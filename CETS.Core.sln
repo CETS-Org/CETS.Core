@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36202.13 d17.14
+VisualStudioVersion = 17.14.36202.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessObjects", "BusinessObjects\BusinessObjects.csproj", "{738F3195-EB74-4470-B7B6-67D98B3060FF}"
 EndProject
@@ -13,11 +13,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DTOs", "DTOs\DTOs.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "Utils\Utils.csproj", "{3E7F482C-5991-43E9-B5B7-487274BF9973}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core.API", "Core.API", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CEST.Core.API", "CEST.Core.API", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core.Shared", "Core.Shared", "{2322666B-5340-4C00-828C-0601297AB9F8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CEST.Core.Shared", "CEST.Core.Shared", "{2322666B-5340-4C00-828C-0601297AB9F8}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core.AI", "Core.AI", "{4F77A4BC-FCD4-493C-984E-E016A0DFED4A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CEST.Core.AI", "CEST.Core.AI", "{4F77A4BC-FCD4-493C-984E-E016A0DFED4A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Models\Models.csproj", "{157DF514-B98D-40BF-A0C6-2583EDE6EEEE}"
 EndProject
