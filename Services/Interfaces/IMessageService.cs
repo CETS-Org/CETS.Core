@@ -1,4 +1,4 @@
-﻿using DTOs;
+﻿using DTOs.Message.Requests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,8 @@ namespace Services.Interfaces
 {
     public interface IMessageService
     {
-        Task SendMessageAsync(Message message);
+        Task SendMessageAsync(CreateMessageRequest message);        //Message AutoMapper DTO to Entity
+
         //Task<string> ReceiveMessageAsync();
         //Task<IEnumerable<string>> GetAllMessagesAsync();
         //Task DeleteMessageAsync(string messageId);

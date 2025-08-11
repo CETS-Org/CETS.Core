@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DTOs
+namespace DTOs.Message.Requests
 {
-    public record Message(string message);
+    public record CreateMessageRequest(string message);
 
 }
