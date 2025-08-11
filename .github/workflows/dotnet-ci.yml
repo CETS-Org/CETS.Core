@@ -2,10 +2,10 @@ name: .NET CI
 
 on:
   push:
-    branches: [ develop, staging, main, dev_minhdq ]
+    branches: [ develop, staging, main ]
     paths: [ '**/*.sln', '**/*.csproj', '**/*.cs', '.github/workflows/dotnet-ci.yml' ]
   pull_request:
-    branches: [ develop, staging, main, dev_minhdq ]
+    branches: [ develop, staging, main ]
     paths: [ '**/*.sln', '**/*.csproj', '**/*.cs' ]
 
 jobs:
