@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class FIN_InvoiceItem
+public partial class FIN_InvoiceItem : IEntityBase
 {
     [Key]
-    public Guid InvoiceItemID { get; set; }
+    [Column("InvoiceItemID")]
+    public Guid Id { get; set; }
 
     public Guid InvoiceID { get; set; }
 
@@ -30,11 +32,15 @@ public partial class FIN_InvoiceItem
 
     public Guid? PromotionID { get; set; }
 
+    [ForeignKey(nameof(CourseID))]
     public virtual ACAD_Course? Course { get; set; }
 
+    [ForeignKey(nameof(CoursePackageID))]
     public virtual ACAD_CoursePackage? CoursePackage { get; set; }
 
+    [ForeignKey(nameof(InvoiceID))]
     public virtual FIN_Invoice Invoice { get; set; } = null!;
 
+    [ForeignKey(nameof(PromotionID))]
     public virtual FIN_Promotion? Promotion { get; set; }
 }

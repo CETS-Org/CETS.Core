@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
 
-public partial class IDN_Role
+public partial class IDN_Role : IEntityBase
 {
     [Key]
-    public Guid RoleID { get; set; }
+    [Column("RoleID")]
+    public Guid Id { get; set; }
 
     [StringLength(50)]
     public string RoleName { get; set; } = null!;

@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class ACAD_LearningMaterial
+public partial class ACAD_LearningMaterial : IEntityBase
 {
     [Key]
-    public Guid MaterialID { get; set; }
+    [Column("MaterialID")]
+    public Guid Id { get; set; }
 
     public Guid UploaderID { get; set; }
 
@@ -34,9 +36,12 @@ public partial class ACAD_LearningMaterial
 
     public virtual ACAD_Class? Class { get; set; }
 
+    [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 
+    [ForeignKey(nameof(UploaderID))]
     public virtual IDN_Account Uploader { get; set; } = null!;
 }

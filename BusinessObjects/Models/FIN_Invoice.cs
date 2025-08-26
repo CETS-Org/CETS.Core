@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class FIN_Invoice
+public partial class FIN_Invoice : IEntityBase
 {
     [Key]
-    public Guid InvoiceID { get; set; }
+    [Column("InvoiceID")]
+    public Guid Id { get; set; }
 
     public Guid StudentID { get; set; }
 
@@ -60,4 +62,10 @@ public partial class FIN_Invoice
     public virtual CORE_LookUp? PlanType { get; set; }
 
     public virtual IDN_Student Student { get; set; } = null!;
+
+    [ForeignKey(nameof(CreatedBy))]
+    public virtual IDN_Account? CreatedByNavigation { get; set; }
+
+    [ForeignKey(nameof(UpdatedBy))]
+    public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

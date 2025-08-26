@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class EVT_EventFeedback
+public partial class EVT_EventFeedback : IEntityBase
 {
     [Key]
-    public Guid EventFeedbackID { get; set; }
+    [Column("EventFeedbackID")]
+    public Guid Id { get; set; }
 
     public Guid EventID { get; set; }
 
@@ -24,7 +26,9 @@ public partial class EVT_EventFeedback
     [Precision(0)]
     public DateTime SubmittedAt { get; set; }
 
+    [ForeignKey(nameof(AccountID))]
     public virtual IDN_Account Account { get; set; } = null!;
 
+    [ForeignKey(nameof(EventID))]
     public virtual EVT_Event Event { get; set; } = null!;
 }

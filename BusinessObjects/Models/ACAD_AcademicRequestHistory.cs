@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class ACAD_AcademicRequestHistory
+public partial class ACAD_AcademicRequestHistory : IEntityBase
 {
     [Key]
-    public Guid HistoryID { get; set; }
+    [Column("HistoryID")]
+    public Guid Id { get; set; }
 
     public Guid RequestID { get; set; }
 
@@ -24,6 +26,7 @@ public partial class ACAD_AcademicRequestHistory
 
     public string? AttachmentUrl { get; set; }
 
+    [ForeignKey(nameof(ChangedBy))]
     public virtual IDN_Account? ChangedByNavigation { get; set; }
 
     public virtual ACAD_AcademicRequest Request { get; set; } = null!;

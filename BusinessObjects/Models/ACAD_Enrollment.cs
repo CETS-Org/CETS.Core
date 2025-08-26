@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class ACAD_Enrollment
+public partial class ACAD_Enrollment : IEntityBase
 {
     [Key]
-    public Guid EnrollmentID { get; set; }
+    [Column("EnrollmentID")]
+    public Guid Id { get; set; }
 
     public Guid StudentID { get; set; }
 
@@ -31,15 +33,21 @@ public partial class ACAD_Enrollment
 
     public bool IsDeleted { get; set; }
 
+    [ForeignKey(nameof(ClassID))]
     public virtual ACAD_Class? Class { get; set; }
 
+    [ForeignKey(nameof(CourseID))]
     public virtual ACAD_Course Course { get; set; } = null!;
 
+    [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
+    [ForeignKey(nameof(EnrollmentStatusID))]
     public virtual CORE_LookUp EnrollmentStatus { get; set; } = null!;
 
+    [ForeignKey(nameof(StudentID))]
     public virtual IDN_Student Student { get; set; } = null!;
 
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

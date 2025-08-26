@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class ACAD_CoursePackage
+public partial class ACAD_CoursePackage : IEntityBase
 {
     [Key]
-    public Guid PackageID { get; set; }
+    [Column("PackageID")]
+    public Guid Id { get; set; }
 
     [StringLength(50)]
     [Unicode(false)]

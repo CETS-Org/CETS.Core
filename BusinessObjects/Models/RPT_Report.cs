@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class RPT_Report
+public partial class RPT_Report : IEntityBase
 {
     [Key]
-    public Guid ReportID { get; set; }
+    [Column("ReportID")]
+    public Guid Id { get; set; }
 
     public Guid ReportTypeID { get; set; }
 
@@ -38,7 +40,9 @@ public partial class RPT_Report
 
     public virtual CORE_LookUp ReportType { get; set; } = null!;
 
+    [ForeignKey(nameof(ResolvedBy))]
     public virtual IDN_Account? ResolvedByNavigation { get; set; }
 
+    [ForeignKey(nameof(SubmittedBy))]
     public virtual IDN_Account SubmittedByNavigation { get; set; } = null!;
 }

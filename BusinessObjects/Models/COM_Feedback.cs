@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class COM_Feedback
+public partial class COM_Feedback : IEntityBase
 {
     [Key]
-    public Guid FeedbackID { get; set; }
+    [Column("FeedbackID")]
+    public Guid Id { get; set; }
 
     public Guid SubmitterID { get; set; }
 

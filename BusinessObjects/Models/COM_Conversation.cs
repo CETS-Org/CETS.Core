@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class COM_Conversation
+public partial class COM_Conversation : IEntityBase
 {
     [Key]
-    public Guid ConversationID { get; set; }
+    [Column("ConversationID")]
+    public Guid Id { get; set; }
 
     public Guid SenderID { get; set; }
 
@@ -18,7 +20,9 @@ public partial class COM_Conversation
     [Precision(0)]
     public DateTime StartAt { get; set; }
 
+    [ForeignKey(nameof(RecipientID))]
     public virtual IDN_Account Recipient { get; set; } = null!;
 
+    [ForeignKey(nameof(SenderID))]
     public virtual IDN_Account Sender { get; set; } = null!;
 }

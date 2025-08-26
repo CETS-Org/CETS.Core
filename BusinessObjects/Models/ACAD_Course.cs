@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
-public partial class ACAD_Course
+public partial class ACAD_Course : IEntityBase
 {
     [Key]
-    public Guid CourseID { get; set; }
+    [Column("CourseID")]
+    public Guid Id { get; set; }
 
     [StringLength(50)]
     [Unicode(false)]
@@ -52,15 +54,20 @@ public partial class ACAD_Course
 
     public virtual ICollection<COM_Feedback> COM_Feedbacks { get; set; } = new List<COM_Feedback>();
 
+    [ForeignKey(nameof(CategoryID))]
     public virtual ACAD_CourseCategory Category { get; set; } = null!;
 
+    [ForeignKey(nameof(CourseFormatID))]
     public virtual CORE_LookUp CourseFormat { get; set; } = null!;
 
+    [ForeignKey(nameof(CourseLevelID))]
     public virtual CORE_LookUp CourseLevel { get; set; } = null!;
 
+    [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
     public virtual ICollection<FIN_InvoiceItem> FIN_InvoiceItems { get; set; } = new List<FIN_InvoiceItem>();
 
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

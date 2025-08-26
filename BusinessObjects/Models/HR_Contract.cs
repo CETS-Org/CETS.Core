@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class HR_Contract
+public partial class HR_Contract : IEntityBase
 {
     [Key]
-    public Guid ContractID { get; set; }
+    [Column("ContractID")]
+    public Guid Id { get; set; }
 
     public Guid TeacherID { get; set; }
 
@@ -43,9 +45,11 @@ public partial class HR_Contract
 
     public virtual CORE_LookUp ContractStatus { get; set; } = null!;
 
+    [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
     public virtual IDN_Teacher Teacher { get; set; } = null!;
 
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

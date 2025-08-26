@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BusinessObjects.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObjects.Models;
 
-public partial class ACAD_AcademicRequest
+public partial class ACAD_AcademicRequest : IEntityBase
 {
     [Key]
-    public Guid RequestID { get; set; }
+    [Column("RequestID")]
+    public Guid Id { get; set; }
 
     public Guid StudentID { get; set; }
 
@@ -37,15 +39,21 @@ public partial class ACAD_AcademicRequest
 
     public virtual ICollection<ACAD_AcademicRequestHistory> ACAD_AcademicRequestHistories { get; set; } = new List<ACAD_AcademicRequestHistory>();
 
+    [ForeignKey(nameof(AcademicRequestStatusID))]
     public virtual CORE_LookUp AcademicRequestStatus { get; set; } = null!;
 
+    [ForeignKey(nameof(FromClassID))]
     public virtual ACAD_Class? FromClass { get; set; }
 
+    [ForeignKey(nameof(ProcessedBy))]
     public virtual IDN_Account? ProcessedByNavigation { get; set; }
 
+    [ForeignKey(nameof(RequestTypeID))]
     public virtual CORE_LookUp RequestType { get; set; } = null!;
 
+    [ForeignKey(nameof(StudentID))]
     public virtual IDN_Student Student { get; set; } = null!;
 
+    [ForeignKey(nameof(ToClassID))]
     public virtual ACAD_Class? ToClass { get; set; }
 }

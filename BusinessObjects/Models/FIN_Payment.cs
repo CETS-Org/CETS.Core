@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class FIN_Payment
+public partial class FIN_Payment : IEntityBase
 {
     [Key]
-    public Guid PaymentID { get; set; }
+    [Column("PaymentID")]
+    public Guid Id { get; set; }
 
     public Guid InvoiceID { get; set; }
 
@@ -46,9 +48,12 @@ public partial class FIN_Payment
 
     public virtual ICollection<FIN_PaymentWebhook> FIN_PaymentWebhooks { get; set; } = new List<FIN_PaymentWebhook>();
 
+    [ForeignKey(nameof(GatewayID))]
     public virtual CORE_LookUp? Gateway { get; set; }
 
+    [ForeignKey(nameof(InvoiceID))]
     public virtual FIN_Invoice Invoice { get; set; } = null!;
 
+    [ForeignKey(nameof(PaymentMethodID))]
     public virtual CORE_LookUp PaymentMethod { get; set; } = null!;
 }

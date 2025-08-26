@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class FIN_PaymentWebhook
+public partial class FIN_PaymentWebhook : IEntityBase
 {
     [Key]
-    public Guid WebhookID { get; set; }
+    [Column("WebhookID")]
+    public Guid Id { get; set; }
 
     public Guid PaymentID { get; set; }
 

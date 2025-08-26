@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class CORE_LookUpType
+public partial class CORE_LookUpType : IEntityBase
 {
     [Key]
-    public Guid LookUpTypeID { get; set; }
+    [Column("LookUpTypeID")]
+    public Guid Id { get; set; }
 
     [StringLength(50)]
     [Unicode(false)]

@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class HR_TeacherAvailability
+public partial class HR_TeacherAvailability : IEntityBase
 {
     [Key]
-    public Guid AvailabilityID { get; set; }
+    [Column("AvailabilityID")]
+    public Guid Id { get; set; }
 
     public Guid TeacherID { get; set; }
 

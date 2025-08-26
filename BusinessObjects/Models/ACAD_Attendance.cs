@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
-public partial class ACAD_Attendance
+public partial class ACAD_Attendance : IEntityBase
 {
     [Key]
-    public Guid AttendanceID { get; set; }
+    [Column("AttendanceID")]
+    public Guid Id { get; set; }
 
     public Guid MeetingID { get; set; }
 
@@ -30,9 +32,11 @@ public partial class ACAD_Attendance
     public DateTime? UpdatedAt { get; set; }
 
     public virtual CORE_LookUp AttendanceStatus { get; set; } = null!;
+    [ForeignKey(nameof(CheckBy))]
     public virtual IDN_Teacher? CheckByNavigation { get; set; }
 
     public virtual ACAD_ClassMeeting Meeting { get; set; } = null!;
     public virtual IDN_Student Student { get; set; } = null!;
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

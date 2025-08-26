@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class ACAD_ClassReservation
+public partial class ACAD_ClassReservation : IEntityBase
 {
     [Key]
-    public Guid ReservationID { get; set; }
+    [Column("ReservationID")]
+    public Guid Id { get; set; }
 
     public Guid ClassID { get; set; }
 

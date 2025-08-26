@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class COM_Notification
+public partial class COM_Notification : IEntityBase
 {
     [Key]
-    public Guid NotificationID { get; set; }
+    [Column("NotificationID")]
+    public Guid Id { get; set; }
 
     public string Content { get; set; } = null!;
 

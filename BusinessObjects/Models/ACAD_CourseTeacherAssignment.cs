@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class ACAD_CourseTeacherAssignment
+public partial class ACAD_CourseTeacherAssignment : IEntityBase
 {
     [Key]
-    public Guid AssignmentID { get; set; }
+    [Column("AssignmentID")]
+    public Guid Id { get; set; }
 
     public Guid CourseID { get; set; }
 
@@ -31,9 +33,11 @@ public partial class ACAD_CourseTeacherAssignment
 
     public virtual ACAD_Course Course { get; set; } = null!;
 
+    [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
     public virtual IDN_Teacher Teacher { get; set; } = null!;
 
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

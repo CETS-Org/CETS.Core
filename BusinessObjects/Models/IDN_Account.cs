@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class IDN_Account
+public partial class IDN_Account : IEntityBase
 {
     [Key]
-    public Guid AccountID { get; set; }
+    [Column("AccountID")]
+    public Guid Id { get; set; }
 
     [StringLength(255)]
     public string? Email { get; set; }

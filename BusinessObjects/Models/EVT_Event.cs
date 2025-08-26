@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class EVT_Event
+public partial class EVT_Event : IEntityBase
 {
     [Key]
-    public Guid EventID { get; set; }
+    [Column("EventID")]
+    public Guid Id { get; set; }
 
     public Guid EventTypeID { get; set; }
 

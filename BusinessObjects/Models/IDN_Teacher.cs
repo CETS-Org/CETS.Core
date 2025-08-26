@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class IDN_Teacher
+public partial class IDN_Teacher : IEntityBase
 {
     [Key]
-    public Guid AccountID { get; set; }
+    [Column("AccountID")]
+    public Guid Id { get; set; }
 
     [StringLength(20)]
     public string TeacherCode { get; set; } = null!;
@@ -50,5 +52,6 @@ public partial class IDN_Teacher
 
     public virtual ICollection<IDN_TeacherCredential> IDN_TeacherCredentials { get; set; } = new List<IDN_TeacherCredential>();
 
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

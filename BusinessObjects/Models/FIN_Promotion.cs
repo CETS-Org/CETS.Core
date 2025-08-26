@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class FIN_Promotion
+public partial class FIN_Promotion : IEntityBase
 {
     [Key]
-    public Guid PromotionID { get; set; }
+    [Column("PromotionID")]
+    public Guid Id { get; set; }
 
     public Guid PromotionTypeID { get; set; }
 
@@ -42,11 +44,13 @@ public partial class FIN_Promotion
     [Precision(0)]
     public DateTime? UpdatedAt { get; set; }
 
+    [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
     public virtual ICollection<FIN_InvoiceItem> FIN_InvoiceItems { get; set; } = new List<FIN_InvoiceItem>();
 
     public virtual CORE_LookUp PromotionType { get; set; } = null!;
 
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

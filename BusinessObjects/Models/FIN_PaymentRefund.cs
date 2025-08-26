@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class FIN_PaymentRefund
+public partial class FIN_PaymentRefund : IEntityBase
 {
     [Key]
-    public Guid RefundID { get; set; }
+    [Column("RefundID")]
+    public Guid Id { get; set; }
 
     public Guid PaymentID { get; set; }
 

@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class ACAD_SyllabusItem
+public partial class ACAD_SyllabusItem : IEntityBase
 {
     [Key]
-    public Guid SyllabusItemID { get; set; }
+    [Column("SyllabusItemID")]
+    public Guid Id { get; set; }
 
     public Guid SyllabusID { get; set; }
 
@@ -42,9 +44,11 @@ public partial class ACAD_SyllabusItem
 
     public virtual ICollection<ACAD_ClassMeeting> ACAD_ClassMeetings { get; set; } = new List<ACAD_ClassMeeting>();
 
+    [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
     public virtual ACAD_Syllabus Syllabus { get; set; } = null!;
 
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

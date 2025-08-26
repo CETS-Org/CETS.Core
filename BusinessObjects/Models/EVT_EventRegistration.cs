@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class EVT_EventRegistration
+public partial class EVT_EventRegistration : IEntityBase
 {
     [Key]
-    public Guid RegistrationID { get; set; }
+    [Column("RegistrationID")]
+    public Guid Id { get; set; }
 
     public Guid EventID { get; set; }
 
@@ -29,7 +31,9 @@ public partial class EVT_EventRegistration
 
     public bool IsDeleted { get; set; }
 
+    [ForeignKey(nameof(AccountID))]
     public virtual IDN_Account? Account { get; set; }
 
+    [ForeignKey(nameof(EventID))]
     public virtual EVT_Event Event { get; set; } = null!;
 }

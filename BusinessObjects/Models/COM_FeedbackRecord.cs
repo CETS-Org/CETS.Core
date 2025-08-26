@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using BusinessObjects.Entities;
 
 namespace BusinessObjects.Models;
 
-public partial class COM_FeedbackRecord
+public partial class COM_FeedbackRecord : IEntityBase
 {
     [Key]
-    public Guid FeedbackRecordID { get; set; }
+    [Column("FeedbackRecordID")]
+    public Guid Id { get; set; }
 
     public string? FormUrl { get; set; }
 
