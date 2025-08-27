@@ -1,13 +1,14 @@
-﻿using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Interfaces
+namespace Domain.Interfaces.RPT
 {
-    public interface IAccountRepository : IBaseRepository<IDN_Account>
+    public interface IRPT_Report : IBaseRepository<IRPT_Report>
     {
     }
 }
+
+
