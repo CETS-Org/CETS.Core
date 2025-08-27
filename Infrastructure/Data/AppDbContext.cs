@@ -667,9 +667,9 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Account).WithOne(p => p.IDN_TeacherAccount)
                 .HasForeignKey<IDN_Teacher>(d => d.Id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_IDN_Teacher_Account");
+                .HasConstraintName("FK_IDN_Teachers_Account");
 
-            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.IDN_TeacherUpdatedByNavigations).HasConstraintName("FK_IDN_Teacher_Update");
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.IDN_TeacherUpdatedByNavigations).HasConstraintName("FK_IDN_Teachers_Update");
         });
 
         modelBuilder.Entity<IDN_TeacherCredential>(entity =>
@@ -751,9 +751,9 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<IDN_Teacher>(entity =>
         {
-            entity.HasIndex(e => e.TeacherCode, "UQ_IDN_Teacher_Code").IsUnique();
+            entity.HasIndex(e => e.TeacherCode, "UQ_IDN_Teachers_Code").IsUnique();
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
-            entity.ToTable("IDN_Teacher", t => t.HasCheckConstraint("CK_IDN_Teacher_YearsExp", "[YearsExperience] >= 0"));
+            entity.ToTable("IDN_Teachers", t => t.HasCheckConstraint("CK_IDN_Teachers_YearsExp", "[YearsExperience] >= 0"));
         });
 
         modelBuilder.Entity<IDN_TeacherCredential>(entity =>

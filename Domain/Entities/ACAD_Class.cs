@@ -54,13 +54,16 @@ public partial class ACAD_Class : IEntityBase
 
     public virtual ICollection<ACAD_LearningMaterial> ACAD_LearningMaterials { get; set; } = new List<ACAD_LearningMaterial>();
 
+    [ForeignKey(nameof(ClassStatusID))]
     public virtual CORE_LookUp ClassStatus { get; set; } = null!;
 
+    [ForeignKey(nameof(CourseFormatID))]
     public virtual CORE_LookUp? CourseFormat { get; set; }
 
     [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
+    [ForeignKey(nameof(TeacherAssignmentID))]
     public virtual ACAD_CourseTeacherAssignment? TeacherAssignment { get; set; }
 
     [ForeignKey(nameof(UpdatedBy))]

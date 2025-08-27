@@ -58,10 +58,13 @@ public partial class FIN_Invoice : IEntityBase
 
     public virtual ICollection<FIN_Payment> FIN_Payments { get; set; } = new List<FIN_Payment>();
 
+    [ForeignKey(nameof(InvoiceStatusID))]
     public virtual CORE_LookUp InvoiceStatus { get; set; } = null!;
 
+    [ForeignKey(nameof(PlanTypeID))]
     public virtual CORE_LookUp? PlanType { get; set; }
 
+    [ForeignKey(nameof(StudentID))]
     public virtual IDN_Student Student { get; set; } = null!;
 
     [ForeignKey(nameof(CreatedBy))]

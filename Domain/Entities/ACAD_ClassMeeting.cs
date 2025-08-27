@@ -54,15 +54,19 @@ public partial class ACAD_ClassMeeting : IEntityBase
 
     public virtual ICollection<ACAD_Attendance> ACAD_Attendances { get; set; } = new List<ACAD_Attendance>();
 
+    [ForeignKey(nameof(ClassID))]
     public virtual ACAD_Class Class { get; set; } = null!;
 
+    [ForeignKey(nameof(CoveredTopicID))]
     public virtual ACAD_SyllabusItem CoveredTopic { get; set; } = null!;
 
     [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
+    [ForeignKey(nameof(RoomID))]
     public virtual FAC_Room? Room { get; set; }
 
+    [ForeignKey(nameof(TeacherAssignmentID))]
     public virtual ACAD_CourseTeacherAssignment? TeacherAssignment { get; set; }
 
     [ForeignKey(nameof(UpdatedBy))]

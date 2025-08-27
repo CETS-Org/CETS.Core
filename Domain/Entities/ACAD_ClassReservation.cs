@@ -23,9 +23,12 @@ public partial class ACAD_ClassReservation : IEntityBase
 
     public Guid? InvoiceID { get; set; }
 
+    [ForeignKey(nameof(ClassID))]
     public virtual ACAD_Class Class { get; set; } = null!;
 
+    [ForeignKey(nameof(InvoiceID))]
     public virtual FIN_Invoice? Invoice { get; set; }
 
+    [ForeignKey(nameof(StudentID))]
     public virtual IDN_Student Student { get; set; } = null!;
 }

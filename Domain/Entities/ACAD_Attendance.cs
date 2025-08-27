@@ -32,12 +32,18 @@ public partial class ACAD_Attendance : IEntityBase
     [Precision(0)]
     public DateTime? UpdatedAt { get; set; }
 
+    [ForeignKey(nameof(AttendanceStatusID))]
     public virtual CORE_LookUp AttendanceStatus { get; set; } = null!;
+
     [ForeignKey(nameof(CheckBy))]
     public virtual IDN_Teacher? CheckByNavigation { get; set; }
 
+    [ForeignKey(nameof(MeetingID))]
     public virtual ACAD_ClassMeeting Meeting { get; set; } = null!;
+
+    [ForeignKey(nameof(StudentID))]
     public virtual IDN_Student Student { get; set; } = null!;
+    
     [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

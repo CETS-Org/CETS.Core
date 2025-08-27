@@ -83,6 +83,7 @@ public partial class CORE_LookUp : IEntityBase
 
     public virtual ICollection<RPT_Report> RPT_ReportReportTypes { get; set; } = new List<RPT_Report>();
 
+    [ForeignKey(nameof(LookUpTypeID))]
     public virtual CORE_LookUpType LookUpType { get; set; } = null!;
 
 }

@@ -41,6 +41,7 @@ public partial class FAC_Room : IEntityBase
     [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
+    [ForeignKey(nameof(RoomTypeId))]
     public virtual CORE_LookUp RoomType { get; set; } = null!;
 
     [ForeignKey(nameof(UpdatedBy))]

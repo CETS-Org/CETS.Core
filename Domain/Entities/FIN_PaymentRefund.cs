@@ -43,7 +43,9 @@ public partial class FIN_PaymentRefund : IEntityBase
     [Precision(0)]
     public DateTime? UpdatedAt { get; set; }
 
+    [ForeignKey(nameof(GatewayID))]
     public virtual CORE_LookUp? Gateway { get; set; }
 
+    [ForeignKey(nameof(PaymentID))]
     public virtual FIN_Payment Payment { get; set; } = null!;
 }

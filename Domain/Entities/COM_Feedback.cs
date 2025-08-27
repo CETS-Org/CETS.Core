@@ -31,11 +31,15 @@ public partial class COM_Feedback : IEntityBase
 
     public bool IsDeleted { get; set; }
 
+    [ForeignKey(nameof(CourseID))]
     public virtual ACAD_Course? Course { get; set; }
 
+    [ForeignKey(nameof(FeedbackTypeID))]
     public virtual CORE_LookUp? FeedbackType { get; set; }
 
+    [ForeignKey(nameof(SubmitterID))]
     public virtual IDN_Student Submitter { get; set; } = null!;
 
+    [ForeignKey(nameof(TeacherID))]
     public virtual IDN_Teacher? Teacher { get; set; }
 }

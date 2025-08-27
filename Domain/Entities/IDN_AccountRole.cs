@@ -18,7 +18,9 @@ public partial class IDN_AccountRole : IEntityBase
 
     public Guid RoleID { get; set; }
 
+    [ForeignKey(nameof(AccountID))]
     public virtual IDN_Account Account { get; set; } = null!;
 
+    [ForeignKey(nameof(RoleID))]
     public virtual IDN_Role Role { get; set; } = null!;
 }

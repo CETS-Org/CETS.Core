@@ -21,5 +21,6 @@ public partial class HR_TeacherAvailability : IEntityBase
 
     public int? Slot { get; set; }
 
+    [ForeignKey(nameof(TeacherID))]
     public virtual IDN_Teacher Teacher { get; set; } = null!;
 }

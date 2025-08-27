@@ -25,5 +25,6 @@ public partial class COM_FeedbackRecord : IEntityBase
 
     public bool IsDeleted { get; set; }
 
+    [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 }

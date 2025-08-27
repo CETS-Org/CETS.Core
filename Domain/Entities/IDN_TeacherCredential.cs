@@ -31,8 +31,10 @@ public partial class IDN_TeacherCredential : IEntityBase
 
     public Guid? UpdatedBy { get; set; }
 
+    [ForeignKey(nameof(CredentialTypeID))]
     public virtual CORE_LookUp CredentialType { get; set; } = null!;
 
+    [ForeignKey(nameof(TeacherID))]
     public virtual IDN_Teacher Teacher { get; set; } = null!;
 
     [ForeignKey(nameof(UpdatedBy))]

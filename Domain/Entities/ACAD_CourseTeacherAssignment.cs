@@ -32,11 +32,13 @@ public partial class ACAD_CourseTeacherAssignment : IEntityBase
 
     public virtual ICollection<ACAD_Class> ACAD_Classes { get; set; } = new List<ACAD_Class>();
 
+    [ForeignKey(nameof(CourseID))]
     public virtual ACAD_Course Course { get; set; } = null!;
 
     [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
+    [ForeignKey(nameof(TeacherID))]
     public virtual IDN_Teacher Teacher { get; set; } = null!;
 
     [ForeignKey(nameof(UpdatedBy))]

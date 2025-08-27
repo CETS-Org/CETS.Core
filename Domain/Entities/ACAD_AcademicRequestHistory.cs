@@ -30,7 +30,9 @@ public partial class ACAD_AcademicRequestHistory : IEntityBase
     [ForeignKey(nameof(ChangedBy))]
     public virtual IDN_Account? ChangedByNavigation { get; set; }
 
+    [ForeignKey(nameof(RequestID))]
     public virtual ACAD_AcademicRequest Request { get; set; } = null!;
 
+    [ForeignKey(nameof(StatusID))]
     public virtual CORE_LookUp Status { get; set; } = null!;
 }

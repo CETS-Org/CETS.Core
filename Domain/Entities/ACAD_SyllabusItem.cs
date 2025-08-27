@@ -48,6 +48,7 @@ public partial class ACAD_SyllabusItem : IEntityBase
     [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
+    [ForeignKey(nameof(SyllabusID))]
     public virtual ACAD_Syllabus Syllabus { get; set; } = null!;
 
     [ForeignKey(nameof(UpdatedBy))]

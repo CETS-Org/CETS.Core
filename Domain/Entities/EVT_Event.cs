@@ -33,5 +33,6 @@ public partial class EVT_Event : IEntityBase
 
     public virtual ICollection<EVT_EventRegistration> EVT_EventRegistrations { get; set; } = new List<EVT_EventRegistration>();
 
+    [ForeignKey(nameof(EventTypeID))]
     public virtual CORE_LookUp EventType { get; set; } = null!;
 }

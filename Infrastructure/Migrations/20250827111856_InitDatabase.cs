@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Domain.Migrations
+namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitDatabase : Migration
@@ -130,8 +130,7 @@ namespace Domain.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -143,7 +142,7 @@ namespace Domain.Migrations
                         principalColumn: "LookUpID");
                     table.ForeignKey(
                         name: "FK_IDN_Accounts_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -162,21 +161,19 @@ namespace Domain.Migrations
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ACAD_CoursePackages", x => x.PackageID);
                     table.ForeignKey(
                         name: "FK_ACAD_CoursePackages_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_ACAD_CoursePackages_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -198,9 +195,7 @@ namespace Domain.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -212,7 +207,7 @@ namespace Domain.Migrations
                         principalColumn: "CategoryID");
                     table.ForeignKey(
                         name: "FK_ACAD_Courses_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -227,7 +222,7 @@ namespace Domain.Migrations
                         principalColumn: "LookUpID");
                     table.ForeignKey(
                         name: "FK_ACAD_Courses_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -265,15 +260,14 @@ namespace Domain.Migrations
                     ResultUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreateAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_COM_FeedbackRecords", x => x.FeedbackRecordID);
                     table.ForeignKey(
                         name: "FK_COM_FeedbackRecord_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -352,9 +346,7 @@ namespace Domain.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
@@ -362,7 +354,7 @@ namespace Domain.Migrations
                     table.CheckConstraint("CK_FAC_Rooms_Capacity", "[Capacity] > 0");
                     table.ForeignKey(
                         name: "FK_FAC_Rooms_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -372,7 +364,7 @@ namespace Domain.Migrations
                         principalColumn: "LookUpID");
                     table.ForeignKey(
                         name: "FK_FAC_Rooms_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -393,9 +385,7 @@ namespace Domain.Migrations
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -403,7 +393,7 @@ namespace Domain.Migrations
                     table.CheckConstraint("CK_FIN_Promotions_Amount", "([PercentOff] IS NOT NULL AND [AmountOff] IS NULL AND [PercentOff] BETWEEN 0 AND 100) OR ([AmountOff] IS NOT NULL AND [PercentOff] IS NULL AND [AmountOff] >= 0)");
                     table.ForeignKey(
                         name: "FK_FIN_Promotions_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -413,7 +403,7 @@ namespace Domain.Migrations
                         principalColumn: "LookUpID");
                     table.ForeignKey(
                         name: "FK_FIN_Promotions_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -456,8 +446,7 @@ namespace Domain.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -469,13 +458,13 @@ namespace Domain.Migrations
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_IDN_Student_Update",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
 
             migrationBuilder.CreateTable(
-                name: "IDN_Teacher",
+                name: "IDN_Teachers",
                 columns: table => new
                 {
                     AccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -485,21 +474,20 @@ namespace Domain.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_IDN_Teacher", x => x.AccountID);
-                    table.CheckConstraint("CK_IDN_Teacher_YearsExp", "[YearsExperience] >= 0");
+                    table.PrimaryKey("PK_IDN_Teachers", x => x.AccountID);
+                    table.CheckConstraint("CK_IDN_Teachers_YearsExp", "[YearsExperience] >= 0");
                     table.ForeignKey(
-                        name: "FK_IDN_Teacher_Account",
+                        name: "FK_IDN_Teachers_Account",
                         column: x => x.AccountID,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
-                        name: "FK_IDN_Teacher_Update",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        name: "FK_IDN_Teachers_Update",
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -518,16 +506,14 @@ namespace Domain.Migrations
                     ReportUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
                     ResolvedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    ResolvedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ResolvedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    SubmittedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    ResolvedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RPT_Reports", x => x.ReportID);
                     table.ForeignKey(
                         name: "FK_RPT_Reports_Resolved",
-                        column: x => x.ResolvedByNavigationAccountID,
+                        column: x => x.ResolvedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -537,7 +523,7 @@ namespace Domain.Migrations
                         principalColumn: "LookUpID");
                     table.ForeignKey(
                         name: "FK_RPT_Reports_Submitter",
-                        column: x => x.SubmittedByNavigationAccountID,
+                        column: x => x.SubmittedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -587,9 +573,7 @@ namespace Domain.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -602,12 +586,12 @@ namespace Domain.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ACAD_Syllabi_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_ACAD_Syllabi_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -637,6 +621,16 @@ namespace Domain.Migrations
                 {
                     table.PrimaryKey("PK_FIN_Invoices", x => x.InvoiceID);
                     table.ForeignKey(
+                        name: "FK_FIN_Invoices_IDN_Accounts_CreatedBy",
+                        column: x => x.CreatedBy,
+                        principalTable: "IDN_Accounts",
+                        principalColumn: "AccountID");
+                    table.ForeignKey(
+                        name: "FK_FIN_Invoices_IDN_Accounts_UpdatedBy",
+                        column: x => x.UpdatedBy,
+                        principalTable: "IDN_Accounts",
+                        principalColumn: "AccountID");
+                    table.ForeignKey(
                         name: "FK_FIN_Invoices_PlanType",
                         column: x => x.PlanTypeID,
                         principalTable: "CORE_LookUps",
@@ -663,9 +657,7 @@ namespace Domain.Migrations
                     AssignedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -678,17 +670,17 @@ namespace Domain.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ACAD_CourseTeacherAssignments_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_ACAD_CourseTeacherAssignments_Teacher",
                         column: x => x.TeacherID,
-                        principalTable: "IDN_Teacher",
+                        principalTable: "IDN_Teachers",
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_ACAD_CourseTeacherAssignments_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -730,7 +722,7 @@ namespace Domain.Migrations
                     table.ForeignKey(
                         name: "FK_COM_Feedback_Teacher",
                         column: x => x.TeacherID,
-                        principalTable: "IDN_Teacher",
+                        principalTable: "IDN_Teachers",
                         principalColumn: "AccountID",
                         onDelete: ReferentialAction.SetNull);
                 });
@@ -751,9 +743,7 @@ namespace Domain.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -761,7 +751,7 @@ namespace Domain.Migrations
                     table.CheckConstraint("CK_HR_Contracts_Dates", "[ExpiredAt] IS NULL OR [ExpiredAt] >= [SignedAt]");
                     table.ForeignKey(
                         name: "FK_HR_Contracts_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -772,11 +762,11 @@ namespace Domain.Migrations
                     table.ForeignKey(
                         name: "FK_HR_Contracts_Teacher",
                         column: x => x.TeacherID,
-                        principalTable: "IDN_Teacher",
+                        principalTable: "IDN_Teachers",
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_HR_Contracts_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -796,7 +786,7 @@ namespace Domain.Migrations
                     table.ForeignKey(
                         name: "FK_HR_TeacherAvailability_Teacher",
                         column: x => x.TeacherID,
-                        principalTable: "IDN_Teacher",
+                        principalTable: "IDN_Teachers",
                         principalColumn: "AccountID");
                 });
 
@@ -811,8 +801,7 @@ namespace Domain.Migrations
                     Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Level = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -825,12 +814,12 @@ namespace Domain.Migrations
                     table.ForeignKey(
                         name: "FK_TeacherCredentials_Teacher",
                         column: x => x.TeacherID,
-                        principalTable: "IDN_Teacher",
+                        principalTable: "IDN_Teachers",
                         principalColumn: "AccountID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_TeacherCredentials_Update",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -852,9 +841,7 @@ namespace Domain.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -863,7 +850,7 @@ namespace Domain.Migrations
                     table.CheckConstraint("CK_ACAD_SyllabusItems_Session", "[SessionNumber] >= 1");
                     table.ForeignKey(
                         name: "FK_ACAD_SyllabusItems_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -874,7 +861,7 @@ namespace Domain.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ACAD_SyllabusItems_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -976,9 +963,7 @@ namespace Domain.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -993,7 +978,7 @@ namespace Domain.Migrations
                         principalColumn: "AssignmentID");
                     table.ForeignKey(
                         name: "FK_ACAD_Classes_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -1008,7 +993,7 @@ namespace Domain.Migrations
                         principalColumn: "LookUpID");
                     table.ForeignKey(
                         name: "FK_ACAD_Classes_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -1089,8 +1074,7 @@ namespace Domain.Migrations
                     EffectiveDate = table.Column<DateOnly>(type: "date", nullable: true),
                     AttachmentUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ProcessedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ProcessedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    ProcessedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    ProcessedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1102,7 +1086,7 @@ namespace Domain.Migrations
                         principalColumn: "ClassID");
                     table.ForeignKey(
                         name: "FK_ACAD_AcReq_Processed",
-                        column: x => x.ProcessedByNavigationAccountID,
+                        column: x => x.ProcessedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -1147,9 +1131,7 @@ namespace Domain.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -1172,7 +1154,7 @@ namespace Domain.Migrations
                         principalColumn: "SyllabusItemID");
                     table.ForeignKey(
                         name: "FK_ACAD_ClassMeetings_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -1183,7 +1165,7 @@ namespace Domain.Migrations
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_ACAD_ClassMeetings_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -1231,9 +1213,7 @@ namespace Domain.Migrations
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -1250,7 +1230,7 @@ namespace Domain.Migrations
                         principalColumn: "CourseID");
                     table.ForeignKey(
                         name: "FK_ACAD_Enrollments_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -1265,7 +1245,7 @@ namespace Domain.Migrations
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_ACAD_Enrollments_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -1283,9 +1263,7 @@ namespace Domain.Migrations
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -1297,12 +1275,12 @@ namespace Domain.Migrations
                         principalColumn: "ClassID");
                     table.ForeignKey(
                         name: "FK_ACAD_LearningMaterials_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_ACAD_LearningMaterials_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -1322,8 +1300,7 @@ namespace Domain.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ChangedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ChangedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
-                    AttachmentUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ChangedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    AttachmentUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1335,7 +1312,7 @@ namespace Domain.Migrations
                         principalColumn: "LookUpID");
                     table.ForeignKey(
                         name: "FK_ACAD_AcReqHist_ChangedBy",
-                        column: x => x.ChangedByNavigationAccountID,
+                        column: x => x.ChangedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -1360,9 +1337,7 @@ namespace Domain.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -1374,13 +1349,13 @@ namespace Domain.Migrations
                         principalColumn: "MeetingID");
                     table.ForeignKey(
                         name: "FK_ACAD_Assignments_Created",
-                        column: x => x.CreatedByNavigationAccountID,
-                        principalTable: "IDN_Teacher",
+                        column: x => x.CreatedBy,
+                        principalTable: "IDN_Teachers",
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_ACAD_Assignments_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
-                        principalTable: "IDN_Teacher",
+                        column: x => x.UpdatedBy,
+                        principalTable: "IDN_Teachers",
                         principalColumn: "AccountID");
                 });
 
@@ -1396,17 +1371,15 @@ namespace Domain.Migrations
                     CheckBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: false, defaultValueSql: "(sysutcdatetime())"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    CheckByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ACAD_Attendances", x => x.AttendanceID);
                     table.ForeignKey(
                         name: "FK_ACAD_Attendance_Created",
-                        column: x => x.CheckByNavigationAccountID,
-                        principalTable: "IDN_Teacher",
+                        column: x => x.CheckBy,
+                        principalTable: "IDN_Teachers",
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_ACAD_Attendance_Meeting",
@@ -1426,7 +1399,7 @@ namespace Domain.Migrations
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_ACAD_Attendance_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
@@ -1446,9 +1419,7 @@ namespace Domain.Migrations
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2(0)", precision: 0, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedByNavigationAccountID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -1461,7 +1432,7 @@ namespace Domain.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ACAD_Submissions_Created",
-                        column: x => x.CreatedByNavigationAccountID,
+                        column: x => x.CreatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                     table.ForeignKey(
@@ -1471,15 +1442,15 @@ namespace Domain.Migrations
                         principalColumn: "AccountID");
                     table.ForeignKey(
                         name: "FK_ACAD_Submissions_Updated",
-                        column: x => x.UpdatedByNavigationAccountID,
+                        column: x => x.UpdatedBy,
                         principalTable: "IDN_Accounts",
                         principalColumn: "AccountID");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_AcademicRequestHistories_ChangedByNavigationAccountID",
+                name: "IX_ACAD_AcademicRequestHistories_ChangedBy",
                 table: "ACAD_AcademicRequestHistories",
-                column: "ChangedByNavigationAccountID");
+                column: "ChangedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_AcademicRequestHistories_RequestID",
@@ -1502,9 +1473,9 @@ namespace Domain.Migrations
                 column: "FromClassID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_AcademicRequests_ProcessedByNavigationAccountID",
+                name: "IX_ACAD_AcademicRequests_ProcessedBy",
                 table: "ACAD_AcademicRequests",
-                column: "ProcessedByNavigationAccountID");
+                column: "ProcessedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_AcademicRequests_RequestTypeID",
@@ -1527,14 +1498,14 @@ namespace Domain.Migrations
                 column: "ClassMeetingID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Assignments_CreatedByNavigationAccountID",
+                name: "IX_ACAD_Assignments_CreatedBy",
                 table: "ACAD_Assignments",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Assignments_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_Assignments_UpdatedBy",
                 table: "ACAD_Assignments",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_Attendances_AttendanceStatusID",
@@ -1542,9 +1513,9 @@ namespace Domain.Migrations
                 column: "AttendanceStatusID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Attendances_CheckByNavigationAccountID",
+                name: "IX_ACAD_Attendances_CheckBy",
                 table: "ACAD_Attendances",
-                column: "CheckByNavigationAccountID");
+                column: "CheckBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_Attendances_StudentID",
@@ -1552,9 +1523,9 @@ namespace Domain.Migrations
                 column: "StudentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Attendances_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_Attendances_UpdatedBy",
                 table: "ACAD_Attendances",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "UQ_ACAD_Attendance",
@@ -1573,9 +1544,9 @@ namespace Domain.Migrations
                 column: "CourseFormatID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Classes_CreatedByNavigationAccountID",
+                name: "IX_ACAD_Classes_CreatedBy",
                 table: "ACAD_Classes",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_Classes_TeacherAssignmentID",
@@ -1583,9 +1554,9 @@ namespace Domain.Migrations
                 column: "TeacherAssignmentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Classes_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_Classes_UpdatedBy",
                 table: "ACAD_Classes",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_ClassMeetings_ClassID",
@@ -1598,9 +1569,9 @@ namespace Domain.Migrations
                 column: "CoveredTopicID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_ClassMeetings_CreatedByNavigationAccountID",
+                name: "IX_ACAD_ClassMeetings_CreatedBy",
                 table: "ACAD_ClassMeetings",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_ClassMeetings_RoomID",
@@ -1613,9 +1584,9 @@ namespace Domain.Migrations
                 column: "TeacherAssignmentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_ClassMeetings_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_ClassMeetings_UpdatedBy",
                 table: "ACAD_ClassMeetings",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_ClassReservations_InvoiceID",
@@ -1651,14 +1622,14 @@ namespace Domain.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_CoursePackages_CreatedByNavigationAccountID",
+                name: "IX_ACAD_CoursePackages_CreatedBy",
                 table: "ACAD_CoursePackages",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_CoursePackages_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_CoursePackages_UpdatedBy",
                 table: "ACAD_CoursePackages",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "UQ_ACAD_CoursePackages_Code",
@@ -1682,14 +1653,14 @@ namespace Domain.Migrations
                 column: "CourseLevelID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Courses_CreatedByNavigationAccountID",
+                name: "IX_ACAD_Courses_CreatedBy",
                 table: "ACAD_Courses",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Courses_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_Courses_UpdatedBy",
                 table: "ACAD_Courses",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "UQ_ACAD_Courses_CourseCode",
@@ -1703,9 +1674,9 @@ namespace Domain.Migrations
                 column: "CourseID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_CourseTeacherAssignments_CreatedByNavigationAccountID",
+                name: "IX_ACAD_CourseTeacherAssignments_CreatedBy",
                 table: "ACAD_CourseTeacherAssignments",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_CourseTeacherAssignments_TeacherID",
@@ -1713,9 +1684,9 @@ namespace Domain.Migrations
                 column: "TeacherID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_CourseTeacherAssignments_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_CourseTeacherAssignments_UpdatedBy",
                 table: "ACAD_CourseTeacherAssignments",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_Enrollments_ClassID",
@@ -1728,9 +1699,9 @@ namespace Domain.Migrations
                 column: "CourseID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Enrollments_CreatedByNavigationAccountID",
+                name: "IX_ACAD_Enrollments_CreatedBy",
                 table: "ACAD_Enrollments",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_Enrollments_EnrollmentStatusID",
@@ -1743,9 +1714,9 @@ namespace Domain.Migrations
                 column: "StudentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Enrollments_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_Enrollments_UpdatedBy",
                 table: "ACAD_Enrollments",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_LearningMaterials_ClassID",
@@ -1753,14 +1724,14 @@ namespace Domain.Migrations
                 column: "ClassID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_LearningMaterials_CreatedByNavigationAccountID",
+                name: "IX_ACAD_LearningMaterials_CreatedBy",
                 table: "ACAD_LearningMaterials",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_LearningMaterials_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_LearningMaterials_UpdatedBy",
                 table: "ACAD_LearningMaterials",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_LearningMaterials_UploaderID",
@@ -1773,9 +1744,9 @@ namespace Domain.Migrations
                 column: "AssignmentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Submissions_CreatedByNavigationAccountID",
+                name: "IX_ACAD_Submissions_CreatedBy",
                 table: "ACAD_Submissions",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_Submissions_StudentID",
@@ -1783,9 +1754,9 @@ namespace Domain.Migrations
                 column: "StudentID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Submissions_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_Submissions_UpdatedBy",
                 table: "ACAD_Submissions",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_Syllabi_CourseID",
@@ -1793,19 +1764,19 @@ namespace Domain.Migrations
                 column: "CourseID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Syllabi_CreatedByNavigationAccountID",
+                name: "IX_ACAD_Syllabi_CreatedBy",
                 table: "ACAD_Syllabi",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_Syllabi_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_Syllabi_UpdatedBy",
                 table: "ACAD_Syllabi",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_SyllabusItems_CreatedByNavigationAccountID",
+                name: "IX_ACAD_SyllabusItems_CreatedBy",
                 table: "ACAD_SyllabusItems",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_SyllabusItems_SyllabusID",
@@ -1813,9 +1784,9 @@ namespace Domain.Migrations
                 column: "SyllabusID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ACAD_SyllabusItems_UpdatedByNavigationAccountID",
+                name: "IX_ACAD_SyllabusItems_UpdatedBy",
                 table: "ACAD_SyllabusItems",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_COM_Conversations_RecipientID",
@@ -1848,9 +1819,9 @@ namespace Domain.Migrations
                 column: "TeacherID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_COM_FeedbackRecords_CreatedByNavigationAccountID",
+                name: "IX_COM_FeedbackRecords_CreatedBy",
                 table: "COM_FeedbackRecords",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "UQ_CORE_LookUps_Type_Code",
@@ -1890,9 +1861,9 @@ namespace Domain.Migrations
                 column: "EventTypeID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FAC_Rooms_CreatedByNavigationAccountID",
+                name: "IX_FAC_Rooms_CreatedBy",
                 table: "FAC_Rooms",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FAC_Rooms_RoomTypeId",
@@ -1900,9 +1871,9 @@ namespace Domain.Migrations
                 column: "RoomTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FAC_Rooms_UpdatedByNavigationAccountID",
+                name: "IX_FAC_Rooms_UpdatedBy",
                 table: "FAC_Rooms",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FIN_InvoiceItems_CourseID",
@@ -1925,6 +1896,11 @@ namespace Domain.Migrations
                 column: "PromotionID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FIN_Invoices_CreatedBy",
+                table: "FIN_Invoices",
+                column: "CreatedBy");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FIN_Invoices_InvoiceStatusID",
                 table: "FIN_Invoices",
                 column: "InvoiceStatusID");
@@ -1945,6 +1921,11 @@ namespace Domain.Migrations
                 name: "IX_FIN_Invoices_StudentID",
                 table: "FIN_Invoices",
                 column: "StudentID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FIN_Invoices_UpdatedBy",
+                table: "FIN_Invoices",
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "UQ_FIN_Invoices_Number",
@@ -1991,9 +1972,9 @@ namespace Domain.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_FIN_Promotions_CreatedByNavigationAccountID",
+                name: "IX_FIN_Promotions_CreatedBy",
                 table: "FIN_Promotions",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FIN_Promotions_PromotionTypeID",
@@ -2001,9 +1982,9 @@ namespace Domain.Migrations
                 column: "PromotionTypeID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FIN_Promotions_UpdatedByNavigationAccountID",
+                name: "IX_FIN_Promotions_UpdatedBy",
                 table: "FIN_Promotions",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "UQ_FIN_Promotions_Code",
@@ -2017,9 +1998,9 @@ namespace Domain.Migrations
                 column: "ContractStatusID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_HR_Contracts_CreatedByNavigationAccountID",
+                name: "IX_HR_Contracts_CreatedBy",
                 table: "HR_Contracts",
-                column: "CreatedByNavigationAccountID");
+                column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_HR_Contracts_TeacherID",
@@ -2027,9 +2008,9 @@ namespace Domain.Migrations
                 column: "TeacherID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_HR_Contracts_UpdatedByNavigationAccountID",
+                name: "IX_HR_Contracts_UpdatedBy",
                 table: "HR_Contracts",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "UQ_HR_Contracts_Code",
@@ -2059,9 +2040,9 @@ namespace Domain.Migrations
                 column: "AccountStatusID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_IDN_Accounts_UpdatedByNavigationAccountID",
+                name: "IX_IDN_Accounts_UpdatedBy",
                 table: "IDN_Accounts",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "UQ_IDN_Roles_RoleName",
@@ -2070,25 +2051,14 @@ namespace Domain.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_IDN_Students_UpdatedByNavigationAccountID",
+                name: "IX_IDN_Students_UpdatedBy",
                 table: "IDN_Students",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
                 name: "UQ_IDN_Student_Code",
                 table: "IDN_Students",
                 column: "StudentCode",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_IDN_Teacher_UpdatedByNavigationAccountID",
-                table: "IDN_Teacher",
-                column: "UpdatedByNavigationAccountID");
-
-            migrationBuilder.CreateIndex(
-                name: "UQ_IDN_Teacher_Code",
-                table: "IDN_Teacher",
-                column: "TeacherCode",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -2102,9 +2072,20 @@ namespace Domain.Migrations
                 column: "TeacherID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_IDN_TeacherCredentials_UpdatedByNavigationAccountID",
+                name: "IX_IDN_TeacherCredentials_UpdatedBy",
                 table: "IDN_TeacherCredentials",
-                column: "UpdatedByNavigationAccountID");
+                column: "UpdatedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IDN_Teachers_UpdatedBy",
+                table: "IDN_Teachers",
+                column: "UpdatedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "UQ_IDN_Teachers_Code",
+                table: "IDN_Teachers",
+                column: "TeacherCode",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_RPT_Reports_ReportStatusID",
@@ -2117,14 +2098,14 @@ namespace Domain.Migrations
                 column: "ReportTypeID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RPT_Reports_ResolvedByNavigationAccountID",
+                name: "IX_RPT_Reports_ResolvedBy",
                 table: "RPT_Reports",
-                column: "ResolvedByNavigationAccountID");
+                column: "ResolvedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RPT_Reports_SubmittedByNavigationAccountID",
+                name: "IX_RPT_Reports_SubmittedBy",
                 table: "RPT_Reports",
-                column: "SubmittedByNavigationAccountID");
+                column: "SubmittedBy");
         }
 
         /// <inheritdoc />
@@ -2239,7 +2220,7 @@ namespace Domain.Migrations
                 name: "ACAD_Syllabi");
 
             migrationBuilder.DropTable(
-                name: "IDN_Teacher");
+                name: "IDN_Teachers");
 
             migrationBuilder.DropTable(
                 name: "ACAD_Courses");

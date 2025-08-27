@@ -22,7 +22,9 @@ public partial class ACAD_CoursePackageItem : IEntityBase
 
     public bool IsDeleted { get; set; }
 
+    [ForeignKey(nameof(CourseID))]
     public virtual ACAD_Course Course { get; set; } = null!;
 
+    [ForeignKey(nameof(PackageID))]
     public virtual ACAD_CoursePackage Package { get; set; } = null!;
 }

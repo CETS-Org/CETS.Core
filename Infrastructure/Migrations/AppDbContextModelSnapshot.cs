@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Domain.Migrations
+namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -80,7 +80,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("ToClassID");
 
-                    b.ToTable("ACAD_AcademicRequests", (string)null);
+                    b.ToTable("ACAD_AcademicRequests");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_AcademicRequestHistory", b =>
@@ -118,7 +118,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("StatusID");
 
-                    b.ToTable("ACAD_AcademicRequestHistories", (string)null);
+                    b.ToTable("ACAD_AcademicRequestHistories");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Assignment", b =>
@@ -173,7 +173,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_Assignments", (string)null);
+                    b.ToTable("ACAD_Assignments");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Attendance", b =>
@@ -224,7 +224,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "MeetingID", "StudentID" }, "UQ_ACAD_Attendance")
                         .IsUnique();
 
-                    b.ToTable("ACAD_Attendances", (string)null);
+                    b.ToTable("ACAD_Attendances");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Class", b =>
@@ -421,7 +421,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "ClassID", "StudentID" }, "UQ_ACAD_ClassReservations")
                         .IsUnique();
 
-                    b.ToTable("ACAD_ClassReservations", (string)null);
+                    b.ToTable("ACAD_ClassReservations");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Course", b =>
@@ -497,7 +497,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "CourseCode" }, "UQ_ACAD_Courses_CourseCode")
                         .IsUnique();
 
-                    b.ToTable("ACAD_Courses", (string)null);
+                    b.ToTable("ACAD_Courses");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CourseCategory", b =>
@@ -522,7 +522,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "Code" }, "UQ_ACAD_CourseCategory_Code")
                         .IsUnique();
 
-                    b.ToTable("ACAD_CourseCategories", (string)null);
+                    b.ToTable("ACAD_CourseCategories");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CoursePackage", b =>
@@ -538,9 +538,6 @@ namespace Domain.Migrations
                         .HasDefaultValueSql("(sysutcdatetime())");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("CreatedByNavigationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
@@ -568,7 +565,7 @@ namespace Domain.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(0)
@@ -577,19 +574,16 @@ namespace Domain.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("UpdatedByNavigationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedByNavigationId");
+                    b.HasIndex("CreatedBy");
 
-                    b.HasIndex("UpdatedByNavigationId");
+                    b.HasIndex("UpdatedBy");
 
                     b.HasIndex(new[] { "PackageCode" }, "UQ_ACAD_CoursePackages_Code")
                         .IsUnique();
 
-                    b.ToTable("ACAD_CoursePackages", (string)null);
+                    b.ToTable("ACAD_CoursePackages");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CoursePackageItem", b =>
@@ -619,7 +613,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "PackageID", "Sequence" }, "UQ_ACAD_CoursePackageItems_Package_Sequence")
                         .IsUnique();
 
-                    b.ToTable("ACAD_CoursePackageItems", (string)null);
+                    b.ToTable("ACAD_CoursePackageItems");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CourseTeacherAssignment", b =>
@@ -660,7 +654,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_CourseTeacherAssignments", (string)null);
+                    b.ToTable("ACAD_CourseTeacherAssignments");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Enrollment", b =>
@@ -716,7 +710,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_Enrollments", (string)null);
+                    b.ToTable("ACAD_Enrollments");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_LearningMaterial", b =>
@@ -770,7 +764,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("UploaderID");
 
-                    b.ToTable("ACAD_LearningMaterials", (string)null);
+                    b.ToTable("ACAD_LearningMaterials");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Submission", b =>
@@ -829,7 +823,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_Submissions", (string)null);
+                    b.ToTable("ACAD_Submissions");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Syllabus", b =>
@@ -883,7 +877,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_Syllabi", (string)null);
+                    b.ToTable("ACAD_Syllabi");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_SyllabusItem", b =>
@@ -981,7 +975,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("SenderID");
 
-                    b.ToTable("COM_Conversations", (string)null);
+                    b.ToTable("COM_Conversations");
                 });
 
             modelBuilder.Entity("Domain.Entities.COM_Feedback", b =>
@@ -1051,9 +1045,6 @@ namespace Domain.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CreatedByNavigationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("FormUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -1067,9 +1058,9 @@ namespace Domain.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedByNavigationId");
+                    b.HasIndex("CreatedBy");
 
-                    b.ToTable("COM_FeedbackRecords", (string)null);
+                    b.ToTable("COM_FeedbackRecords");
                 });
 
             modelBuilder.Entity("Domain.Entities.COM_Notification", b =>
@@ -1095,7 +1086,7 @@ namespace Domain.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("COM_Notifications", (string)null);
+                    b.ToTable("COM_Notifications");
                 });
 
             modelBuilder.Entity("Domain.Entities.CORE_LookUp", b =>
@@ -1144,7 +1135,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "LookUpTypeID", "Code" }, "UQ_CORE_LookUps_Type_Code")
                         .IsUnique();
 
-                    b.ToTable("CORE_LookUps", (string)null);
+                    b.ToTable("CORE_LookUps");
                 });
 
             modelBuilder.Entity("Domain.Entities.CORE_LookUpType", b =>
@@ -1169,7 +1160,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "Code" }, "UQ_CORE_LookUpTypes_Code")
                         .IsUnique();
 
-                    b.ToTable("CORE_LookUpTypes", (string)null);
+                    b.ToTable("CORE_LookUpTypes");
                 });
 
             modelBuilder.Entity("Domain.Entities.EVT_Event", b =>
@@ -1443,7 +1434,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "InvoiceNumber" }, "UQ_FIN_Invoices_Number")
                         .IsUnique();
 
-                    b.ToTable("FIN_Invoices", (string)null);
+                    b.ToTable("FIN_Invoices");
                 });
 
             modelBuilder.Entity("Domain.Entities.FIN_InvoiceItem", b =>
@@ -1556,7 +1547,7 @@ namespace Domain.Migrations
                         .IsUnique()
                         .HasFilter("[GatewayID] IS NOT NULL AND [TransactionID] IS NOT NULL");
 
-                    b.ToTable("FIN_Payments", (string)null);
+                    b.ToTable("FIN_Payments");
                 });
 
             modelBuilder.Entity("Domain.Entities.FIN_PaymentRefund", b =>
@@ -1612,7 +1603,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("PaymentID");
 
-                    b.ToTable("FIN_PaymentRefunds", (string)null);
+                    b.ToTable("FIN_PaymentRefunds");
                 });
 
             modelBuilder.Entity("Domain.Entities.FIN_PaymentWebhook", b =>
@@ -1658,7 +1649,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "GatewayID", "EventId" }, "UQ_FIN_PaymentWebhooks")
                         .IsUnique();
 
-                    b.ToTable("FIN_PaymentWebhooks", (string)null);
+                    b.ToTable("FIN_PaymentWebhooks");
                 });
 
             modelBuilder.Entity("Domain.Entities.FIN_Promotion", b =>
@@ -1825,7 +1816,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("TeacherID");
 
-                    b.ToTable("HR_TeacherAvailabilities", (string)null);
+                    b.ToTable("HR_TeacherAvailabilities");
                 });
 
             modelBuilder.Entity("Domain.Entities.IDN_Account", b =>
@@ -1892,9 +1883,6 @@ namespace Domain.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("UpdatedByNavigationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("VerifiedCode")
                         .HasMaxLength(20)
                         .IsUnicode(false)
@@ -1908,9 +1896,9 @@ namespace Domain.Migrations
 
                     b.HasIndex("AccountStatusID");
 
-                    b.HasIndex("UpdatedByNavigationId");
+                    b.HasIndex("UpdatedBy");
 
-                    b.ToTable("IDN_Accounts", (string)null);
+                    b.ToTable("IDN_Accounts");
                 });
 
             modelBuilder.Entity("Domain.Entities.IDN_AccountRole", b =>
@@ -1934,7 +1922,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "AccountID", "RoleID" }, "UQ_IDN_AccountRoles")
                         .IsUnique();
 
-                    b.ToTable("IDN_AccountRoles", (string)null);
+                    b.ToTable("IDN_AccountRoles");
                 });
 
             modelBuilder.Entity("Domain.Entities.IDN_Role", b =>
@@ -1953,7 +1941,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "RoleName" }, "UQ_IDN_Roles_RoleName")
                         .IsUnique();
 
-                    b.ToTable("IDN_Roles", (string)null);
+                    b.ToTable("IDN_Roles");
                 });
 
             modelBuilder.Entity("Domain.Entities.IDN_Student", b =>
@@ -2007,7 +1995,7 @@ namespace Domain.Migrations
                     b.HasIndex(new[] { "StudentCode" }, "UQ_IDN_Student_Code")
                         .IsUnique();
 
-                    b.ToTable("IDN_Students", (string)null);
+                    b.ToTable("IDN_Students");
                 });
 
             modelBuilder.Entity("Domain.Entities.IDN_Teacher", b =>
@@ -2049,12 +2037,12 @@ namespace Domain.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.HasIndex(new[] { "TeacherCode" }, "UQ_IDN_Teacher_Code")
+                    b.HasIndex(new[] { "TeacherCode" }, "UQ_IDN_Teachers_Code")
                         .IsUnique();
 
-                    b.ToTable("IDN_Teacher", null, t =>
+                    b.ToTable("IDN_Teachers", null, t =>
                         {
-                            t.HasCheckConstraint("CK_IDN_Teacher_YearsExp", "[YearsExperience] >= 0");
+                            t.HasCheckConstraint("CK_IDN_Teachers_YearsExp", "[YearsExperience] >= 0");
                         });
                 });
 
@@ -2101,7 +2089,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("IDN_TeacherCredentials", (string)null);
+                    b.ToTable("IDN_TeacherCredentials");
                 });
 
             modelBuilder.Entity("Domain.Entities.RPT_Report", b =>
@@ -2157,7 +2145,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("SubmittedBy");
 
-                    b.ToTable("RPT_Reports", (string)null);
+                    b.ToTable("RPT_Reports");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_AcademicRequest", b =>
@@ -2460,12 +2448,12 @@ namespace Domain.Migrations
                 {
                     b.HasOne("Domain.Entities.IDN_Account", "CreatedByNavigation")
                         .WithMany("ACAD_CoursePackageCreatedByNavigations")
-                        .HasForeignKey("CreatedByNavigationId")
+                        .HasForeignKey("CreatedBy")
                         .HasConstraintName("FK_ACAD_CoursePackages_Created");
 
                     b.HasOne("Domain.Entities.IDN_Account", "UpdatedByNavigation")
                         .WithMany("ACAD_CoursePackageUpdatedByNavigations")
-                        .HasForeignKey("UpdatedByNavigationId")
+                        .HasForeignKey("UpdatedBy")
                         .HasConstraintName("FK_ACAD_CoursePackages_Updated");
 
                     b.Navigation("CreatedByNavigation");
@@ -2750,7 +2738,7 @@ namespace Domain.Migrations
                 {
                     b.HasOne("Domain.Entities.IDN_Account", "CreatedByNavigation")
                         .WithMany("COM_FeedbackRecords")
-                        .HasForeignKey("CreatedByNavigationId")
+                        .HasForeignKey("CreatedBy")
                         .HasConstraintName("FK_COM_FeedbackRecord_Created");
 
                     b.Navigation("CreatedByNavigation");
@@ -3057,7 +3045,7 @@ namespace Domain.Migrations
 
                     b.HasOne("Domain.Entities.IDN_Account", "UpdatedByNavigation")
                         .WithMany("InverseUpdatedByNavigation")
-                        .HasForeignKey("UpdatedByNavigationId")
+                        .HasForeignKey("UpdatedBy")
                         .HasConstraintName("FK_IDN_Accounts_Updated");
 
                     b.Navigation("AccountStatus");
@@ -3110,12 +3098,12 @@ namespace Domain.Migrations
                         .WithOne("IDN_TeacherAccount")
                         .HasForeignKey("Domain.Entities.IDN_Teacher", "Id")
                         .IsRequired()
-                        .HasConstraintName("FK_IDN_Teacher_Account");
+                        .HasConstraintName("FK_IDN_Teachers_Account");
 
                     b.HasOne("Domain.Entities.IDN_Account", "UpdatedByNavigation")
                         .WithMany("IDN_TeacherUpdatedByNavigations")
                         .HasForeignKey("UpdatedBy")
-                        .HasConstraintName("FK_IDN_Teacher_Update");
+                        .HasConstraintName("FK_IDN_Teachers_Update");
 
                     b.Navigation("Account");
 

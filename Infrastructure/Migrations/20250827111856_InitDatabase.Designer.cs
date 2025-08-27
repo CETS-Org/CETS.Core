@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Domain.Migrations
+namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250826143911_RenameNavigations")]
-    partial class RenameNavigations
+    [Migration("20250827111856_InitDatabase")]
+    partial class InitDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -543,9 +543,6 @@ namespace Domain.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CreatedByNavigationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -571,7 +568,7 @@ namespace Domain.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(0)
@@ -580,14 +577,11 @@ namespace Domain.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("UpdatedByNavigationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedByNavigationId");
+                    b.HasIndex("CreatedBy");
 
-                    b.HasIndex("UpdatedByNavigationId");
+                    b.HasIndex("UpdatedBy");
 
                     b.HasIndex(new[] { "PackageCode" }, "UQ_ACAD_CoursePackages_Code")
                         .IsUnique();
@@ -1054,9 +1048,6 @@ namespace Domain.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CreatedByNavigationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("FormUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -1070,7 +1061,7 @@ namespace Domain.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedByNavigationId");
+                    b.HasIndex("CreatedBy");
 
                     b.ToTable("COM_FeedbackRecords");
                 });
@@ -1895,9 +1886,6 @@ namespace Domain.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("UpdatedByNavigationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("VerifiedCode")
                         .HasMaxLength(20)
                         .IsUnicode(false)
@@ -1911,7 +1899,7 @@ namespace Domain.Migrations
 
                     b.HasIndex("AccountStatusID");
 
-                    b.HasIndex("UpdatedByNavigationId");
+                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("IDN_Accounts");
                 });
@@ -2052,12 +2040,12 @@ namespace Domain.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.HasIndex(new[] { "TeacherCode" }, "UQ_IDN_Teacher_Code")
+                    b.HasIndex(new[] { "TeacherCode" }, "UQ_IDN_Teachers_Code")
                         .IsUnique();
 
-                    b.ToTable("IDN_Teacher", null, t =>
+                    b.ToTable("IDN_Teachers", null, t =>
                         {
-                            t.HasCheckConstraint("CK_IDN_Teacher_YearsExp", "[YearsExperience] >= 0");
+                            t.HasCheckConstraint("CK_IDN_Teachers_YearsExp", "[YearsExperience] >= 0");
                         });
                 });
 
@@ -2463,12 +2451,12 @@ namespace Domain.Migrations
                 {
                     b.HasOne("Domain.Entities.IDN_Account", "CreatedByNavigation")
                         .WithMany("ACAD_CoursePackageCreatedByNavigations")
-                        .HasForeignKey("CreatedByNavigationId")
+                        .HasForeignKey("CreatedBy")
                         .HasConstraintName("FK_ACAD_CoursePackages_Created");
 
                     b.HasOne("Domain.Entities.IDN_Account", "UpdatedByNavigation")
                         .WithMany("ACAD_CoursePackageUpdatedByNavigations")
-                        .HasForeignKey("UpdatedByNavigationId")
+                        .HasForeignKey("UpdatedBy")
                         .HasConstraintName("FK_ACAD_CoursePackages_Updated");
 
                     b.Navigation("CreatedByNavigation");
@@ -2753,7 +2741,7 @@ namespace Domain.Migrations
                 {
                     b.HasOne("Domain.Entities.IDN_Account", "CreatedByNavigation")
                         .WithMany("COM_FeedbackRecords")
-                        .HasForeignKey("CreatedByNavigationId")
+                        .HasForeignKey("CreatedBy")
                         .HasConstraintName("FK_COM_FeedbackRecord_Created");
 
                     b.Navigation("CreatedByNavigation");
@@ -3060,7 +3048,7 @@ namespace Domain.Migrations
 
                     b.HasOne("Domain.Entities.IDN_Account", "UpdatedByNavigation")
                         .WithMany("InverseUpdatedByNavigation")
-                        .HasForeignKey("UpdatedByNavigationId")
+                        .HasForeignKey("UpdatedBy")
                         .HasConstraintName("FK_IDN_Accounts_Updated");
 
                     b.Navigation("AccountStatus");
@@ -3113,12 +3101,12 @@ namespace Domain.Migrations
                         .WithOne("IDN_TeacherAccount")
                         .HasForeignKey("Domain.Entities.IDN_Teacher", "Id")
                         .IsRequired()
-                        .HasConstraintName("FK_IDN_Teacher_Account");
+                        .HasConstraintName("FK_IDN_Teachers_Account");
 
                     b.HasOne("Domain.Entities.IDN_Account", "UpdatedByNavigation")
                         .WithMany("IDN_TeacherUpdatedByNavigations")
                         .HasForeignKey("UpdatedBy")
-                        .HasConstraintName("FK_IDN_Teacher_Update");
+                        .HasConstraintName("FK_IDN_Teachers_Update");
 
                     b.Navigation("Account");
 

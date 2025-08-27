@@ -23,6 +23,7 @@ public partial class ACAD_CoursePackage : IEntityBase
 
     public string? Description { get; set; }
 
+    [Column(TypeName = "decimal(18, 2)")]
     public decimal TotalPrice { get; set; }
 
     public bool IsActive { get; set; }
@@ -41,9 +42,11 @@ public partial class ACAD_CoursePackage : IEntityBase
 
     public virtual ICollection<ACAD_CoursePackageItem> ACAD_CoursePackageItems { get; set; } = new List<ACAD_CoursePackageItem>();
 
+    [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
     public virtual ICollection<FIN_InvoiceItem> FIN_InvoiceItems { get; set; } = new List<FIN_InvoiceItem>();
 
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

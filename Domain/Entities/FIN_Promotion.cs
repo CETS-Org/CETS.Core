@@ -50,6 +50,7 @@ public partial class FIN_Promotion : IEntityBase
 
     public virtual ICollection<FIN_InvoiceItem> FIN_InvoiceItems { get; set; } = new List<FIN_InvoiceItem>();
 
+    [ForeignKey(nameof(PromotionTypeID))]
     public virtual CORE_LookUp PromotionType { get; set; } = null!;
 
     [ForeignKey(nameof(UpdatedBy))]

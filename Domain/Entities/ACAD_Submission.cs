@@ -40,11 +40,13 @@ public partial class ACAD_Submission : IEntityBase
 
     public bool IsDeleted { get; set; }
 
+    [ForeignKey(nameof(AssignmentID))]
     public virtual ACAD_Assignment? Assignment { get; set; }
 
     [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
+    [ForeignKey(nameof(StudentID))]
     public virtual IDN_Student Student { get; set; } = null!;
 
     [ForeignKey(nameof(UpdatedBy))]

@@ -171,5 +171,6 @@ public partial class IDN_Account : IEntityBase
 
     public virtual ICollection<RPT_Report> RPT_ReportSubmittedByNavigations { get; set; } = new List<RPT_Report>();
 
+    [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 }

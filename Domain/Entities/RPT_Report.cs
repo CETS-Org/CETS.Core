@@ -37,8 +37,10 @@ public partial class RPT_Report : IEntityBase
 
     public Guid? ResolvedBy { get; set; }
 
+    [ForeignKey(nameof(ReportStatusID))]
     public virtual CORE_LookUp ReportStatus { get; set; } = null!;
 
+    [ForeignKey(nameof(ReportTypeID))]
     public virtual CORE_LookUp ReportType { get; set; } = null!;
 
     [ForeignKey(nameof(ResolvedBy))]

@@ -35,6 +35,7 @@ public partial class ACAD_LearningMaterial : IEntityBase
 
     public bool IsDeleted { get; set; }
 
+    [ForeignKey(nameof(ClassID))]
     public virtual ACAD_Class? Class { get; set; }
 
     [ForeignKey(nameof(CreatedBy))]

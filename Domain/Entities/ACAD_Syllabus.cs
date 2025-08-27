@@ -37,6 +37,7 @@ public partial class ACAD_Syllabus : IEntityBase
 
     public virtual ICollection<ACAD_SyllabusItem> ACAD_SyllabusItems { get; set; } = new List<ACAD_SyllabusItem>();
 
+    [ForeignKey(nameof(CourseID))]
     public virtual ACAD_Course Course { get; set; } = null!;
 
     [ForeignKey(nameof(CreatedBy))]

@@ -44,11 +44,13 @@ public partial class HR_Contract : IEntityBase
 
     public bool IsDeleted { get; set; }
 
+    [ForeignKey(nameof(ContractStatusID))]
     public virtual CORE_LookUp ContractStatus { get; set; } = null!;
 
     [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }
 
+    [ForeignKey(nameof(TeacherID))]
     public virtual IDN_Teacher Teacher { get; set; } = null!;
 
     [ForeignKey(nameof(UpdatedBy))]

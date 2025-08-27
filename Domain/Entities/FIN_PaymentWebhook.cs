@@ -31,7 +31,9 @@ public partial class FIN_PaymentWebhook : IEntityBase
     [Precision(0)]
     public DateTime CreatedAt { get; set; }
 
+    [ForeignKey(nameof(GatewayID))]
     public virtual CORE_LookUp Gateway { get; set; } = null!;
 
+    [ForeignKey(nameof(PaymentID))]
     public virtual FIN_Payment Payment { get; set; } = null!;
 }
