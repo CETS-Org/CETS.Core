@@ -108,7 +108,7 @@ public partial class AppDbContext : DbContext
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", true, true);
         var configuration = builder.Build();
-        optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+        optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

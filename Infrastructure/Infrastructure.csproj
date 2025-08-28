@@ -24,14 +24,4 @@
     <ProjectReference Include="..\Domain\Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repositories\ACAD\" />
-    <Folder Include="Repositories\COM\" />
-    <Folder Include="Repositories\CORE\" />
-    <Folder Include="Repositories\EVT\" />
-    <Folder Include="Repositories\FIN\" />
-    <Folder Include="Repositories\HR\" />
-    <Folder Include="Repositories\RPT\" />
-  </ItemGroup>
-
 </Project>
