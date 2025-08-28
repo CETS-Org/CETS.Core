@@ -1,4 +1,5 @@
-﻿using DTOs.Message.Requests;
+﻿using Application.Interfaces;
+using DTOs.Message.Requests;
 using System;
 using System.Collections.Generic;
 using System.Linq;

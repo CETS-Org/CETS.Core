@@ -6,25 +6,25 @@ using System.Threading.Tasks;
 
 namespace Domain.Constants
 {
-    public enum LookUpTypes
+    public static class LookUpTypes
     {
-        FeedbackType,
-        EnrollmentStatus,
-        Gateway,
-        AccountStatus,
-        AcademicRequestStatus,
-        PromotionType,
-        CourseFormat,
-        AcademicRequestType,
-        PlanType,
-        ContractStatus,
-        EventType,
-        ReportType,
-        CourseLevel,
-        ClassStatus,
-        AttendanceStatus,
-        ReportStatus,
-        InvoiceStatus,
-        PaymentMethod
+       public const string FeedbackType = "FeedbackType";
+        public const string EnrollmentStatus = "EnrollmentStatus";
+        public const string Gateway = "Gateway";
+        public const string AccountStatus = "AccountStatus";
+        public const string AcademicRequestStatus = "AcademicRequestStatus";
+        public const string PromotionType = "PromotionType";
+        public const string CourseFormat = "CourseFormat";
+        public const string AcademicRequestType = "AcademicRequestType";
+        public const string PlanType = "PlanType";
+        public const string ContractStatus = "ContractStatus";
+        public const string EventType = "EventType";
+        public const string ReportType = "ReportType";
+        public const string CourseLevel = "CourseLevel";
+        public const string ClassStatus = "ClassStatus";
+        public const string AttendanceStatus = "AttendanceStatus";
+        public const string ReportStatus = "ReportStatus";
+        public const string InvoiceStatus = "InvoiceStatus";
+        public const string PaymentMethod = "PaymentMethod";
     }
 }

@@ -15,21 +15,25 @@ namespace Infrastructure.Repositories.CORE
         {
             return await _context.CORE_LookUps
                 .AsNoTracking()
-                .FirstOrDefaultAsync(lu => lu.LookUpTypeID.ToString() == lookUpTypeId && lu.Code == code);
+                .FirstOrDefaultAsync(lu => lu.LookUpTypeID.ToString() == lookUpTypeId
+                                    && lu.Code == code 
+                                    && lu.IsActive == true);
         }
 
         public async Task<CORE_LookUp?> GetByNameAsync(string name)
         {
             return await _context.CORE_LookUps
                 .AsNoTracking()
-                .FirstOrDefaultAsync(lu => lu.Name == name);
+                .FirstOrDefaultAsync(lu => lu.Name == name 
+                                    && lu.IsActive == true);
         }
 
         public async Task<IReadOnlyList<CORE_LookUp>> GetByTypeAsync(Guid lookUpTypeId)
         {
             return await _context.CORE_LookUps
                 .AsNoTracking()
-                .Where(lu => lu.LookUpTypeID == lookUpTypeId)
+                .Where(lu => lu.LookUpTypeID == lookUpTypeId 
+                    && lu.IsActive == true)
                 .ToListAsync();
         }
         public async Task<IReadOnlyList<CORE_LookUp>> GetByTypeAsync(string lookUpTypeName)
@@ -37,7 +41,9 @@ namespace Infrastructure.Repositories.CORE
             return await _context.CORE_LookUps
                 .AsNoTracking()
                 .Include(lu => lu.LookUpType) 
-                .Where(lu => lu.LookUpType != null && lu.LookUpType.Name == lookUpTypeName)
+                .Where(lu => lu.LookUpType != null 
+                    && lu.LookUpType.Name == lookUpTypeName 
+                    && lu.IsActive == true)
                 .ToListAsync();
         }
     }
