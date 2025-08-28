@@ -1,6 +1,7 @@
 using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.CORE;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.CORE
 {
@@ -8,6 +9,36 @@ namespace Infrastructure.Repositories.CORE
     {
         public CORE_LookUpRepository(AppDbContext context) : base(context)
         {
+        }
+
+        public async Task<CORE_LookUp?> GetByCodeAsync(string lookUpTypeId, string code)
+        {
+            return await _context.CORE_LookUps
+                .AsNoTracking()
+                .FirstOrDefaultAsync(lu => lu.LookUpTypeID.ToString() == lookUpTypeId && lu.Code == code);
+        }
+
+        public async Task<CORE_LookUp?> GetByNameAsync(string name)
+        {
+            return await _context.CORE_LookUps
+                .AsNoTracking()
+                .FirstOrDefaultAsync(lu => lu.Name == name);
+        }
+
+        public async Task<IReadOnlyList<CORE_LookUp>> GetByTypeAsync(Guid lookUpTypeId)
+        {
+            return await _context.CORE_LookUps
+                .AsNoTracking()
+                .Where(lu => lu.LookUpTypeID == lookUpTypeId)
+                .ToListAsync();
+        }
+        public async Task<IReadOnlyList<CORE_LookUp>> GetByTypeAsync(string lookUpTypeName)
+        {
+            return await _context.CORE_LookUps
+                .AsNoTracking()
+                .Include(lu => lu.LookUpType) 
+                .Where(lu => lu.LookUpType != null && lu.LookUpType.Name == lookUpTypeName)
+                .ToListAsync();
         }
     }
 }
