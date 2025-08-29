@@ -2,18 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
+using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class ACAD_CourseCategory : IEntityBase
+public partial class ACAD_CourseCategory : EntityBase
 {
-    [Key]
-    [Column("CategoryID")]
-    public Guid Id { get; set; }
-
     [StringLength(50)]
     [Unicode(false)]
     public string Code { get; set; } = null!;

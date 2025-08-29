@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class ACAD_LearningMaterial : IEntityBase
+public partial class ACAD_LearningMaterial : EntityBase
 {
-    [Key]
-    [Column("MaterialID")]
-    public Guid Id { get; set; }
-
     public Guid UploaderID { get; set; }
 
     public Guid? ClassID { get; set; }

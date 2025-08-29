@@ -2,18 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
+using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class ACAD_Assignment : IEntityBase
+public partial class ACAD_Assignment : EntityBase
 {
-    [Key]
-    [Column("AssignmentID")]
-    public Guid Id { get; set; }
-
     public Guid? ClassMeetingID { get; set; }
 
     [StringLength(255)]

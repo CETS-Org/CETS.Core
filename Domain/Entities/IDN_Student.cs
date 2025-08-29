@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class IDN_Student : IEntityBase
+public partial class IDN_Student : EntityBase
 {
-    [Key]
-    [Column("AccountID")]
-    public Guid Id { get; set; }
-
     [StringLength(20)]
     public string StudentCode { get; set; } = null!;
 
@@ -38,16 +32,16 @@ public partial class IDN_Student : IEntityBase
 
     public bool IsDeleted { get; set; }
 
-    
+
     public virtual ICollection<ACAD_AcademicRequest> ACAD_AcademicRequests { get; set; } = new List<ACAD_AcademicRequest>();
 
-    
+
     public virtual ICollection<ACAD_Attendance> ACAD_Attendances { get; set; } = new List<ACAD_Attendance>();
 
-    
+
     public virtual ICollection<ACAD_ClassReservation> ACAD_ClassReservations { get; set; } = new List<ACAD_ClassReservation>();
 
-    
+
     public virtual ICollection<ACAD_Enrollment> ACAD_Enrollments { get; set; } = new List<ACAD_Enrollment>();
 
     public virtual ICollection<ACAD_Submission> ACAD_Submissions { get; set; } = new List<ACAD_Submission>();

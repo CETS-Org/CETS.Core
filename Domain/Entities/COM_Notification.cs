@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
+﻿using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class COM_Notification : IEntityBase
+public partial class COM_Notification : EntityBase
 {
-    [Key]
-    [Column("NotificationID")]
-    public Guid Id { get; set; }
-
     public string Content { get; set; } = null!;
 
     [Precision(0)]

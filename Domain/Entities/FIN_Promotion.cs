@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class FIN_Promotion : IEntityBase
+public partial class FIN_Promotion : EntityBase
 {
-    [Key]
-    [Column("PromotionID")]
-    public Guid Id { get; set; }
-
     public Guid PromotionTypeID { get; set; }
 
     [StringLength(50)]
@@ -23,15 +17,13 @@ public partial class FIN_Promotion : IEntityBase
     [StringLength(200)]
     public string Name { get; set; } = null!;
 
-    [Column(TypeName = "decimal(5, 2)")]
     public decimal? PercentOff { get; set; }
 
-    [Column(TypeName = "decimal(12, 2)")]
     public decimal? AmountOff { get; set; }
 
-    public DateOnly? StartDate { get; set; }
-
     public DateOnly? EndDate { get; set; }
+
+    public DateOnly? StartDate { get; set; }
 
     public bool IsActive { get; set; }
 

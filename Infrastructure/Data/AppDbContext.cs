@@ -1,18 +1,19 @@
-﻿using Domain.Entities;
+﻿using Application.Interfaces;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
+using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 namespace Domain.Data;
 
 public partial class AppDbContext : DbContext
 {
+    private readonly ICurrentUserService _currentUserService;
     public AppDbContext() { }
 
-    public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService) : base(options)
     {
+        _currentUserService = currentUserService;
     }
 
     #region DbSet
@@ -113,9 +114,21 @@ public partial class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<IDN_Account>(entity =>
+        {
+            entity.Property(e => e.Id).HasColumnName("AccountID").ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.IsVerified).HasDefaultValue(false);
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+            entity.HasIndex(e => e.Email, "UQ_IDN_Accounts_Email").IsUnique();
+
+            entity.HasOne(d => d.AccountStatus).WithMany(p => p.IDN_Accounts).HasConstraintName("FK_IDN_Accounts_AccountStatus");
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.InverseUpdatedByNavigation).HasConstraintName("FK_IDN_Accounts_Updated");
+        });
+
         modelBuilder.Entity<ACAD_AcademicRequest>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("RequestID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.AcademicRequestStatus).WithMany(p => p.ACAD_AcademicRequestAcademicRequestStatuses)
@@ -139,7 +152,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_AcademicRequestHistory>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("HistoryID").ValueGeneratedNever();
             entity.Property(e => e.ChangedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.ChangedByNavigation).WithMany(p => p.ACAD_AcademicRequestHistories).HasConstraintName("FK_ACAD_AcReqHist_ChangedBy");
@@ -153,7 +166,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_Assignment>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("AssignmentID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.ClassMeeting).WithMany(p => p.ACAD_Assignments).HasConstraintName("FK_ACAD_Assignments_ClassMeeting");
@@ -167,7 +180,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_Attendance>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("AttendanceID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.AttendanceStatus).WithMany(p => p.ACAD_Attendances)
@@ -187,7 +200,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_Class>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("ClassID").ValueGeneratedNever();
             entity.Property(e => e.Capacity).HasDefaultValue(30);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
@@ -207,7 +220,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_ClassMeeting>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("MeetingID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
 
@@ -232,7 +245,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>
         {
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Id).HasColumnName("ReservationID").HasDefaultValueSql("(newid())");
 
             entity.HasOne(d => d.Class).WithMany(p => p.ACAD_ClassReservations)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -247,8 +260,9 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_Course>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("CourseID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.StandardPrice).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.Category).WithMany(p => p.ACAD_Courses)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -269,14 +283,15 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_CourseCategory>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("CategoryID").ValueGeneratedNever();
         });
 
         modelBuilder.Entity<ACAD_CoursePackage>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("PackageID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.TotalPrice).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ACAD_CoursePackageCreatedByNavigations).HasConstraintName("FK_ACAD_CoursePackages_Created");
 
@@ -285,7 +300,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_CoursePackageItem>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("PackageItemID").ValueGeneratedNever();
 
             entity.HasOne(d => d.Course).WithMany(p => p.ACAD_CoursePackageItems).HasConstraintName("FK_ACAD_CoursePackageItems_Course");
 
@@ -294,7 +309,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_CourseTeacherAssignment>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("AssignmentID").ValueGeneratedNever();
             entity.Property(e => e.AssignedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Course).WithMany(p => p.ACAD_CourseTeacherAssignments).HasConstraintName("FK_ACAD_CourseTeacherAssignments_Course");
@@ -310,7 +325,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_Enrollment>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("EnrollmentID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Class).WithMany(p => p.ACAD_Enrollments).HasConstraintName("FK_ACAD_Enrollments_Class");
@@ -334,7 +349,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_LearningMaterial>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("MaterialID").ValueGeneratedNever();
             entity.Property(e => e.UploadDate).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Class).WithMany(p => p.ACAD_LearningMaterials).HasConstraintName("FK_ACAD_LearningMaterials_Class");
@@ -350,8 +365,10 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_Submission>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("SubmissionID").ValueGeneratedNever();
             entity.Property(e => e.SubmittedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.Score).HasColumnType("decimal(5, 2)");
+            entity.Property<string?>("Title").HasMaxLength(255).HasColumnName("Title");
 
             entity.HasOne(d => d.Assignment).WithMany(p => p.ACAD_Submissions)
                 .OnDelete(DeleteBehavior.Cascade)
@@ -368,7 +385,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_Syllabus>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("SyllabusID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
 
@@ -381,7 +398,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_SyllabusItem>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("SyllabusItemID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Required).HasDefaultValue(true);
 
@@ -394,7 +411,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<COM_Conversation>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("ConversationID").ValueGeneratedNever();
             entity.Property(e => e.StartAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Recipient).WithMany(p => p.COM_ConversationRecipients)
@@ -408,7 +425,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<COM_Feedback>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("FeedbackID").ValueGeneratedNever();
             entity.Property(e => e.SubmittedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Course).WithMany(p => p.COM_Feedbacks)
@@ -428,7 +445,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<COM_FeedbackRecord>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("FeedbackRecordID").ValueGeneratedNever();
             entity.Property(e => e.CreateAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.COM_FeedbackRecords).HasConstraintName("FK_COM_FeedbackRecord_Created");
@@ -436,13 +453,13 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<COM_Notification>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("NotificationID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
         });
 
         modelBuilder.Entity<CORE_LookUp>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("LookUpID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
 
@@ -453,12 +470,12 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<CORE_LookUpType>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("LookUpTypeID").ValueGeneratedNever();
         });
 
         modelBuilder.Entity<EVT_Event>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("EventID").ValueGeneratedNever();
 
             entity.HasOne(d => d.EventType).WithMany(p => p.EVT_Events)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -467,7 +484,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<EVT_EventFeedback>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("EventFeedbackID").ValueGeneratedNever();
             entity.Property(e => e.SubmittedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Account).WithMany(p => p.EVT_EventFeedbacks)
@@ -479,7 +496,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<EVT_EventRegistration>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("RegistrationID").ValueGeneratedNever();
             entity.Property(e => e.RegistrationDate).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Account).WithMany(p => p.EVT_EventRegistrations)
@@ -491,7 +508,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<FAC_Room>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("RoomID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
 
@@ -510,9 +527,12 @@ public partial class AppDbContext : DbContext
                 .IsUnique()
                 .HasFilter("([SeriesID] IS NOT NULL AND [Sequence] IS NOT NULL)");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("InvoiceID").ValueGeneratedNever();
             entity.Property(e => e.CreateDate).HasDefaultValueSql("(CONVERT([date],sysutcdatetime()))");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.Subtotal).HasColumnType("decimal(14, 2)");
+            entity.Property(e => e.TaxAmount).HasColumnType("decimal(14, 2)");
+            entity.Property(e => e.TotalAmount).HasColumnType("decimal(14, 2)");
 
             entity.HasOne(d => d.InvoiceStatus).WithMany(p => p.FIN_InvoiceInvoiceStatuses)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -527,8 +547,11 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<FIN_InvoiceItem>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("InvoiceItemID").ValueGeneratedNever();
             entity.Property(e => e.Quantity).HasDefaultValue(1);
+            entity.Property(e => e.UnitPrice).HasColumnType("decimal(12, 2)");
+            entity.Property(e => e.Subtotal).HasColumnType("decimal(12, 2)");
+            entity.Property(e => e.Total).HasColumnType("decimal(12, 2)");
 
             entity.HasOne(d => d.Course).WithMany(p => p.FIN_InvoiceItems).HasConstraintName("FK_FIN_InvoiceItems_Course");
 
@@ -541,9 +564,11 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<FIN_Payment>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("PaymentID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.PaymentDate).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.Amount).HasColumnType("decimal(12, 2)");
+            entity.Property(e => e.GatewayStatus).IsUnicode(false).HasMaxLength(30);
 
             entity.HasOne(d => d.Gateway).WithMany(p => p.FIN_PaymentGateways).HasConstraintName("FK_FIN_Payments_Gateway");
 
@@ -556,17 +581,18 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<FIN_PaymentRefund>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("RefundID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.Amount).HasColumnType("decimal(12, 2)");
 
             entity.HasOne(d => d.Gateway).WithMany(p => p.FIN_PaymentRefunds).HasConstraintName("FK_FIN_PaymentRefunds_Gateway");
-
+            entity.Property(e => e.GatewayStatus).IsUnicode(false).HasMaxLength(30);
             entity.HasOne(d => d.Payment).WithMany(p => p.FIN_PaymentRefunds).HasConstraintName("FK_FIN_PaymentRefunds_Payment");
         });
 
         modelBuilder.Entity<FIN_PaymentWebhook>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("WebhookID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.ReceivedAt).HasDefaultValueSql("(sysutcdatetime())");
 
@@ -581,9 +607,11 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<FIN_Promotion>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("PromotionID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.PercentOff).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.AmountOff).HasColumnType("decimal(12, 2)");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.FIN_PromotionCreatedByNavigations).HasConstraintName("FK_FIN_Promotions_Created");
 
@@ -596,7 +624,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<HR_Contract>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("ContractID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.FileHash).IsFixedLength();
 
@@ -615,26 +643,16 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<HR_TeacherAvailability>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("AvailabilityID").ValueGeneratedNever();
 
             entity.HasOne(d => d.Teacher).WithMany(p => p.HR_TeacherAvailabilities)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_HR_TeacherAvailability_Teacher");
         });
 
-        modelBuilder.Entity<IDN_Account>(entity =>
-        {
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
-
-            entity.HasOne(d => d.AccountStatus).WithMany(p => p.IDN_Accounts).HasConstraintName("FK_IDN_Accounts_AccountStatus");
-
-            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.InverseUpdatedByNavigation).HasConstraintName("FK_IDN_Accounts_Updated");
-        });
-
         modelBuilder.Entity<IDN_AccountRole>(entity =>
         {
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Id).HasColumnName("AccountRoleID").HasDefaultValueSql("(newid())");
 
             entity.HasOne(d => d.Account).WithMany(p => p.IDN_AccountRoles).HasConstraintName("FK_IDN_AccountRoles_Account");
 
@@ -643,12 +661,12 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<IDN_Role>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("RoleID").ValueGeneratedNever();
         });
 
         modelBuilder.Entity<IDN_Student>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("AccountID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Account).WithOne(p => p.IDN_StudentAccount)
@@ -661,7 +679,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<IDN_Teacher>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("AccountID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Account).WithOne(p => p.IDN_TeacherAccount)
@@ -676,7 +694,7 @@ public partial class AppDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__IDN_Teac__2C58F9EC154F9DC2");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Id).HasColumnName("CredentialID").HasDefaultValueSql("(newid())");
 
             entity.HasOne(d => d.CredentialType).WithMany(p => p.IDN_TeacherCredentials)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -689,7 +707,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<RPT_Report>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("ReportID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.ReportStatus).WithMany(p => p.RPT_ReportReportStatuses)
@@ -733,6 +751,7 @@ public partial class AppDbContext : DbContext
         {
             entity.Property(e => e.IsVerified).HasDefaultValue(false);
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+            entity.HasIndex(e => e.Email, "UQ_IDN_Accounts_Email").IsUnique();
         });
 
         modelBuilder.Entity<IDN_AccountRole>(entity =>
@@ -794,7 +813,8 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<ACAD_SyllabusItem>(entity =>
         {
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
-            entity.ToTable("ACAD_SyllabusItems", t => {
+            entity.ToTable("ACAD_SyllabusItems", t =>
+            {
                 t.HasCheckConstraint("CK_ACAD_SyllabusItems_Session", "[SessionNumber] >= 1");
                 t.HasCheckConstraint("CK_ACAD_SyllabusItems_Minutes", "[EstimatedMinutes] > 0");
             });
@@ -819,7 +839,8 @@ public partial class AppDbContext : DbContext
         {
             entity.Property(e => e.EnrolledCount).HasDefaultValue(0);
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
-            entity.ToTable("ACAD_Classes", t => {
+            entity.ToTable("ACAD_Classes", t =>
+            {
                 t.HasCheckConstraint("CK_ACAD_Classes_Capacity", "[Capacity] > 0");
                 t.HasCheckConstraint("CK_ACAD_Classes_EnrolledCount", "[EnrolledCount] >= 0");
                 t.HasCheckConstraint("CK_ACAD_Classes_Dates", "[EndDate] >= [StartDate]");
@@ -941,7 +962,8 @@ public partial class AppDbContext : DbContext
         {
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
             entity.HasOne(d => d.Event).WithMany(p => p.EVT_EventRegistrations).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_EVT_Regs_Event");
-            entity.ToTable("EVT_EventRegistrations", t => {
+            entity.ToTable("EVT_EventRegistrations", t =>
+            {
                 t.HasCheckConstraint("CK_EVT_Regs_UserOrEmail", "[AccountID] IS NOT NULL OR ([Email] IS NOT NULL AND LEN(LTRIM(RTRIM([Email]))) > 0)");
                 t.HasCheckConstraint("CK_EVT_Regs_CheckTimes", "[CheckOutAt] IS NULL OR ([CheckInAt] IS NOT NULL AND [CheckOutAt] >= [CheckInAt])");
             });
@@ -952,5 +974,60 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Event).WithMany(p => p.EVT_EventFeedbacks).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_EVT_EventFeedback_Event");
             entity.ToTable("EVT_EventFeedback", t => t.HasCheckConstraint("CK_EVT_EventFeedback_Rating", "[Rating] BETWEEN 1 AND 5"));
         });
+    }
+
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        HandleAuditing();
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void HandleAuditing()
+    {
+        var entries = ChangeTracker.Entries()
+            .Where(e => e.Entity is IHasCreationTime || e.Entity is IHasModificationTime || e.Entity is IHasCreator || e.Entity is IHasModifier)
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+        if (!entries.Any())
+        {
+            return;
+        }
+
+        var currentUserId = _currentUserService.UserId;
+        var now = DateTime.UtcNow;
+
+        foreach (var entry in entries)
+        {
+            // --- Handle Created properties for new entities ---
+            if (entry.State == EntityState.Added)
+            {
+                if (entry.Entity is IHasCreationTime creationTimeEntity)
+                {
+                    creationTimeEntity.CreatedAt = now;
+                }
+
+                if (entry.Entity is IHasCreator creatorEntity)
+                {
+                    creatorEntity.CreatedBy = currentUserId ?? Guid.Empty;
+                }
+
+                continue;
+            }
+
+            // --- Handle Modified properties for existing entities ---
+            if (entry.State == EntityState.Modified)
+            {
+                if (entry.Entity is IHasModificationTime modificationTimeEntity)
+                {
+                    modificationTimeEntity.UpdatedAt = now;
+                }
+
+                if (entry.Entity is IHasModifier modifierEntity)
+                {
+                    modifierEntity.UpdatedBy = currentUserId;
+                }
+            }
+        }
     }
 }

@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class ACAD_CoursePackage : IEntityBase
+public partial class ACAD_CoursePackage : EntityBase
 {
-    [Key]
-    [Column("PackageID")]
-    public Guid Id { get; set; }
-
     [StringLength(50)]
     [Unicode(false)]
     public string PackageCode { get; set; } = null!;
@@ -23,7 +17,6 @@ public partial class ACAD_CoursePackage : IEntityBase
 
     public string? Description { get; set; }
 
-    [Column(TypeName = "decimal(18, 2)")]
     public decimal TotalPrice { get; set; }
 
     public bool IsActive { get; set; }

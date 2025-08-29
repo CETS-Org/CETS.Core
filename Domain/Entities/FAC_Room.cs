@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class FAC_Room : IEntityBase
+public partial class FAC_Room : EntityBase
 {
-    [Key]
-    [Column("RoomID")]
-    public Guid Id { get; set; }
 
     [StringLength(50)]
     [Unicode(false)]

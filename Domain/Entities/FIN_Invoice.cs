@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class FIN_Invoice : IEntityBase
+public partial class FIN_Invoice : EntityBase
 {
-    [Key]
-    [Column("InvoiceID")]
-    public Guid Id { get; set; }
-
     public Guid StudentID { get; set; }
 
     [StringLength(50)]
@@ -26,13 +20,10 @@ public partial class FIN_Invoice : IEntityBase
 
     public DateOnly? DueDate { get; set; }
 
-    [Column(TypeName = "decimal(14, 2)")]
     public decimal Subtotal { get; set; }
 
-    [Column(TypeName = "decimal(14, 2)")]
     public decimal TaxAmount { get; set; }
 
-    [Column(TypeName = "decimal(14, 2)")]
     public decimal TotalAmount { get; set; }
 
     [StringLength(50)]

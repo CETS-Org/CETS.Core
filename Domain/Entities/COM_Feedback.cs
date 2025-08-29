@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
+﻿using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace Domain.Entities;
 
-public partial class COM_Feedback : IEntityBase
+public partial class COM_Feedback : EntityBase
 {
-    [Key]
-    [Column("FeedbackID")]
-    public Guid Id { get; set; }
 
     public Guid SubmitterID { get; set; }
 

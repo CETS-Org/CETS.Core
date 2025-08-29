@@ -2,17 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
+using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
-public partial class ACAD_Course : IEntityBase
+public partial class ACAD_Course : EntityBase
 {
-    [Key]
-    [Column("CourseID")]
-    public Guid Id { get; set; }
-
     [StringLength(50)]
     [Unicode(false)]
     public string CourseCode { get; set; } = null!;
@@ -28,7 +24,6 @@ public partial class ACAD_Course : IEntityBase
 
     public string? Description { get; set; }
 
-    [Column(TypeName = "decimal(18, 2)")]
     public decimal StandardPrice { get; set; }
 
     public bool IsActive { get; set; }

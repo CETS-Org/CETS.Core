@@ -1,34 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using Domain.Entities.EntityBases;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class FIN_InvoiceItem : IEntityBase
+public partial class FIN_InvoiceItem : EntityBase
 {
-    [Key]
-    [Column("InvoiceItemID")]
-    public Guid Id { get; set; }
-
     public Guid InvoiceID { get; set; }
 
     public Guid? CourseID { get; set; }
 
     public Guid? CoursePackageID { get; set; }
 
-    [Column(TypeName = "decimal(12, 2)")]
-    public decimal UnitPrice { get; set; }
-
     public int Quantity { get; set; }
 
-    [Column(TypeName = "decimal(12, 2)")]
+    public decimal UnitPrice { get; set; }
+
     public decimal Subtotal { get; set; }
 
-    [Column(TypeName = "decimal(12, 2)")]
     public decimal Total { get; set; }
 
     public Guid? PromotionID { get; set; }

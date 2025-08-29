@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using Domain.Entities.EntityBases;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class IDN_AccountRole : IEntityBase
+public partial class IDN_AccountRole : EntityBase
 {
-    [Key]
-    [Column("AccountRoleID")]
-    public Guid Id { get; set; }
-
     public Guid AccountID { get; set; }
 
     public Guid RoleID { get; set; }

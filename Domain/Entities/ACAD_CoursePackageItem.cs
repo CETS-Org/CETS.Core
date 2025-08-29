@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using Domain.Entities.EntityBases;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class ACAD_CoursePackageItem : IEntityBase
+public partial class ACAD_CoursePackageItem : EntityBase
 {
-    [Key]
-    [Column("PackageItemID")]
-    public Guid Id { get; set; }
-
     public Guid PackageID { get; set; }
 
     public Guid CourseID { get; set; }

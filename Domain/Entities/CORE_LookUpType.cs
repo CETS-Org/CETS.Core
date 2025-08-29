@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
+﻿using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 
 namespace Domain.Entities;
 
-public partial class CORE_LookUpType : IEntityBase
+public partial class CORE_LookUpType : EntityBase
 {
-    [Key]
-    [Column("LookUpTypeID")]
-    public Guid Id { get; set; }
 
     [StringLength(50)]
     [Unicode(false)]
