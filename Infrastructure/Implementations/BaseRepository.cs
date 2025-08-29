@@ -1,14 +1,8 @@
 ﻿using Domain.Data;
+using Domain.Entities.EntityBases;
 using Domain.Interfaces;
-using Domain.Entities.EntityBase;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {

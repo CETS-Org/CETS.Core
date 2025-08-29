@@ -1,46 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class FIN_Payment : IEntityBase
+public partial class FIN_Payment : EntityBase
 {
-    [Key]
-    [Column("PaymentID")]
-    public Guid Id { get; set; }
-
     public Guid InvoiceID { get; set; }
 
-    [Precision(0)]
-    public DateTime PaymentDate { get; set; }
-
-    [Column(TypeName = "decimal(12, 2)")]
-    public decimal Amount { get; set; }
-
     public Guid PaymentMethodID { get; set; }
+
+    public Guid? GatewayID { get; set; }
+
+    public string? GatewayStatus { get; set; }
 
     [StringLength(255)]
     public string? TransactionID { get; set; }
 
-    public Guid? GatewayID { get; set; }
+    public decimal Amount { get; set; }
 
-    [StringLength(30)]
-    [Unicode(false)]
-    public string? GatewayStatus { get; set; }
+    [Precision(0)]
+    public DateTime PaymentDate { get; set; }
+
+    [Precision(0)]
+    public DateTime CreatedAt { get; set; }
 
     public string? GatewayPayload { get; set; }
 
     public Guid? CreatedBy { get; set; }
 
     public Guid? UpdatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
 
     [Precision(0)]
     public DateTime? UpdatedAt { get; set; }

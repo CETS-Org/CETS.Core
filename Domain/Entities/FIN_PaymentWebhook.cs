@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class FIN_PaymentWebhook : IEntityBase
+public partial class FIN_PaymentWebhook : EntityBase
 {
-    [Key]
-    [Column("WebhookID")]
-    public Guid Id { get; set; }
-
     public Guid PaymentID { get; set; }
 
     public Guid EventId { get; set; }

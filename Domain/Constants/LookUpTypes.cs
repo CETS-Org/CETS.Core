@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Constants
+{
+    public static class LookUpTypes
+    {
+       public const string FeedbackType = "FeedbackType";
+        public const string EnrollmentStatus = "EnrollmentStatus";
+        public const string Gateway = "Gateway";
+        public const string AccountStatus = "AccountStatus";
+        public const string AcademicRequestStatus = "AcademicRequestStatus";
+        public const string PromotionType = "PromotionType";
+        public const string CourseFormat = "CourseFormat";
+        public const string AcademicRequestType = "AcademicRequestType";
+        public const string PlanType = "PlanType";
+        public const string ContractStatus = "ContractStatus";
+        public const string EventType = "EventType";
+        public const string ReportType = "ReportType";
+        public const string CourseLevel = "CourseLevel";
+        public const string ClassStatus = "ClassStatus";
+        public const string AttendanceStatus = "AttendanceStatus";
+        public const string ReportStatus = "ReportStatus";
+        public const string InvoiceStatus = "InvoiceStatus";
+        public const string PaymentMethod = "PaymentMethod";
+    }
+}

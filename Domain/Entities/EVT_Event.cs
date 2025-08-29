@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class EVT_Event : IEntityBase
+public partial class EVT_Event : EntityBase
 {
-    [Key]
-    [Column("EventID")]
-    public Guid Id { get; set; }
-
     public Guid EventTypeID { get; set; }
 
     [StringLength(255)]

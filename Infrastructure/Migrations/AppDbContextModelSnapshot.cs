@@ -80,7 +80,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("ToClassID");
 
-                    b.ToTable("ACAD_AcademicRequests");
+                    b.ToTable("ACAD_AcademicRequests", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_AcademicRequestHistory", b =>
@@ -118,7 +118,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("StatusID");
 
-                    b.ToTable("ACAD_AcademicRequestHistories");
+                    b.ToTable("ACAD_AcademicRequestHistories", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Assignment", b =>
@@ -173,7 +173,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_Assignments");
+                    b.ToTable("ACAD_Assignments", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Attendance", b =>
@@ -224,7 +224,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "MeetingID", "StudentID" }, "UQ_ACAD_Attendance")
                         .IsUnique();
 
-                    b.ToTable("ACAD_Attendances");
+                    b.ToTable("ACAD_Attendances", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Class", b =>
@@ -421,7 +421,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "ClassID", "StudentID" }, "UQ_ACAD_ClassReservations")
                         .IsUnique();
 
-                    b.ToTable("ACAD_ClassReservations");
+                    b.ToTable("ACAD_ClassReservations", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Course", b =>
@@ -497,7 +497,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "CourseCode" }, "UQ_ACAD_Courses_CourseCode")
                         .IsUnique();
 
-                    b.ToTable("ACAD_Courses");
+                    b.ToTable("ACAD_Courses", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CourseCategory", b =>
@@ -522,7 +522,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "Code" }, "UQ_ACAD_CourseCategory_Code")
                         .IsUnique();
 
-                    b.ToTable("ACAD_CourseCategories");
+                    b.ToTable("ACAD_CourseCategories", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CoursePackage", b =>
@@ -583,7 +583,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "PackageCode" }, "UQ_ACAD_CoursePackages_Code")
                         .IsUnique();
 
-                    b.ToTable("ACAD_CoursePackages");
+                    b.ToTable("ACAD_CoursePackages", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CoursePackageItem", b =>
@@ -613,7 +613,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "PackageID", "Sequence" }, "UQ_ACAD_CoursePackageItems_Package_Sequence")
                         .IsUnique();
 
-                    b.ToTable("ACAD_CoursePackageItems");
+                    b.ToTable("ACAD_CoursePackageItems", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CourseTeacherAssignment", b =>
@@ -654,7 +654,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_CourseTeacherAssignments");
+                    b.ToTable("ACAD_CourseTeacherAssignments", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Enrollment", b =>
@@ -710,7 +710,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_Enrollments");
+                    b.ToTable("ACAD_Enrollments", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_LearningMaterial", b =>
@@ -764,7 +764,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UploaderID");
 
-                    b.ToTable("ACAD_LearningMaterials");
+                    b.ToTable("ACAD_LearningMaterials", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Submission", b =>
@@ -823,7 +823,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_Submissions");
+                    b.ToTable("ACAD_Submissions", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Syllabus", b =>
@@ -877,7 +877,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_Syllabi");
+                    b.ToTable("ACAD_Syllabi", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_SyllabusItem", b =>
@@ -975,7 +975,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("SenderID");
 
-                    b.ToTable("COM_Conversations");
+                    b.ToTable("COM_Conversations", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.COM_Feedback", b =>
@@ -1060,7 +1060,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("COM_FeedbackRecords");
+                    b.ToTable("COM_FeedbackRecords", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.COM_Notification", b =>
@@ -1086,7 +1086,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("COM_Notifications");
+                    b.ToTable("COM_Notifications", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.CORE_LookUp", b =>
@@ -1135,7 +1135,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "LookUpTypeID", "Code" }, "UQ_CORE_LookUps_Type_Code")
                         .IsUnique();
 
-                    b.ToTable("CORE_LookUps");
+                    b.ToTable("CORE_LookUps", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.CORE_LookUpType", b =>
@@ -1160,7 +1160,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "Code" }, "UQ_CORE_LookUpTypes_Code")
                         .IsUnique();
 
-                    b.ToTable("CORE_LookUpTypes");
+                    b.ToTable("CORE_LookUpTypes", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.EVT_Event", b =>
@@ -1434,7 +1434,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "InvoiceNumber" }, "UQ_FIN_Invoices_Number")
                         .IsUnique();
 
-                    b.ToTable("FIN_Invoices");
+                    b.ToTable("FIN_Invoices", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.FIN_InvoiceItem", b =>
@@ -1547,7 +1547,7 @@ namespace Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[GatewayID] IS NOT NULL AND [TransactionID] IS NOT NULL");
 
-                    b.ToTable("FIN_Payments");
+                    b.ToTable("FIN_Payments", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.FIN_PaymentRefund", b =>
@@ -1603,7 +1603,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("PaymentID");
 
-                    b.ToTable("FIN_PaymentRefunds");
+                    b.ToTable("FIN_PaymentRefunds", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.FIN_PaymentWebhook", b =>
@@ -1649,7 +1649,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "GatewayID", "EventId" }, "UQ_FIN_PaymentWebhooks")
                         .IsUnique();
 
-                    b.ToTable("FIN_PaymentWebhooks");
+                    b.ToTable("FIN_PaymentWebhooks", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.FIN_Promotion", b =>
@@ -1816,7 +1816,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("TeacherID");
 
-                    b.ToTable("HR_TeacherAvailabilities");
+                    b.ToTable("HR_TeacherAvailabilities", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.IDN_Account", b =>
@@ -1898,7 +1898,11 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("IDN_Accounts");
+                    b.HasIndex(new[] { "Email" }, "UQ_IDN_Accounts_Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
+                    b.ToTable("IDN_Accounts", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.IDN_AccountRole", b =>
@@ -1922,7 +1926,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "AccountID", "RoleID" }, "UQ_IDN_AccountRoles")
                         .IsUnique();
 
-                    b.ToTable("IDN_AccountRoles");
+                    b.ToTable("IDN_AccountRoles", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.IDN_Role", b =>
@@ -1941,7 +1945,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "RoleName" }, "UQ_IDN_Roles_RoleName")
                         .IsUnique();
 
-                    b.ToTable("IDN_Roles");
+                    b.ToTable("IDN_Roles", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.IDN_Student", b =>
@@ -1995,7 +1999,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex(new[] { "StudentCode" }, "UQ_IDN_Student_Code")
                         .IsUnique();
 
-                    b.ToTable("IDN_Students");
+                    b.ToTable("IDN_Students", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.IDN_Teacher", b =>
@@ -2089,7 +2093,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("IDN_TeacherCredentials");
+                    b.ToTable("IDN_TeacherCredentials", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.RPT_Report", b =>
@@ -2145,7 +2149,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("SubmittedBy");
 
-                    b.ToTable("RPT_Reports");
+                    b.ToTable("RPT_Reports", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_AcademicRequest", b =>

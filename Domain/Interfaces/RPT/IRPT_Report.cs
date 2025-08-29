@@ -1,13 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities.EntityBase
+namespace Domain.Interfaces.RPT
 {
-    public interface IEntityBase
+    public interface IRPT_Report : IBaseRepository<IRPT_Report>
     {
-        Guid Id { get; set; }
     }
 }
+
+

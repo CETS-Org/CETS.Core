@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class HR_Contract : IEntityBase
+public partial class HR_Contract : EntityBase
 {
-    [Key]
-    [Column("ContractID")]
-    public Guid Id { get; set; }
-
     public Guid TeacherID { get; set; }
 
     [StringLength(50)]

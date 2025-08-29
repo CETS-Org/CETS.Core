@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
 
-public partial class IDN_Role : IEntityBase
+public partial class IDN_Role : EntityBase
 {
-    [Key]
-    [Column("RoleID")]
-    public Guid Id { get; set; }
-
     [StringLength(50)]
     public string RoleName { get; set; } = null!;
 

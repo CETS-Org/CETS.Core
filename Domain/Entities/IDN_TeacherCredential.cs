@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class IDN_TeacherCredential : IEntityBase
+public partial class IDN_TeacherCredential : EntityBase
 {
-    [Key]
-    [Column("CredentialID")]
-    public Guid Id { get; set; }
-
     public Guid TeacherID { get; set; }
 
     public Guid CredentialTypeID { get; set; }

@@ -2,18 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
+using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class ACAD_AcademicRequestHistory : IEntityBase
+public partial class ACAD_AcademicRequestHistory : EntityBase
 {
-    [Key]
-    [Column("HistoryID")]
-    public Guid Id { get; set; }
-
     public Guid RequestID { get; set; }
 
     public Guid StatusID { get; set; }

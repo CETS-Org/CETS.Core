@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
+﻿using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace Domain.Entities;
 
-public partial class ACAD_CourseTeacherAssignment : IEntityBase
+public partial class ACAD_CourseTeacherAssignment : EntityBase
 {
-    [Key]
-    [Column("AssignmentID")]
-    public Guid Id { get; set; }
-
     public Guid CourseID { get; set; }
 
     public Guid TeacherID { get; set; }

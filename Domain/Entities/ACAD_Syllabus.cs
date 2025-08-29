@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.Entities.EntityBases;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Domain.Entities.EntityBase;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
 
-public partial class ACAD_Syllabus : IEntityBase
+public partial class ACAD_Syllabus : EntityBase
 {
-    [Key]
-    [Column("SyllabusID")]
-    public Guid Id { get; set; }
-
     public Guid CourseID { get; set; }
 
     [StringLength(255)]
