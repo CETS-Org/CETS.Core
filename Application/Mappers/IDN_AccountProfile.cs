@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Domain.Entities;
+using DTOs.IDN_Account.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,7 @@ namespace Application.Mappers
     {
         public IDN_AccountProfile()
         {
+            CreateMap<IDN_Account, AccountResponse>();
         }
     }
 }

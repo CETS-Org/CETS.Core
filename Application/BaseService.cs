@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Domain.Entities.EntityBase;
+using Domain.Entities.EntityBases;
 using Domain.Interfaces;
 using System;
 using System.Collections.Generic;

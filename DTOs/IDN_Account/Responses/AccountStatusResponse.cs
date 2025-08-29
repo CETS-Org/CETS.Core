@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DTOs.IDN_Account.Responses
 {
-    public class AccountStatusDto
+    public class AccountStatusResponse
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;

@@ -1,4 +1,5 @@
-﻿using DTOs.IDN_Account.Responses;
+﻿using DTOs.IDN_Account.Requests;
+using DTOs.IDN_Account.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,11 @@ namespace Application.Interfaces
 {
     public interface IIDN_AccountService
     {
-        Task<IReadOnlyList<AccountStatusDto>> GetAccountStatusesAsync();
+        Task<IReadOnlyList<AccountStatusResponse>> GetStatusesAsync();
+        Task<IReadOnlyList<AccountResponse>> GetAllAsync();
+        Task<AccountResponse?> GetByIdAsync(Guid id);
+        Task<AccountResponse> GetByEmailAsync(string email);
+        Task<AccountResponse?> UpdateAsync(Guid id, UpdateAccountRequest dto);
+        Task<AccountResponse?> DeactivateAccountAsync(Guid id);
     }
 }

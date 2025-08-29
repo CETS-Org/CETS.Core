@@ -13,7 +13,7 @@ namespace Application.Mappers
     {
         public CORE_LookUpProfile()
         {
-            CreateMap<CORE_LookUp, AccountStatusDto>();
+            CreateMap<CORE_LookUp, AccountStatusResponse>();
         }
     }
 }

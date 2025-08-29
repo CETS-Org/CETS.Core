@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="IDN_Account\Requests\" />
     <Folder Include="Message\Responses\" />
   </ItemGroup>
 
