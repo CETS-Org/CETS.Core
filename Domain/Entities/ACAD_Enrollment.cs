@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class ACAD_Enrollment : EntityBase
+public partial class ACAD_Enrollment : AuditedEntity
 {
     public Guid StudentID { get; set; }
 
@@ -14,16 +14,6 @@ public partial class ACAD_Enrollment : EntityBase
     public Guid CourseID { get; set; }
 
     public Guid EnrollmentStatusID { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
 
     public bool IsDeleted { get; set; }
 

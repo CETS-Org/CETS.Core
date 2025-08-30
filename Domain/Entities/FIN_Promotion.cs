@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class FIN_Promotion : EntityBase
+public partial class FIN_Promotion : AuditedEntity
 {
     public Guid PromotionTypeID { get; set; }
 
@@ -26,16 +26,6 @@ public partial class FIN_Promotion : EntityBase
     public DateOnly? StartDate { get; set; }
 
     public bool IsActive { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
 
     [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }

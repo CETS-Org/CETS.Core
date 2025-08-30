@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Entities;
 
-public partial class ACAD_Assignment : EntityBase
+public partial class ACAD_Assignment : AuditedEntity
 {
     public Guid? ClassMeetingID { get; set; }
 
@@ -21,16 +21,6 @@ public partial class ACAD_Assignment : EntityBase
 
     [Precision(0)]
     public DateTime? DueAt { get; set; }
-
-    public Guid CreatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
 
     public bool IsDeleted { get; set; }
 

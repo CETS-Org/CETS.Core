@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class ACAD_CourseTeacherAssignment : EntityBase
+public partial class ACAD_CourseTeacherAssignment : AuditedEntity
 {
     public Guid CourseID { get; set; }
 
@@ -13,14 +13,6 @@ public partial class ACAD_CourseTeacherAssignment : EntityBase
 
     [Precision(0)]
     public DateTime AssignedAt { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
-
     public virtual ICollection<ACAD_ClassMeeting> ACAD_ClassMeetings { get; set; } = new List<ACAD_ClassMeeting>();
 
     public virtual ICollection<ACAD_Class> ACAD_Classes { get; set; } = new List<ACAD_Class>();

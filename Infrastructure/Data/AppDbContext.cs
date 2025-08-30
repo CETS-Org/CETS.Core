@@ -8,7 +8,7 @@ namespace Domain.Data;
 
 public partial class AppDbContext : DbContext
 {
-    private readonly ICurrentUserService _currentUserService;
+    private readonly ICurrentUserService _currentUserService = null!;
     public AppDbContext() { }
 
     public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService) : base(options)
@@ -153,9 +153,9 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<ACAD_AcademicRequestHistory>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("HistoryID").ValueGeneratedNever();
-            entity.Property(e => e.ChangedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
-            entity.HasOne(d => d.ChangedByNavigation).WithMany(p => p.ACAD_AcademicRequestHistories).HasConstraintName("FK_ACAD_AcReqHist_ChangedBy");
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_AcademicRequestHistories).HasConstraintName("FK_ACAD_AcReqHist_ChangedBy");
 
             entity.HasOne(d => d.Request).WithMany(p => p.ACAD_AcademicRequestHistories).HasConstraintName("FK_ACAD_AcReqHist_Request");
 
@@ -187,7 +187,7 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ACAD_Attendance_Status");
 
-            entity.HasOne(d => d.CheckByNavigation).WithMany(p => p.ACAD_Attendances).HasConstraintName("FK_ACAD_Attendance_Created");
+            entity.HasOne(d => d.CheckedByNavigation).WithMany(p => p.ACAD_Attendances).HasConstraintName("FK_ACAD_Attendance_CheckedBy");
 
             entity.HasOne(d => d.Meeting).WithMany(p => p.ACAD_Attendances).HasConstraintName("FK_ACAD_Attendance_Meeting");
 
@@ -276,9 +276,9 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ACAD_Courses_Level");
 
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ACAD_CourseCreatedByNavigations).HasConstraintName("FK_ACAD_Courses_Created");
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ACAD_CourseCreatedByNavigations).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_ACAD_Courses_Created");
 
-            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_CourseUpdatedByNavigations).HasConstraintName("FK_ACAD_Courses_Updated");
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_CourseUpdatedByNavigations).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_ACAD_Courses_Updated");
         });
 
         modelBuilder.Entity<ACAD_CourseCategory>(entity =>
@@ -310,7 +310,7 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<ACAD_CourseTeacherAssignment>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("AssignmentID").ValueGeneratedNever();
-            entity.Property(e => e.AssignedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Course).WithMany(p => p.ACAD_CourseTeacherAssignments).HasConstraintName("FK_ACAD_CourseTeacherAssignments_Course");
 
@@ -350,7 +350,7 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<ACAD_LearningMaterial>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("MaterialID").ValueGeneratedNever();
-            entity.Property(e => e.UploadDate).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Class).WithMany(p => p.ACAD_LearningMaterials).HasConstraintName("FK_ACAD_LearningMaterials_Class");
 
@@ -366,7 +366,7 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<ACAD_Submission>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("SubmissionID").ValueGeneratedNever();
-            entity.Property(e => e.SubmittedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Score).HasColumnType("decimal(5, 2)");
             entity.Property<string?>("Title").HasMaxLength(255).HasColumnName("Title");
 
@@ -402,9 +402,13 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Required).HasDefaultValue(true);
 
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ACAD_SyllabusItemCreatedByNavigations).HasConstraintName("FK_ACAD_SyllabusItems_Created");
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ACAD_SyllabusItemCreatedByNavigations)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ACAD_SyllabusItems_Created");
 
-            entity.HasOne(d => d.Syllabus).WithMany(p => p.ACAD_SyllabusItems).HasConstraintName("FK_ACAD_SyllabusItems_Syllabus");
+            entity.HasOne(d => d.Syllabus).WithMany(p => p.ACAD_SyllabusItems)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ACAD_SyllabusItems_Syllabus");
 
             entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_SyllabusItemUpdatedByNavigations).HasConstraintName("FK_ACAD_SyllabusItems_Updated");
         });
@@ -412,7 +416,7 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<COM_Conversation>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("ConversationID").ValueGeneratedNever();
-            entity.Property(e => e.StartAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Recipient).WithMany(p => p.COM_ConversationRecipients)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -426,7 +430,7 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<COM_Feedback>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("FeedbackID").ValueGeneratedNever();
-            entity.Property(e => e.SubmittedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Course).WithMany(p => p.COM_Feedbacks)
                 .OnDelete(DeleteBehavior.SetNull)
@@ -446,7 +450,7 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<COM_FeedbackRecord>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("FeedbackRecordID").ValueGeneratedNever();
-            entity.Property(e => e.CreateAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.COM_FeedbackRecords).HasConstraintName("FK_COM_FeedbackRecord_Created");
         });
@@ -485,7 +489,7 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<EVT_EventFeedback>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("EventFeedbackID").ValueGeneratedNever();
-            entity.Property(e => e.SubmittedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.Account).WithMany(p => p.EVT_EventFeedbacks)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -512,7 +516,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
 
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.FAC_RoomCreatedByNavigations).HasConstraintName("FK_FAC_Rooms_Created");
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.FAC_RoomCreatedByNavigations)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FAC_Rooms_Created");
 
             entity.HasOne(d => d.RoomType).WithMany(p => p.FAC_Rooms)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -995,7 +1001,7 @@ public partial class AppDbContext : DbContext
         }
 
         var currentUserId = _currentUserService.UserId;
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
 
         foreach (var entry in entries)
         {

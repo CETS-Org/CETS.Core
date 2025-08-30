@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 
 namespace Domain.Entities;
-public partial class ACAD_ClassMeeting : EntityBase
+public partial class ACAD_ClassMeeting : AuditedEntity
 {
     public Guid ClassID { get; set; }
 
@@ -31,16 +31,6 @@ public partial class ACAD_ClassMeeting : EntityBase
     public string? ProgressNote { get; set; }
 
     public Guid CoveredTopicID { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
 
     public bool IsActive { get; set; }
 
