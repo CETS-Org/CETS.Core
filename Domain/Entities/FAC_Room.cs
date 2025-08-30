@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class FAC_Room : EntityBase
+public partial class FAC_Room : AuditedEntity
 {
 
     [StringLength(50)]
@@ -18,16 +18,6 @@ public partial class FAC_Room : EntityBase
     public Guid RoomTypeId { get; set; }
 
     public string? OnlineMeetingUrl { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
 
     public bool IsActive { get; set; }
 

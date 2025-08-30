@@ -10,11 +10,13 @@ namespace Application.Interfaces.IDN
 {
     public interface IIDN_AccountService
     {
-        Task<IReadOnlyList<AccountStatusResponse>> GetStatusesAsync();
-        Task<IReadOnlyList<AccountResponse>> GetAllAsync();
-        Task<AccountResponse?> GetByIdAsync(Guid id);
-        Task<AccountResponse> GetByEmailAsync(string email);
-        Task<AccountResponse?> UpdateAsync(Guid id, UpdateAccountRequest dto);
+        Task<IReadOnlyList<AccountStatusResponse>> GetAccountStatusesAsync();
+        Task<IReadOnlyList<AccountResponse>> GetAllAccountsAsync();
+        Task<AccountResponse?> GetAccountByIdAsync(Guid id);
+        Task<AccountResponse> GetAccountByEmailAsync(string email);
+        Task<AccountResponse> UpdateAccountAsync(Guid id, UpdateAccountRequest dto);
         Task<AccountResponse?> DeactivateAccountAsync(Guid id);
+        Task<AccountResponse?> ActivateAccountAsync(Guid id);
+        Task<AccountResponse> SoftDeleteAccountAsync(Guid id);
     }
 }

@@ -4,10 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
+using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 
 namespace Domain.Entities;
-public partial class ACAD_Attendance : EntityBase
+public partial class ACAD_Attendance : EntityBase, IHasCreationTime, IHasModificationTime, IHasModifier
 {
 
     public Guid MeetingID { get; set; }
@@ -18,8 +19,7 @@ public partial class ACAD_Attendance : EntityBase
 
     [StringLength(500)]
     public string? Notes { get; set; }
-
-    public Guid? CheckBy { get; set; }
+    public Guid? CheckedBy { get; set; }
 
     public Guid? UpdatedBy { get; set; }
 
@@ -32,8 +32,8 @@ public partial class ACAD_Attendance : EntityBase
     [ForeignKey(nameof(AttendanceStatusID))]
     public virtual CORE_LookUp AttendanceStatus { get; set; } = null!;
 
-    [ForeignKey(nameof(CheckBy))]
-    public virtual IDN_Teacher? CheckByNavigation { get; set; }
+    [ForeignKey(nameof(CheckedBy))]
+    public virtual IDN_Teacher? CheckedByNavigation { get; set; }
 
     [ForeignKey(nameof(MeetingID))]
     public virtual ACAD_ClassMeeting Meeting { get; set; } = null!;

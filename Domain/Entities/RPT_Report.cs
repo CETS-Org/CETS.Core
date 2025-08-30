@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 
 namespace Domain.Entities;
@@ -37,9 +38,11 @@ public partial class RPT_Report : EntityBase
     [ForeignKey(nameof(ReportTypeID))]
     public virtual CORE_LookUp ReportType { get; set; } = null!;
 
+    [ForeignKey(nameof(SubmittedBy))]
+    public virtual IDN_Account SubmittedByNavigation { get; set; } = null!;
+
     [ForeignKey(nameof(ResolvedBy))]
     public virtual IDN_Account? ResolvedByNavigation { get; set; }
 
-    [ForeignKey(nameof(SubmittedBy))]
-    public virtual IDN_Account SubmittedByNavigation { get; set; } = null!;
+   
 }

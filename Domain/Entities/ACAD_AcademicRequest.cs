@@ -1,10 +1,11 @@
 ﻿using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
+using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 namespace Domain.Entities;
 
-public partial class ACAD_AcademicRequest : EntityBase
+public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
 {
     public Guid StudentID { get; set; }
 

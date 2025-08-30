@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class HR_Contract : EntityBase
+public partial class HR_Contract : AuditedEntity
 {
     public Guid TeacherID { get; set; }
 
@@ -25,16 +25,6 @@ public partial class HR_Contract : EntityBase
     [StringLength(64)]
     [Unicode(false)]
     public string FileHash { get; set; } = null!;
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
 
     public bool IsDeleted { get; set; }
 

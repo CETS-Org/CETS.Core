@@ -1,11 +1,12 @@
 ﻿using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
+using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 
 namespace Domain.Entities;
 
-public partial class COM_Feedback : EntityBase
+public partial class COM_Feedback : EntityBase, IHasCreationTime
 {
 
     public Guid SubmitterID { get; set; }
@@ -21,7 +22,7 @@ public partial class COM_Feedback : EntityBase
     public string Comment { get; set; } = null!;
 
     [Precision(0)]
-    public DateTime SubmittedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public bool IsDeleted { get; set; }
 

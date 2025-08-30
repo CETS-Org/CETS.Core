@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class FIN_Invoice : EntityBase
+public partial class FIN_Invoice : AuditedEntity
 {
     public Guid StudentID { get; set; }
 
@@ -34,15 +34,6 @@ public partial class FIN_Invoice : EntityBase
 
     public Guid? PlanTypeID { get; set; }
 
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
     public virtual ICollection<ACAD_ClassReservation> ACAD_ClassReservations { get; set; } = new List<ACAD_ClassReservation>();
 
     public virtual ICollection<FIN_InvoiceItem> FIN_InvoiceItems { get; set; } = new List<FIN_InvoiceItem>();

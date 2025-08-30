@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class FIN_Payment : EntityBase
+public partial class FIN_Payment : AuditedEntity
 {
     public Guid InvoiceID { get; set; }
 
@@ -24,17 +24,7 @@ public partial class FIN_Payment : EntityBase
     [Precision(0)]
     public DateTime PaymentDate { get; set; }
 
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
     public string? GatewayPayload { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<FIN_PaymentRefund> FIN_PaymentRefunds { get; set; } = new List<FIN_PaymentRefund>();
 

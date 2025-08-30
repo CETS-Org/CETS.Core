@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class CORE_LookUp : EntityBase
+public partial class CORE_LookUp : AuditedEntity
 {
     public Guid LookUpTypeID { get; set; }
 
@@ -18,16 +18,6 @@ public partial class CORE_LookUp : EntityBase
     public string Name { get; set; } = null!;
 
     public bool IsActive { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
 
     public virtual ICollection<ACAD_AcademicRequest> ACAD_AcademicRequestAcademicRequestStatuses { get; set; } = new List<ACAD_AcademicRequest>();
 

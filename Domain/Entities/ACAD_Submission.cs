@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class ACAD_Submission : EntityBase
+public partial class ACAD_Submission : AuditedEntity
 {
     public Guid? AssignmentID { get; set; }
 
@@ -16,16 +16,6 @@ public partial class ACAD_Submission : EntityBase
     public string? Feedback { get; set; }
 
     public decimal? Score { get; set; }
-
-    [Precision(0)]
-    public DateTime SubmittedAt { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
 
     public bool IsDeleted { get; set; }
 

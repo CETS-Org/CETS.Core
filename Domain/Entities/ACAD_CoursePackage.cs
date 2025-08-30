@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class ACAD_CoursePackage : EntityBase
+public partial class ACAD_CoursePackage : AuditedEntity
 {
     [StringLength(50)]
     [Unicode(false)]
@@ -20,16 +20,6 @@ public partial class ACAD_CoursePackage : EntityBase
     public decimal TotalPrice { get; set; }
 
     public bool IsActive { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
 
     public bool IsDeleted { get; set; }
 

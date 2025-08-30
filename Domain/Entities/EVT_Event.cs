@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class EVT_Event : EntityBase
+public partial class EVT_Event : AuditedEntity
 {
     public Guid EventTypeID { get; set; }
 

@@ -2,11 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 
 namespace Domain.Entities;
 
-public partial class FIN_PaymentWebhook : EntityBase
+public partial class FIN_PaymentWebhook : EntityBase, IHasCreationTime
 {
     public Guid PaymentID { get; set; }
 

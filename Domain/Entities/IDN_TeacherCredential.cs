@@ -2,11 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 
 namespace Domain.Entities;
 
-public partial class IDN_TeacherCredential : EntityBase
+public partial class IDN_TeacherCredential : EntityBase, IHasModificationTime, IHasModifier
 {
     public Guid TeacherID { get; set; }
 

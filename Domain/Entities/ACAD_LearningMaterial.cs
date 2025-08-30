@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class ACAD_LearningMaterial : EntityBase
+public partial class ACAD_LearningMaterial : AuditedEntity
 {
     public Guid UploaderID { get; set; }
 
@@ -16,16 +16,6 @@ public partial class ACAD_LearningMaterial : EntityBase
     public string Title { get; set; } = null!;
 
     public string? StoreUrl { get; set; }
-
-    [Precision(0)]
-    public DateTime UploadDate { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
 
     public bool IsDeleted { get; set; }
 

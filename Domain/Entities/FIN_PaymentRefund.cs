@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class FIN_PaymentRefund : EntityBase
+public partial class FIN_PaymentRefund : AuditedEntity
 {
     public Guid PaymentID { get; set; }
 
@@ -24,16 +24,6 @@ public partial class FIN_PaymentRefund : EntityBase
     public string? GatewayStatus { get; set; }
 
     public string? GatewayPayload { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
 
     [ForeignKey(nameof(GatewayID))]
     public virtual CORE_LookUp? Gateway { get; set; }

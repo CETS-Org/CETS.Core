@@ -24,25 +24,25 @@ namespace Application.Implementations.IDN
             _mapper = mapper;
         }
 
-        public async Task<IReadOnlyList<AccountStatusResponse>> GetStatusesAsync()
+        public async Task<IReadOnlyList<AccountStatusResponse>> GetAccountStatusesAsync()
         {
             var lookup = await _lookUpRepository.GetByTypeAsync(LookUpTypes.AccountStatus);
 
             return _mapper.Map<IReadOnlyList<AccountStatusResponse>>(lookup);
         }
 
-        public async Task<IReadOnlyList<AccountResponse>> GetAllAsync()
+        public async Task<IReadOnlyList<AccountResponse>> GetAllAccountsAsync()
         {
             var account = await _accountRepository.GetAllAsync();
             return _mapper.Map<IReadOnlyList<AccountResponse>>(account);
         }
 
-        public async Task<AccountResponse?> GetByIdAsync(Guid id)
+        public async Task<AccountResponse?> GetAccountByIdAsync(Guid id)
         {
             var account = await _accountRepository.GetByIdAsync(id);
             return _mapper.Map<AccountResponse?>(account);
         }
-        public async Task<AccountResponse> GetByEmailAsync(string email)
+        public async Task<AccountResponse> GetAccountByEmailAsync(string email)
         {
             var account = await _accountRepository.FindFirstAsync(ac => ac.Email == email);
             if (account == null)
@@ -52,7 +52,7 @@ namespace Application.Implementations.IDN
             return _mapper.Map<AccountResponse>(account);
         }
 
-        public async Task<AccountResponse?> UpdateAsync(Guid id, UpdateAccountRequest dto)
+        public async Task<AccountResponse> UpdateAccountAsync(Guid id, UpdateAccountRequest dto)
         {
             var account = await _accountRepository.GetByIdAsync(id);
             if (account == null)
@@ -63,7 +63,7 @@ namespace Application.Implementations.IDN
             _mapper.Map(dto, account);
             _accountRepository.Update(account);
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<AccountResponse?>(account);
+            return _mapper.Map<AccountResponse>(account);
         }
 
         public async Task<AccountResponse?> DeactivateAccountAsync(Guid id)
@@ -73,7 +73,7 @@ namespace Application.Implementations.IDN
             {
                 throw new KeyNotFoundException($"Account with id {id} not found.");
             }
-            var inactiveStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, AccountStatuses.Inactive.ToString());
+            var inactiveStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, AccountStatuses.Locked.ToString());
             if (inactiveStatus == null)
             {
                 throw new InvalidOperationException("Inactive status not found in lookup.");
@@ -83,6 +83,39 @@ namespace Application.Implementations.IDN
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<AccountResponse?>(account);
         }
+
+        public async Task<AccountResponse?> ActivateAccountAsync(Guid id)
+        {
+            var account = await _accountRepository.GetByIdAsync(id);
+            if (account == null)
+            {
+                throw new KeyNotFoundException($"Account with id {id} not found.");
+            }
+            var activeStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, AccountStatuses.Active.ToString());
+            if (activeStatus == null)
+            {
+                throw new InvalidOperationException("Active status not found in lookup.");
+            }
+            account.AccountStatusID = activeStatus.Id;
+            _accountRepository.Update(account);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<AccountResponse?>(account);
+        }
+
+        public async Task<AccountResponse> SoftDeleteAccountAsync(Guid id)
+        {
+            var account = await _accountRepository.GetByIdAsync(id);
+            if (account == null)
+            {
+                throw new KeyNotFoundException($"Account with id {id} not found.");
+            }
+            account.IsDeleted = true;
+            _accountRepository.Update(account);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<AccountResponse>(account);
+        }
+
+
 
 
     }

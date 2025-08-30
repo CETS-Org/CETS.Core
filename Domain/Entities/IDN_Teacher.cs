@@ -2,11 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 
 namespace Domain.Entities;
 
-public partial class IDN_Teacher : EntityBase
+public partial class IDN_Teacher : EntityBase, IHasCreationTime, IHasModificationTime, IHasModifier
 {
     [StringLength(20)]
     public string TeacherCode { get; set; } = null!;

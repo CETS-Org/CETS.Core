@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Entities;
 
-public partial class ACAD_Class : EntityBase
+public partial class ACAD_Class : AuditedEntity
 {
     public Guid ClassStatusID { get; set; }
 
@@ -23,16 +23,6 @@ public partial class ACAD_Class : EntityBase
     public int Capacity { get; set; }
 
     public int EnrolledCount { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
 
     public bool IsActive { get; set; }
 

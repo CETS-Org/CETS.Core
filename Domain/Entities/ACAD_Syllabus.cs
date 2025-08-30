@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities;
 
-public partial class ACAD_Syllabus : EntityBase
+public partial class ACAD_Syllabus : AuditedEntity
 {
     public Guid CourseID { get; set; }
 
@@ -16,16 +16,6 @@ public partial class ACAD_Syllabus : EntityBase
     public string? Description { get; set; }
 
     public bool IsActive { get; set; }
-
-    [Precision(0)]
-    public DateTime CreatedAt { get; set; }
-
-    [Precision(0)]
-    public DateTime? UpdatedAt { get; set; }
-
-    public Guid? CreatedBy { get; set; }
-
-    public Guid? UpdatedBy { get; set; }
 
     public bool IsDeleted { get; set; }
 
