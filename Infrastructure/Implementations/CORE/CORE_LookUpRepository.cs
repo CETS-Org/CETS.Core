@@ -11,11 +11,11 @@ namespace Infrastructure.Repositories.CORE
         {
         }
 
-        public async Task<CORE_LookUp?> GetByCodeAsync(string lookUpTypeId, string code)
+        public async Task<CORE_LookUp?> GetByCodeAsync(string lookUpTypeCode, string code)
         {
             return await _context.CORE_LookUps
                 .AsNoTracking()
-                .FirstOrDefaultAsync(lu => lu.LookUpTypeID.ToString() == lookUpTypeId
+                .FirstOrDefaultAsync(lu => lu.LookUpType.Code.ToString() == lookUpTypeCode
                                     && lu.Code == code 
                                     && lu.IsActive == true);
         }

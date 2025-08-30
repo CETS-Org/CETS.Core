@@ -16,4 +16,23 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Implementations\ACAD\" />
+    <Folder Include="Implementations\COM\" />
+    <Folder Include="Implementations\CORE\" />
+    <Folder Include="Implementations\EVT\" />
+    <Folder Include="Implementations\FAC\" />
+    <Folder Include="Implementations\FIN\" />
+    <Folder Include="Implementations\HR\" />
+    <Folder Include="Implementations\RPT\" />
+    <Folder Include="Interfaces\ACAD\" />
+    <Folder Include="Interfaces\COM\" />
+    <Folder Include="Interfaces\CORE\" />
+    <Folder Include="Interfaces\EVT\" />
+    <Folder Include="Interfaces\FAC\" />
+    <Folder Include="Interfaces\FIN\" />
+    <Folder Include="Interfaces\HR\" />
+    <Folder Include="Interfaces\RPT\" />
+  </ItemGroup>
+
 </Project>
