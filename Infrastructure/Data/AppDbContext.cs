@@ -980,6 +980,21 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Event).WithMany(p => p.EVT_EventFeedbacks).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_EVT_EventFeedback_Event");
             entity.ToTable("EVT_EventFeedback", t => t.HasCheckConstraint("CK_EVT_EventFeedback_Rating", "[Rating] BETWEEN 1 AND 5"));
         });
+
+        modelBuilder.HasSequence<int>("SeqStudent");
+        modelBuilder.Entity<IDN_Student>(e =>
+        {
+            e.Property(x => x.StudentNumber)
+             .HasDefaultValueSql("NEXT VALUE FOR [SeqStudent]");
+
+            e.Property(x => x.StudentCode)
+             .HasComputedColumnSql("('STU'+RIGHT('000000'+CONVERT(varchar(6), [StudentNumber]), 6))", stored: true);
+
+            e.HasIndex(x => x.StudentCode)
+             .IsUnique()
+             .HasDatabaseName("UX_IDN_Students_StudentCode");
+        });
+
     }
 
 
