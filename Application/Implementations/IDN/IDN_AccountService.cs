@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+﻿using Application.Interfaces.IDN;
 using AutoMapper;
 using Domain.Constants;
 using Domain.Interfaces;
@@ -7,7 +7,7 @@ using Domain.Interfaces.IDN;
 using DTOs.IDN_Account.Requests;
 using DTOs.IDN_Account.Responses;
 
-namespace Application.Implementations
+namespace Application.Implementations.IDN
 {
     public class IDN_AccountService : IIDN_AccountService
     {
@@ -61,6 +61,24 @@ namespace Application.Implementations
             }
 
             _mapper.Map(dto, account);
+            _accountRepository.Update(account);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<AccountResponse?>(account);
+        }
+
+        public async Task<AccountResponse?> DeactivateAccountAsync(Guid id)
+        {
+            var account = await _accountRepository.GetByIdAsync(id);
+            if (account == null)
+            {
+                throw new KeyNotFoundException($"Account with id {id} not found.");
+            }
+            var inactiveStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, AccountStatuses.Inactive.ToString());
+            if (inactiveStatus == null)
+            {
+                throw new InvalidOperationException("Inactive status not found in lookup.");
+            }
+            account.AccountStatusID = inactiveStatus.Id;
             _accountRepository.Update(account);
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<AccountResponse?>(account);
