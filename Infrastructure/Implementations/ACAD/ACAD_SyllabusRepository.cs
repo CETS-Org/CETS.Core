@@ -1,6 +1,7 @@
 using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.ACAD
 {
@@ -8,6 +9,13 @@ namespace Infrastructure.Repositories.ACAD
     {
         public ACAD_SyllabusRepository(AppDbContext context) : base(context)
         {
+        }
+        public async Task<IEnumerable<ACAD_Syllabus>> GetByCourseIdAsync(Guid courseId)
+        {
+            return await _context.ACAD_Syllabi
+                .Where(s => s.CourseID == courseId)
+                .Include(s => s.ACAD_SyllabusItems)
+                .ToListAsync();
         }
     }
 }

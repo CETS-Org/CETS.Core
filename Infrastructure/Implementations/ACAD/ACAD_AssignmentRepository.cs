@@ -1,6 +1,7 @@
 using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.ACAD
 {
@@ -8,6 +9,19 @@ namespace Infrastructure.Repositories.ACAD
     {
         public ACAD_AssignmentRepository(AppDbContext context) : base(context)
         {
+        }
+        public async Task<IEnumerable<ACAD_Assignment>> GetByClassMeetingAsync(Guid classMeetingId)
+        {
+            return await _context.ACAD_Assignments
+                .Where(a => a.ClassMeetingID == classMeetingId && !a.IsDeleted)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ACAD_Assignment>> GetByTeacherAsync(Guid teacherId)
+        {
+            return await _context.ACAD_Assignments
+                .Where(a => a.CreatedBy == teacherId && !a.IsDeleted)
+                .ToListAsync();
         }
     }
 }
