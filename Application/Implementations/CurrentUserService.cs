@@ -26,5 +26,14 @@ namespace Application.Implementations
                 return null;
             }
         }
+
+        public string? UserEmail
+        {
+            get
+            {
+                var claim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email);
+                return claim?.Value;
+            }
+        }
     }
 }

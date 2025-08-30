@@ -8,7 +8,7 @@ namespace Domain.Constants
 {
     public static class LookUpTypes
     {
-       public const string FeedbackType = "FeedbackType";
+        public const string FeedbackType = "FeedbackType";
         public const string EnrollmentStatus = "EnrollmentStatus";
         public const string Gateway = "Gateway";
         public const string AccountStatus = "AccountStatus";
