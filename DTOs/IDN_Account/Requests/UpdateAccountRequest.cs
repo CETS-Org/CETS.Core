@@ -32,12 +32,6 @@ namespace DTOs.IDN_Account.Requests
 
         public DateTime? VerifiedCodeExpiresAt { get; set; }
 
-        public DateTime CreatedAt { get; set; }
-
-        public DateTime? UpdatedAt { get; set; }
-
-        public Guid? UpdatedBy { get; set; }
-
         public bool IsDeleted { get; set; }
     }
 }

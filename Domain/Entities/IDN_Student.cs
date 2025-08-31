@@ -12,6 +12,8 @@ public partial class IDN_Student : EntityBase, IHasCreationTime, IHasModificatio
     [StringLength(20)]
     public string StudentCode { get; set; } = null!;
 
+    public int StudentNumber { get; set; }
+
     [StringLength(100)]
     public string? GuardianName { get; set; }
 
