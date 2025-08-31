@@ -1,0 +1,90 @@
+﻿using Application.Interfaces.IDN;
+using AutoMapper;
+using Domain.Entities;
+using Domain.Interfaces;
+using Domain.Interfaces.IDN;
+using DTOs.IDN_Student.Requests;
+using DTOs.IDN_Student.Responses;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Implementations.IDN
+{
+    public class IDN_StudentService : IIDN_StudentService
+    {
+        private readonly IIDN_StudentRepository _studentRepository;
+        private readonly IIDN_AccountRepository _accountRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        public IDN_StudentService(IIDN_StudentRepository studentRepository, IIDN_AccountRepository accountRepository, IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _studentRepository = studentRepository;
+            _accountRepository = accountRepository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<IReadOnlyList<StudentResponse>> GetAllStudentsAsync()
+        {
+            var students = await _studentRepository.GetAllAsync();
+            return _mapper.Map<IReadOnlyList<StudentResponse>>(students);
+        }
+        public async Task<StudentResponse?> GetStudentByIdAsync(Guid id)
+        {
+            var student = await _studentRepository.GetByIdAsync(id);
+            return _mapper.Map<StudentResponse?>(student);
+        }
+
+        public async Task<StudentResponse?> GetStudentByCodeAsync(string code)
+        {
+            var student = await _studentRepository.FindFirstAsync(st => st.StudentCode == code);
+            return _mapper.Map<StudentResponse?>(student);
+        }
+
+        public async Task<StudentResponse?> UpdateStudentAsync(Guid id, UpdateStudentRequest dto)
+        {
+            var student = await _studentRepository.GetByIdAsync(id);
+            if (student == null)
+            {
+                throw new KeyNotFoundException($"Student with id {id} not found.");
+            }
+            _mapper.Map(dto, student);
+            _studentRepository.Update(student);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<StudentResponse>(student);
+        }
+
+        public async Task<StudentResponse> CreateStudentAsync(CreateStudentRequest dto)
+        {
+            var existingAccount = await _accountRepository.GetByIdAsync(dto.AccountId);
+            if (existingAccount == null)
+            {
+                throw new KeyNotFoundException($"Account with ID {dto.AccountId} not found.");
+            }
+
+            var student = _mapper.Map<IDN_Student>(dto);
+            student.IsDeleted = false;
+            //student.CreatedAt = DateTime.Now;
+            
+            _studentRepository.Add(student);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<StudentResponse>(student);
+        }
+
+        public async Task<StudentResponse> SoftDeleteStudentAsync(Guid id)
+        {
+            var student = await _studentRepository.GetByIdAsync(id);
+            if (student == null)
+            {
+                throw new KeyNotFoundException($"Student with id {id} not found.");
+            }
+            student.IsDeleted = true;
+            _studentRepository.Update(student);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<StudentResponse>(student);
+        }
+    }
+}

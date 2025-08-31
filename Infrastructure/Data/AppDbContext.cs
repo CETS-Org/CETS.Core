@@ -1000,7 +1000,7 @@ public partial class AppDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        //HandleAuditing();
+        HandleAuditing();
         return await base.SaveChangesAsync(cancellationToken);
     }
 
@@ -1015,7 +1015,7 @@ public partial class AppDbContext : DbContext
             return;
         }
 
-        var currentUserId = _currentUserService.UserId;
+        var currentUserId = _currentUserService.UserId ?? Guid.Empty;
         var now = DateTime.Now;
 
         foreach (var entry in entries)
@@ -1030,7 +1030,7 @@ public partial class AppDbContext : DbContext
 
                 if (entry.Entity is IHasCreator creatorEntity)
                 {
-                    creatorEntity.CreatedBy = currentUserId ?? Guid.Empty;
+                    creatorEntity.CreatedBy = currentUserId;
                 }
 
                 continue;
