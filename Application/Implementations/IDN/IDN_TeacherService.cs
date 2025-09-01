@@ -95,6 +95,19 @@ namespace Application.Implementations.IDN
             return _mapper.Map<TeacherResponse>(teacher);
         }
 
+        public async Task ActivateTeacherAsync(Guid id)
+        {
+            var teacher = await _teacherRepository.GetByIdAsync(id);
+            if (teacher == null)
+            {
+                throw new KeyNotFoundException($"Teacher with id {id} not found.");
+            }
+            teacher.IsDeleted = false;
+            _teacherRepository.Update(teacher);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+
         /* Delete methods */
         public async Task SoftDeleteTeacherAsync(Guid id)
         {

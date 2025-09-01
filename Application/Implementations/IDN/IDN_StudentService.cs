@@ -27,6 +27,7 @@ namespace Application.Implementations.IDN
             _mapper = mapper;
         }
 
+        /* Get methods */
         public async Task<IReadOnlyList<StudentResponse>> GetAllStudentsAsync()
         {
             var students = await _studentRepository.GetAllAsync();
@@ -44,6 +45,26 @@ namespace Application.Implementations.IDN
             return _mapper.Map<StudentResponse?>(student);
         }
 
+        /* Post methods */
+        public async Task<StudentResponse> CreateStudentAsync(CreateStudentRequest dto)
+        {
+            var existingAccount = await _accountRepository.GetByIdAsync(dto.AccountId);
+            if (existingAccount == null)
+            {
+                throw new KeyNotFoundException($"Account with ID {dto.AccountId} not found.");
+            }
+
+            var student = _mapper.Map<IDN_Student>(dto);
+            student.IsDeleted = false;
+            //student.CreatedAt = DateTime.Now;
+
+            _studentRepository.Add(student);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<StudentResponse>(student);
+        }
+
+
+        /* Update methods */
         public async Task<StudentResponse?> UpdateStudentAsync(Guid id, UpdateStudentRequest dto)
         {
             var student = await _studentRepository.GetByIdAsync(id);
@@ -57,23 +78,20 @@ namespace Application.Implementations.IDN
             return _mapper.Map<StudentResponse>(student);
         }
 
-        public async Task<StudentResponse> CreateStudentAsync(CreateStudentRequest dto)
+ 
+        public async Task ActivateStudentAsync(Guid id)
         {
-            var existingAccount = await _accountRepository.GetByIdAsync(dto.AccountId);
-            if (existingAccount == null)
+            var student = await _studentRepository.GetByIdAsync(id);
+            if (student == null)
             {
-                throw new KeyNotFoundException($"Account with ID {dto.AccountId} not found.");
+                throw new KeyNotFoundException($"Student with id {id} not found.");
             }
-
-            var student = _mapper.Map<IDN_Student>(dto);
             student.IsDeleted = false;
-            //student.CreatedAt = DateTime.Now;
-            
-            _studentRepository.Add(student);
+            _studentRepository.Update(student);
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<StudentResponse>(student);
         }
 
+        /* Delete methods */
         public async Task<StudentResponse> SoftDeleteStudentAsync(Guid id)
         {
             var student = await _studentRepository.GetByIdAsync(id);

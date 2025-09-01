@@ -1029,7 +1029,9 @@ public partial class AppDbContext : DbContext
             return;
         }
 
-        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");   //Temporary hardcoded admin ID for system processes when no user is logged in.
+        //TODO: Replace with actual system user ID or a dedicated service account ID.
+        //Temporary hardcoded admin ID for system processes when no user is logged in.
+        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");   
         var now = DateTime.Now;
 
         foreach (var entry in entries)

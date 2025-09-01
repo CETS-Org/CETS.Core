@@ -12,6 +12,5 @@ namespace DTOs.IDN_Student.Requests
         public string? GuardianPhone { get; set; }
         public string? School { get; set; }
         public string? AcademicNote { get; set; }
-        public bool IsDeleted { get; set; }
     }
 }

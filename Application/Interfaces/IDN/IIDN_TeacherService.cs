@@ -17,6 +17,8 @@ namespace Application.Interfaces.IDN
         Task<TeacherDetailResponse?> GetTeacherDetailsAsync(Guid id);
         Task<TeacherResponse> CreateTeacherAsync(CreateTeacherRequest dto);
         Task<TeacherResponse> UpdateTeacherAsync(Guid id, UpdateTeacherRequest dto);
+
+        Task ActivateTeacherAsync(Guid id);
         Task SoftDeleteTeacherAsync(Guid id);
     }
 }
