@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace Application
 {
-    public interface IBaseService<TEntity, TDto, TCreateDto> where TEntity : class, IEntityBase
+    public interface IBaseService<TEntity, TDto, TUpdateDto, TCreateDto> where TEntity : class, IEntityBase
     {
         Task<TDto?> GetByIdAsync(Guid id);
         Task<IReadOnlyList<TDto>> GetAllAsync();
         Task<TDto> CreateAsync(TCreateDto createDto);
-        Task UpdateAsync(Guid id, TDto dto);
+        Task<TDto> UpdateAsync(Guid id, TUpdateDto dto);
         Task DeleteAsync(Guid id);
     }
 }
