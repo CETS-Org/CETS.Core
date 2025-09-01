@@ -9,7 +9,7 @@ namespace DTOs.IDN_Account.Responses
 {
     public class AccountResponse
     {
-        public Guid Id { get; set; }
+        public Guid AccountId { get; set; }
 
         public string? Email { get; set; }
 

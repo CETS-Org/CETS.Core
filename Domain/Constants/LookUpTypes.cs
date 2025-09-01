@@ -26,5 +26,6 @@ namespace Domain.Constants
         public const string ReportStatus = "ReportStatus";
         public const string InvoiceStatus = "InvoiceStatus";
         public const string PaymentMethod = "PaymentMethod";
+        public const string CredentialType = "CredentialType";
     }
 }

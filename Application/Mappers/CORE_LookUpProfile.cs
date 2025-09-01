@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Domain.Entities;
 using DTOs.IDN_Account.Responses;
+using DTOs.IDN_TeacherCredential.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace Application.Mappers
         public CORE_LookUpProfile()
         {
             CreateMap<CORE_LookUp, AccountStatusResponse>();
+            CreateMap<CORE_LookUp, CredentialTypeResponse>();
+
         }
     }
 }
