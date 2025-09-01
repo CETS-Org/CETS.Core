@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application
 {
-    public class BaseService<TEntity, TDto, TCreateDto> : IBaseService<TEntity, TDto, TCreateDto> where TEntity : class, IEntityBase
+    public class BaseService<TEntity, TDto, TUpdateDto, TCreateDto> : IBaseService<TEntity, TDto, TUpdateDto, TCreateDto> where TEntity : class, IEntityBase
     {
         protected readonly IBaseRepository<TEntity> _repository;
         protected readonly IUnitOfWork _unitOfWork;
@@ -45,7 +45,7 @@ namespace Application
             return _mapper.Map<TDto>(entity);
         }
 
-        public virtual async Task UpdateAsync(Guid id, TDto dto)
+        public virtual async Task<TDto> UpdateAsync(Guid id, TUpdateDto dto)
         {
             var entity = await _repository.GetByIdAsync(id);
 
@@ -58,10 +58,18 @@ namespace Application
 
             _repository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
+        
+            return _mapper.Map<TDto>(entity);
         }
 
         public virtual async Task DeleteAsync(Guid id)
         {
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null)
+            {
+                throw new KeyNotFoundException($"{typeof(TEntity).Name} with id {id} not found.");
+            }
+
             await _repository.RemoveByIdAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }

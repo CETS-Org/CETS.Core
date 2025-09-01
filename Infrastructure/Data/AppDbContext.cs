@@ -995,6 +995,20 @@ public partial class AppDbContext : DbContext
              .HasDatabaseName("UX_IDN_Students_StudentCode");
         });
 
+        modelBuilder.HasSequence<int>("SeqTeacher");
+        modelBuilder.Entity<IDN_Teacher>(e =>
+        {
+            e.Property<int>("TeacherNumber")
+             .HasDefaultValueSql("NEXT VALUE FOR [SeqTeacher]");
+
+            e.Property(x => x.TeacherCode)
+             .HasComputedColumnSql("('TCH'+RIGHT('000000'+CONVERT(varchar(6), [TeacherNumber]), 6))", stored: true);
+
+            e.HasIndex(x => x.TeacherCode)
+             .IsUnique()
+             .HasDatabaseName("UX_IDN_Teachers_TeacherCode");
+        });
+
     }
 
 
@@ -1015,7 +1029,9 @@ public partial class AppDbContext : DbContext
             return;
         }
 
-        var currentUserId = _currentUserService.UserId ?? Guid.Empty;
+        //TODO: Replace with actual system user ID or a dedicated service account ID.
+        //Temporary hardcoded admin ID for system processes when no user is logged in.
+        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");   
         var now = DateTime.Now;
 
         foreach (var entry in entries)

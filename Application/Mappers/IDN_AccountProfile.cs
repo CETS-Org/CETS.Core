@@ -13,7 +13,10 @@ namespace Application.Mappers
     {
         public IDN_AccountProfile()
         {
-            CreateMap<IDN_Account, AccountResponse>();
+            CreateMap<IDN_Account, AccountResponse>()
+                .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Id))
+                .ReverseMap();
+
         }
     }
 }

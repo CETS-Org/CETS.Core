@@ -20,6 +20,9 @@ namespace Application.Mappers
 
             CreateMap<CreateStudentRequest, IDN_Student>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccountId));
+
+            CreateMap<IDN_Student, UpdateStudentRequest>()
+                .ReverseMap();
         }
     }
 }

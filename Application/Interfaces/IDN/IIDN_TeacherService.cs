@@ -1,0 +1,24 @@
+﻿using DTOs.IDN_Teacher.Requests;
+using DTOs.IDN_Teacher.Responses;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Interfaces.IDN
+{
+    public interface IIDN_TeacherService
+    {
+        Task<IReadOnlyList<TeacherResponse>> GetAllTeachersAsync();
+        Task<TeacherResponse?> GetTeacherByIdAsync(Guid id);
+        Task<TeacherResponse?> GetTeacherByCodeAsync(string teacherCode);
+        Task<TeacherResponse?> GetTeacherByEmailAsync(string email);
+        Task<TeacherDetailResponse?> GetTeacherDetailsAsync(Guid id);
+        Task<TeacherResponse> CreateTeacherAsync(CreateTeacherRequest dto);
+        Task<TeacherResponse> UpdateTeacherAsync(Guid id, UpdateTeacherRequest dto);
+
+        Task ActivateTeacherAsync(Guid id);
+        Task SoftDeleteTeacherAsync(Guid id);
+    }
+}

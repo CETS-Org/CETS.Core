@@ -12,6 +12,8 @@ public partial class IDN_Teacher : EntityBase, IHasCreationTime, IHasModificatio
     [StringLength(20)]
     public string TeacherCode { get; set; } = null!;
 
+    public int TeacherNumber { get; set; }
+
     public int? YearsExperience { get; set; }
 
     public string? Bio { get; set; }
