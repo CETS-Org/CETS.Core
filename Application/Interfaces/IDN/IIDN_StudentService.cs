@@ -16,7 +16,7 @@ namespace Application.Interfaces.IDN
         Task<StudentResponse?> UpdateStudentAsync(Guid id, UpdateStudentRequest dto);
         Task<StudentResponse> CreateStudentAsync(CreateStudentRequest dto);
 
-        Task ActivateStudentAsync(Guid id);
+        Task<StudentResponse> RestoreStudentAsync(Guid id);
         Task<StudentResponse> SoftDeleteStudentAsync(Guid id);
     }
 }

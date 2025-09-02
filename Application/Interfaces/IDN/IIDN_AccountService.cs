@@ -18,5 +18,6 @@ namespace Application.Interfaces.IDN
         Task<AccountResponse?> DeactivateAccountAsync(Guid id);
         Task<AccountResponse?> ActivateAccountAsync(Guid id);
         Task<AccountResponse> SoftDeleteAccountAsync(Guid id);
+        Task<AccountResponse> RestoreAccountAsync(Guid id);
     }
 }

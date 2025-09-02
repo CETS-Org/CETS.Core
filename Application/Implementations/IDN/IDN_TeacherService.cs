@@ -95,7 +95,7 @@ namespace Application.Implementations.IDN
             return _mapper.Map<TeacherResponse>(teacher);
         }
 
-        public async Task ActivateTeacherAsync(Guid id)
+        public async Task<TeacherResponse> RestoreTeacherAsync(Guid id)
         {
             var teacher = await _teacherRepository.GetByIdAsync(id);
             if (teacher == null)
@@ -105,11 +105,13 @@ namespace Application.Implementations.IDN
             teacher.IsDeleted = false;
             _teacherRepository.Update(teacher);
             await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<TeacherResponse>(teacher);
         }
 
 
         /* Delete methods */
-        public async Task SoftDeleteTeacherAsync(Guid id)
+        public async Task<TeacherResponse> SoftDeleteTeacherAsync(Guid id)
         {
             var teacher = await _teacherRepository.GetByIdAsync(id);
             if (teacher == null)
@@ -119,6 +121,8 @@ namespace Application.Implementations.IDN
             teacher.IsDeleted = true;
             _teacherRepository.Update(teacher);
             await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<TeacherResponse>(teacher);
         }
 
     }

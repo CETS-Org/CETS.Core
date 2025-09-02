@@ -79,7 +79,7 @@ namespace Application.Implementations.IDN
         }
 
  
-        public async Task ActivateStudentAsync(Guid id)
+        public async Task<StudentResponse> RestoreStudentAsync(Guid id)
         {
             var student = await _studentRepository.GetByIdAsync(id);
             if (student == null)
@@ -89,6 +89,7 @@ namespace Application.Implementations.IDN
             student.IsDeleted = false;
             _studentRepository.Update(student);
             await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<StudentResponse>(student);
         }
 
         /* Delete methods */

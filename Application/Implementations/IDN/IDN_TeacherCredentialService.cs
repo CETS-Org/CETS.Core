@@ -15,7 +15,9 @@ using System.Threading.Tasks;
 
 namespace Application.Implementations.IDN
 {
-    public class IDN_TeacherCredentialService : BaseService<IDN_TeacherCredential, TeacherCredentialResponse, UpdateTeacherCredentialRequest, CreateTeacherCredentialRequest>,IIDN_TeacherCredentialService
+    public class IDN_TeacherCredentialService 
+        : BaseService<IDN_TeacherCredential, TeacherCredentialResponse, UpdateTeacherCredentialRequest, CreateTeacherCredentialRequest>,
+        IIDN_TeacherCredentialService
     {
         private readonly ICORE_LookUpRepository _lookUpRepository;
         public IDN_TeacherCredentialService(IIDN_TeacherCredentialRepository repository, ICORE_LookUpRepository lookUpRepository, IUnitOfWork unitOfWork, IMapper mapper) 
