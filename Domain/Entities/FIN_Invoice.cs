@@ -16,6 +16,8 @@ public partial class FIN_Invoice : AuditedEntity
 
     public Guid InvoiceStatusID { get; set; }
 
+    public int? InvoiceSequence { get; set; }
+
     public DateOnly CreateDate { get; set; }
 
     public DateOnly? DueDate { get; set; }
@@ -30,7 +32,7 @@ public partial class FIN_Invoice : AuditedEntity
     [Unicode(false)]
     public string? SeriesID { get; set; }
 
-    public int? Sequence { get; set; }
+    public int? PaymentSequence { get; set; }
 
     public Guid? PlanTypeID { get; set; }
 
