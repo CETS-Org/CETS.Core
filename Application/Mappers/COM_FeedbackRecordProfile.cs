@@ -1,0 +1,20 @@
+using AutoMapper;
+using Domain.Entities;
+using DTOs.COM_FeedbackRecord.Requests;
+using DTOs.COM_FeedbackRecord.Responses;
+
+namespace Application.Mappers
+{
+	public class COM_FeedbackRecordProfile : Profile
+	{
+		public COM_FeedbackRecordProfile()
+		{
+			CreateMap<COM_FeedbackRecord, FeedbackRecordResponse>().ReverseMap();
+			CreateMap<CreateFeedbackRecordRequest, COM_FeedbackRecord>();
+			CreateMap<UpdateFeedbackRecordRequest, COM_FeedbackRecord>();
+		}
+	}
+}
+
+
+
