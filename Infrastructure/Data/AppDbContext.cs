@@ -529,9 +529,9 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<FIN_Invoice>(entity =>
         {
-            entity.HasIndex(e => new { e.SeriesID, e.Sequence }, "IX_FIN_Invoices_SeriesSeq_Filtered")
+            entity.HasIndex(e => new { e.SeriesID, e.PaymentSequence }, "IX_FIN_Invoices_SeriesSeq_Filtered")
                 .IsUnique()
-                .HasFilter("([SeriesID] IS NOT NULL AND [Sequence] IS NOT NULL)");
+                .HasFilter("([SeriesID] IS NOT NULL AND [PaymentSequence] IS NOT NULL)");
 
             entity.Property(e => e.Id).HasColumnName("InvoiceID").ValueGeneratedNever();
             entity.Property(e => e.CreateDate).HasDefaultValueSql("(CONVERT([date],sysutcdatetime()))");
@@ -1009,7 +1009,22 @@ public partial class AppDbContext : DbContext
              .HasDatabaseName("UX_IDN_Teachers_TeacherCode");
         });
 
-    }
+        modelBuilder.HasSequence<int>("InvoiceSequence", schema: "dbo")
+               .StartsAt(1000000) 
+               .IncrementsBy(1);
+        modelBuilder.Entity<FIN_Invoice>(entity =>
+        {
+            entity.Property(e => e.InvoiceSequence)
+             .IsRequired()
+             .HasDefaultValueSql("NEXT VALUE FOR dbo.InvoiceSequence");
+
+            entity.Property(e => e.InvoiceNumber)
+              .HasColumnName("InvoiceNumber")
+              .HasComputedColumnSql("'INV-' + CONVERT(VARCHAR(10), [InvoiceSequence]) + '-' + RIGHT('000' + CONVERT(VARCHAR(3), [PaymentSequence]), 3)", stored: true);
+
+            entity.ToTable(tb => tb.HasCheckConstraint("CK_FIN_Invoices_Sequence", "[PaymentSequence] IS NULL OR [PaymentSequence] >= 1"));
+        });
+}
 
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

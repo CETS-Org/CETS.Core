@@ -9,10 +9,6 @@ namespace DTOs.FIN.FIN_Invoice.Requests
 		public Guid StudentID { get; set; }
 
 		[Required]
-		[StringLength(50)]
-		public string InvoiceNumber { get; set; } = null!;
-
-		[Required]
 		public Guid InvoiceStatusID { get; set; }
 
 		[Required]
@@ -32,7 +28,7 @@ namespace DTOs.FIN.FIN_Invoice.Requests
 		[StringLength(50)]
 		public string? SeriesID { get; set; }
 
-		public int? Sequence { get; set; }
+		public int? PaymentSequence { get; set; }
 
 		public Guid? PlanTypeID { get; set; }
 	}
