@@ -1,6 +1,6 @@
 using Domain.Entities;
-using DTOs.FIN_PaymentRefund.Requests;
-using DTOs.FIN_PaymentRefund.Responses;
+using DTOs.FIN.FIN_PaymentRefund.Requests;
+using DTOs.FIN.FIN_PaymentRefund.Responses;
 
 namespace Application.Interfaces.FIN
 {

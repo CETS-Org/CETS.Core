@@ -1,5 +1,5 @@
-﻿using DTOs.IDN_Teacher.Requests;
-using DTOs.IDN_Teacher.Responses;
+﻿using DTOs.IDN.IDN_Teacher.Requests;
+using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;

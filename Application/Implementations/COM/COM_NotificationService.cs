@@ -3,8 +3,8 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.COM;
-using DTOs.COM_Notification.Requests;
-using DTOs.COM_Notification.Responses;
+using DTOs.COM.COM_Notification.Requests;
+using DTOs.COM.COM_Notification.Responses;
 
 namespace Application.Implementations.COM
 {

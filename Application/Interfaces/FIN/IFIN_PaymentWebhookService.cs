@@ -1,6 +1,6 @@
 using Domain.Entities;
-using DTOs.FIN_PaymentWebhook.Requests;
-using DTOs.FIN_PaymentWebhook.Responses;
+using DTOs.FIN.FIN_PaymentWebhook.Requests;
+using DTOs.FIN.FIN_PaymentWebhook.Responses;
 
 namespace Application.Interfaces.FIN
 {

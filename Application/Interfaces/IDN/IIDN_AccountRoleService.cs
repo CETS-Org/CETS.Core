@@ -1,5 +1,5 @@
-using DTOs.IDN_AccountRole.Requests;
-using DTOs.IDN_AccountRole.Responses;
+using DTOs.IDN.IDN_AccountRole.Requests;
+using DTOs.IDN.IDN_AccountRole.Responses;
 
 namespace Application.Interfaces.IDN
 {

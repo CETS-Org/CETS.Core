@@ -1,6 +1,6 @@
 using Domain.Entities;
-using DTOs.COM_Notification.Requests;
-using DTOs.COM_Notification.Responses;
+using DTOs.COM.COM_Notification.Requests;
+using DTOs.COM.COM_Notification.Responses;
 
 namespace Application.Interfaces.COM
 {

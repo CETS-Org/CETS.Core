@@ -3,8 +3,8 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.FIN;
-using DTOs.FIN_Promotion.Requests;
-using DTOs.FIN_Promotion.Responses;
+using DTOs.FIN.FIN_Promotion.Requests;
+using DTOs.FIN.FIN_Promotion.Responses;
 
 namespace Application.Implementations.FIN
 {

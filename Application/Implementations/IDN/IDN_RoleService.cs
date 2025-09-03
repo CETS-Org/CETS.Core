@@ -3,8 +3,8 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.IDN;
-using DTOs.IDN_Role.Requests;
-using DTOs.IDN_Role.Responses;
+using DTOs.IDN.IDN_Role.Requests;
+using DTOs.IDN.IDN_Role.Responses;
 
 namespace Application.Implementations.IDN
 {

@@ -4,8 +4,8 @@ using Domain.Constants;
 using Domain.Interfaces;
 using Domain.Interfaces.CORE;
 using Domain.Interfaces.IDN;
-using DTOs.IDN_Account.Requests;
-using DTOs.IDN_Account.Responses;
+using DTOs.IDN.IDN_Account.Requests;
+using DTOs.IDN.IDN_Account.Responses;
 
 namespace Application.Implementations.IDN
 {

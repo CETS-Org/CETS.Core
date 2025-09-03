@@ -1,6 +1,6 @@
 using Domain.Entities;
-using DTOs.COM_Feedback.Requests;
-using DTOs.COM_Feedback.Responses;
+using DTOs.COM.COM_Feedback.Requests;
+using DTOs.COM.COM_Feedback.Responses;
 
 namespace Application.Interfaces.COM
 {
