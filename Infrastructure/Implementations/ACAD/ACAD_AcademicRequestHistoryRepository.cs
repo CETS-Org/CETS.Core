@@ -1,6 +1,7 @@
 using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.ACAD
 {
@@ -8,6 +9,13 @@ namespace Infrastructure.Repositories.ACAD
     {
         public ACAD_AcademicRequestHistoryRepository(AppDbContext context) : base(context)
         {
+        }
+        public async Task<IEnumerable<ACAD_AcademicRequestHistory>> GetByRequestAsync(Guid requestId)
+        {
+            return await _context.ACAD_AcademicRequestHistories
+                .Where(h => h.RequestID == requestId)
+                .OrderByDescending(h => h.UpdatedAt)
+                .ToListAsync();
         }
     }
 }
