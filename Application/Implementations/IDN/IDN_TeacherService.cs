@@ -3,8 +3,8 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.IDN;
-using DTOs.IDN_Teacher.Requests;
-using DTOs.IDN_Teacher.Responses;
+using DTOs.IDN.IDN_Teacher.Requests;
+using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,7 +95,7 @@ namespace Application.Implementations.IDN
             return _mapper.Map<TeacherResponse>(teacher);
         }
 
-        public async Task ActivateTeacherAsync(Guid id)
+        public async Task<TeacherResponse> RestoreTeacherAsync(Guid id)
         {
             var teacher = await _teacherRepository.GetByIdAsync(id);
             if (teacher == null)
@@ -105,11 +105,13 @@ namespace Application.Implementations.IDN
             teacher.IsDeleted = false;
             _teacherRepository.Update(teacher);
             await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<TeacherResponse>(teacher);
         }
 
 
         /* Delete methods */
-        public async Task SoftDeleteTeacherAsync(Guid id)
+        public async Task<TeacherResponse> SoftDeleteTeacherAsync(Guid id)
         {
             var teacher = await _teacherRepository.GetByIdAsync(id);
             if (teacher == null)
@@ -119,6 +121,8 @@ namespace Application.Implementations.IDN
             teacher.IsDeleted = true;
             _teacherRepository.Update(teacher);
             await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<TeacherResponse>(teacher);
         }
 
     }

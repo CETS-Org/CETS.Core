@@ -5,8 +5,8 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.CORE;
 using Domain.Interfaces.IDN;
-using DTOs.IDN_TeacherCredential.Requests;
-using DTOs.IDN_TeacherCredential.Responses;
+using DTOs.IDN.IDN_TeacherCredential.Requests;
+using DTOs.IDN.IDN_TeacherCredential.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,9 @@ using System.Threading.Tasks;
 
 namespace Application.Implementations.IDN
 {
-    public class IDN_TeacherCredentialService : BaseService<IDN_TeacherCredential, TeacherCredentialResponse, UpdateTeacherCredentialRequest, CreateTeacherCredentialRequest>,IIDN_TeacherCredentialService
+    public class IDN_TeacherCredentialService 
+        : BaseService<IDN_TeacherCredential, TeacherCredentialResponse, UpdateTeacherCredentialRequest, CreateTeacherCredentialRequest>,
+        IIDN_TeacherCredentialService
     {
         private readonly ICORE_LookUpRepository _lookUpRepository;
         public IDN_TeacherCredentialService(IIDN_TeacherCredentialRepository repository, ICORE_LookUpRepository lookUpRepository, IUnitOfWork unitOfWork, IMapper mapper) 

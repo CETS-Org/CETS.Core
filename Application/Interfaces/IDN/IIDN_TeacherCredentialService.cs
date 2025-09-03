@@ -1,6 +1,6 @@
 ﻿using Domain.Entities;
-using DTOs.IDN_TeacherCredential.Requests;
-using DTOs.IDN_TeacherCredential.Responses;
+using DTOs.IDN.IDN_TeacherCredential.Requests;
+using DTOs.IDN.IDN_TeacherCredential.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;

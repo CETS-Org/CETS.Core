@@ -1,5 +1,5 @@
-﻿using DTOs.IDN_Student.Requests;
-using DTOs.IDN_Student.Responses;
+﻿using DTOs.IDN.IDN_Student.Requests;
+using DTOs.IDN.IDN_Student.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace Application.Interfaces.IDN
         Task<StudentResponse?> UpdateStudentAsync(Guid id, UpdateStudentRequest dto);
         Task<StudentResponse> CreateStudentAsync(CreateStudentRequest dto);
 
-        Task ActivateStudentAsync(Guid id);
+        Task<StudentResponse> RestoreStudentAsync(Guid id);
         Task<StudentResponse> SoftDeleteStudentAsync(Guid id);
     }
 }

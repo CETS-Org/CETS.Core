@@ -1,5 +1,5 @@
-﻿using DTOs.IDN_Account.Requests;
-using DTOs.IDN_Account.Responses;
+﻿using DTOs.IDN.IDN_Account.Requests;
+using DTOs.IDN.IDN_Account.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,5 +18,6 @@ namespace Application.Interfaces.IDN
         Task<AccountResponse?> DeactivateAccountAsync(Guid id);
         Task<AccountResponse?> ActivateAccountAsync(Guid id);
         Task<AccountResponse> SoftDeleteAccountAsync(Guid id);
+        Task<AccountResponse> RestoreAccountAsync(Guid id);
     }
 }

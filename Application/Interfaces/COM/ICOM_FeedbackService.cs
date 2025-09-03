@@ -1,0 +1,15 @@
+using Domain.Entities;
+using DTOs.COM.COM_Feedback.Requests;
+using DTOs.COM.COM_Feedback.Responses;
+
+namespace Application.Interfaces.COM
+{
+	public interface ICOM_FeedbackService : IBaseService<COM_Feedback, FeedbackResponse, UpdateFeedbackRequest, CreateFeedbackRequest>
+	{
+		Task<FeedbackResponse> SoftDeleteAsync(Guid id);
+		Task<FeedbackResponse> RestoreAsync(Guid id);
+    }
+}
+
+
+

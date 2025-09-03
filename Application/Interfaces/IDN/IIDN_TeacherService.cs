@@ -1,5 +1,5 @@
-﻿using DTOs.IDN_Teacher.Requests;
-using DTOs.IDN_Teacher.Responses;
+﻿using DTOs.IDN.IDN_Teacher.Requests;
+using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +18,7 @@ namespace Application.Interfaces.IDN
         Task<TeacherResponse> CreateTeacherAsync(CreateTeacherRequest dto);
         Task<TeacherResponse> UpdateTeacherAsync(Guid id, UpdateTeacherRequest dto);
 
-        Task ActivateTeacherAsync(Guid id);
-        Task SoftDeleteTeacherAsync(Guid id);
+        Task<TeacherResponse> RestoreTeacherAsync(Guid id);
+        Task<TeacherResponse> SoftDeleteTeacherAsync(Guid id);
     }
 }

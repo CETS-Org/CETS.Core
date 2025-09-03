@@ -4,8 +4,8 @@ using Domain.Constants;
 using Domain.Interfaces;
 using Domain.Interfaces.CORE;
 using Domain.Interfaces.IDN;
-using DTOs.IDN_Account.Requests;
-using DTOs.IDN_Account.Responses;
+using DTOs.IDN.IDN_Account.Requests;
+using DTOs.IDN.IDN_Account.Responses;
 
 namespace Application.Implementations.IDN
 {
@@ -115,7 +115,18 @@ namespace Application.Implementations.IDN
             return _mapper.Map<AccountResponse>(account);
         }
 
-
+        public async Task<AccountResponse> RestoreAccountAsync(Guid id)
+        {
+            var account = await _accountRepository.GetByIdAsync(id);
+            if (account == null)
+            {
+                throw new KeyNotFoundException($"Account with id {id} not found.");
+            }
+            account.IsDeleted = false;
+            _accountRepository.Update(account);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<AccountResponse>(account);
+        }
 
 
     }
