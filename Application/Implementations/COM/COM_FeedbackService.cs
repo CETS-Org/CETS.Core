@@ -27,6 +27,19 @@ namespace Application.Implementations.COM
 			await _unitOfWork.SaveChangesAsync();
 			return _mapper.Map<FeedbackResponse>(entity);
         }
+
+		public async Task<FeedbackResponse> RestoreAsync(Guid id)
+		{
+			var entity = await _repository.GetByIdAsync(id);
+			if (entity == null)
+			{
+				throw new KeyNotFoundException($"COM_Feedback with id {id} not found.");
+			}
+			entity.IsDeleted = false;
+			_repository.Update(entity);
+			await _unitOfWork.SaveChangesAsync();
+			return _mapper.Map<FeedbackResponse>(entity);
+		}
     }
 }
 

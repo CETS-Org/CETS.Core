@@ -7,6 +7,7 @@ namespace Application.Interfaces.COM
 	public interface ICOM_FeedbackRecordService : IBaseService<COM_FeedbackRecord, FeedbackRecordResponse, UpdateFeedbackRecordRequest, CreateFeedbackRecordRequest>
 	{
         Task<FeedbackRecordResponse> SoftDeleteAsync(Guid id);
+        Task<FeedbackRecordResponse> RestoreAsync(Guid id);
 
     }
 }
