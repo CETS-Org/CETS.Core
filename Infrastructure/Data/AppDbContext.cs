@@ -841,8 +841,21 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Course).WithMany(p => p.ACAD_CoursePackageItems).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_ACAD_CoursePackageItems_Course");
         });
 
+        modelBuilder.HasSequence<int>("SeqClass");
         modelBuilder.Entity<ACAD_Class>(entity =>
         {
+            entity.Property(x => x.ClassNum)
+          .HasDefaultValueSql("NEXT VALUE FOR [SeqClass]");
+
+            entity.Property(x => x.ClassName)
+                  .HasMaxLength(50)
+                  .HasComputedColumnSql(
+                      "('CLS' + RIGHT('0000' + CONVERT(varchar(4), [ClassNum]), 4))",
+                      stored: true);
+
+            entity.HasIndex(x => x.ClassName)
+                  .IsUnique()
+                  .HasDatabaseName("UX_ACAD_Classes_ClassName");
             entity.Property(e => e.EnrolledCount).HasDefaultValue(0);
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
             entity.ToTable("ACAD_Classes", t =>

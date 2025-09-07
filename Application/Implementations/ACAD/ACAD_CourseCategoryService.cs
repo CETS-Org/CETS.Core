@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.ACAD;
+using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
@@ -15,25 +16,24 @@ namespace Application.Implementations.ACAD
     {
         private readonly IACAD_CourseCategoryRepository _categoryRepo;
         private readonly IUnitOfWork _uow;
+        private readonly IMapper _mapper;
 
         public ACAD_CourseCategoryService(
             IACAD_CourseCategoryRepository categoryRepo,
-            IUnitOfWork uow)
+            IUnitOfWork uow,
+            IMapper mapper)
         {
             _categoryRepo = categoryRepo;
             _uow = uow;
+            _mapper = mapper;
         }
 
         public async Task<Guid> CreateCourseCategoryAsync(CreateCourseCategoryRequest request)
         {
             return await _uow.ExecuteInTransactionAsync(() =>
             {
-                var entity = new ACAD_CourseCategory
-                {
-                    Id = Guid.NewGuid(),
-                    Code = request.Code,
-                    Name = request.Name
-                };
+                var entity = _mapper.Map<ACAD_CourseCategory>(request);
+                entity.Id = Guid.NewGuid();
 
                 _categoryRepo.Add(entity);
                 return Task.FromResult(entity.Id);
@@ -48,9 +48,7 @@ namespace Application.Implementations.ACAD
                 if (entity == null)
                     throw new KeyNotFoundException($"Course category with Id {request.Id} not found.");
 
-                entity.Code = request.Code;
-                entity.Name = request.Name;
-
+                _mapper.Map(request, entity);
                 _categoryRepo.Update(entity);
             });
         }
@@ -65,28 +63,19 @@ namespace Application.Implementations.ACAD
         public async Task<IEnumerable<CourseCategoryResponse>> GetAllCourseCategoriesAsync()
         {
             var categories = await _categoryRepo.GetAllAsync();
-            return categories.Select(MapToResponse);
+            return _mapper.Map<IEnumerable<CourseCategoryResponse>>(categories);
         }
 
         public async Task<CourseCategoryResponse?> GetCourseCategoryByIdAsync(Guid id)
         {
             var entity = await _categoryRepo.GetByIdAsync(id);
-            return entity == null ? null : MapToResponse(entity);
+            return _mapper.Map<CourseCategoryResponse?>(entity);
         }
 
         public async Task<CourseCategoryResponse?> GetCourseCategoryByCodeAsync(string code)
         {
             var entity = await _categoryRepo.GetByCodeAsync(code);
-            return entity == null ? null : MapToResponse(entity);
+            return _mapper.Map<CourseCategoryResponse?>(entity);
         }
-
-        private static CourseCategoryResponse MapToResponse(ACAD_CourseCategory c) =>
-            new CourseCategoryResponse
-            {
-                Id = c.Id,
-                Code = c.Code,
-                Name = c.Name
-            };
     }
-
 }

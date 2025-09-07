@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Entities;
 
-public partial class ACAD_CourseCategory : EntityBase
+public partial class ACAD_CourseCategory : EntityBase   
 {
     [StringLength(50)]
     [Unicode(false)]

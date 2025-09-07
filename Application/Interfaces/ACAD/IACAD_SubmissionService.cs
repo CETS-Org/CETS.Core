@@ -1,4 +1,6 @@
 ﻿using Domain.Entities;
+using DTOs.ACAD.ACAD_Submission.Requests;
+using DTOs.ACAD.ACAD_Submission.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +11,10 @@ namespace Application.Interfaces.ACAD
 {
     public interface ISubmissionService
     {
-        Task<ACAD_Submission> SubmitAssignmentAsync(ACAD_Submission submission);
-        Task<IEnumerable<ACAD_Submission>> GetSubmissionsByAssignmentAsync(Guid assignmentId);
-        Task<IEnumerable<ACAD_Submission>> GetSubmissionsByStudentAsync(Guid studentId);
-        Task GradeSubmissionAsync(Guid submissionId, decimal score, string? feedback);
+        Task<SubmissionResponse> SubmitAssignmentAsync(SubmitAssignmentRequest request);
+        Task<IEnumerable<SubmissionResponse>> GetSubmissionsByAssignmentAsync(Guid assignmentId);
+        Task<IEnumerable<SubmissionResponse>> GetSubmissionsByStudentAsync(Guid studentId);
+        Task<SubmissionResponse> GradeSubmissionAsync(GradeSubmissionRequest request);
     }
+
 }

@@ -1,7 +1,10 @@
 ﻿using Application.Interfaces.ACAD;
+using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using DTOs.ACAD.ACAD_Submission.Requests;
+using DTOs.ACAD.ACAD_Submission.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,38 +17,54 @@ namespace Application.Implementations.ACAD
     {
         private readonly IACAD_SubmissionRepository _submissionRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
         public SubmissionService(
             IACAD_SubmissionRepository submissionRepository,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _submissionRepository = submissionRepository;
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
-        public async Task<ACAD_Submission> SubmitAssignmentAsync(ACAD_Submission submission)
+        public async Task<SubmissionResponse> SubmitAssignmentAsync(SubmitAssignmentRequest request)
         {
-            _submissionRepository.Add(submission);
+            var entity = _mapper.Map<ACAD_Submission>(request);
+            entity.Id = Guid.NewGuid();
+            entity.CreatedAt = DateTime.UtcNow;
+
+            _submissionRepository.Add(entity);
             await _unitOfWork.SaveChangesAsync();
-            return submission;
+
+            return _mapper.Map<SubmissionResponse>(entity);
         }
 
-        public async Task<IEnumerable<ACAD_Submission>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
-            => await _submissionRepository.GetByAssignmentAsync(assignmentId);
-
-        public async Task<IEnumerable<ACAD_Submission>> GetSubmissionsByStudentAsync(Guid studentId)
-            => await _submissionRepository.GetByStudentAsync(studentId);
-
-        public async Task GradeSubmissionAsync(Guid submissionId, decimal score, string? feedback)
+        public async Task<IEnumerable<SubmissionResponse>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
         {
-            var submission = await _submissionRepository.GetByIdAsync(submissionId);
-            if (submission == null) throw new Exception("Submission not found");
+            var submissions = await _submissionRepository.GetByAssignmentAsync(assignmentId);
+            return _mapper.Map<IEnumerable<SubmissionResponse>>(submissions);
+        }
 
-            submission.Score = score;
-            submission.Feedback = feedback;
-            _submissionRepository.Update(submission);
+        public async Task<IEnumerable<SubmissionResponse>> GetSubmissionsByStudentAsync(Guid studentId)
+        {
+            var submissions = await _submissionRepository.GetByStudentAsync(studentId);
+            return _mapper.Map<IEnumerable<SubmissionResponse>>(submissions);
+        }
 
+        public async Task<SubmissionResponse> GradeSubmissionAsync(GradeSubmissionRequest request)
+        {
+            var entity = await _submissionRepository.GetByIdAsync(request.SubmissionID)
+                         ?? throw new KeyNotFoundException("Submission not found");
+
+            entity.Score = request.Score;
+            entity.Feedback = request.Feedback;
+
+            _submissionRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<SubmissionResponse>(entity);
         }
     }
 }

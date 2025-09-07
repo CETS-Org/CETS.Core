@@ -1,11 +1,13 @@
 ﻿using Application.Interfaces.ACAD;
+using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using DTOs.ACAD.ACAD_AcademicRequest.Requests;
+using DTOs.ACAD.ACAD_AcademicRequest.Responses;
+using DTOs.ACAD.ACAD_AcademicRequestHistory.Responses;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Application.Implementations.ACAD
@@ -15,70 +17,63 @@ namespace Application.Implementations.ACAD
         private readonly IACAD_AcademicRequestRepository _requestRepo;
         private readonly IACAD_AcademicRequestHistoryRepository _historyRepo;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
         public ACAD_AcademicRequestService(
             IACAD_AcademicRequestRepository requestRepo,
             IACAD_AcademicRequestHistoryRepository historyRepo,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _requestRepo = requestRepo;
             _historyRepo = historyRepo;
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
-        public async Task<ACAD_AcademicRequest> SubmitRequestAsync(
-            Guid studentId, Guid requestTypeId, string reason, Guid fromClassId, Guid? toClassId = null)
-        {
-            var request = new ACAD_AcademicRequest
-            {
-                Id = Guid.NewGuid(),
-                StudentID = studentId,
-                RequestTypeID = requestTypeId,
-                AcademicRequestStatusID = Guid.Empty, 
-                Reason = reason,
-                FromClassID = fromClassId,
-                ToClassID = toClassId,
-                CreatedAt = DateTime.UtcNow
-            };
 
-            _requestRepo.Add(request);
+        public async Task<AcademicRequestResponse> SubmitRequestAsync(CreateAcademicRequest requestDto)
+        {
+            var entity = _mapper.Map<ACAD_AcademicRequest>(requestDto);
+            entity.Id = Guid.NewGuid();
+            entity.CreatedAt = DateTime.UtcNow;
+            entity.AcademicRequestStatusID = Guid.Empty; 
+
+            _requestRepo.Add(entity);
             await _unitOfWork.SaveChangesAsync();
-            return request;
+
+            return _mapper.Map<AcademicRequestResponse>(entity);
         }
 
-        public async Task ProcessRequestAsync(
-            Guid requestId, Guid statusId, string description, Guid staffId, string? attachmentUrl = null)
+        public async Task ProcessRequestAsync(ProcessAcademicRequest requestDto)
         {
-            var request = await _requestRepo.GetByIdAsync(requestId);
-            if (request == null) throw new Exception("Request not found");
+            var entity = await _requestRepo.GetByIdAsync(requestDto.RequestID);
+            if (entity == null)
+                throw new KeyNotFoundException("Request not found");
 
-            request.AcademicRequestStatusID = statusId;
-            request.ProcessedBy = staffId;
-            request.ProcessedAt = DateTime.UtcNow;
-            _requestRepo.Update(request);
+            entity.AcademicRequestStatusID = requestDto.StatusID;
+            entity.ProcessedBy = requestDto.StaffID;
+            entity.ProcessedAt = DateTime.UtcNow;
+            _requestRepo.Update(entity);
 
-            var history = new ACAD_AcademicRequestHistory
-            {
-                Id = Guid.NewGuid(),
-                RequestID = requestId,
-                StatusID = statusId,
-                Description = description,
-                UpdatedBy = staffId,
-                UpdatedAt = DateTime.UtcNow,
-                AttachmentUrl = attachmentUrl
-            };
+            var history = _mapper.Map<ACAD_AcademicRequestHistory>(requestDto);
+            history.Id = Guid.NewGuid();
+            history.RequestID = requestDto.RequestID;
+            history.UpdatedAt = DateTime.UtcNow;
 
             _historyRepo.Add(history);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<ACAD_AcademicRequest>> GetRequestsByStudentAsync(Guid studentId)
+        public async Task<IEnumerable<AcademicRequestResponse>> GetRequestsByStudentAsync(Guid studentId)
         {
-            return await _requestRepo.GetByStudentAsync(studentId);
+            var requests = await _requestRepo.GetByStudentAsync(studentId);
+            return _mapper.Map<IEnumerable<AcademicRequestResponse>>(requests);
         }
 
-        public async Task<IEnumerable<ACAD_AcademicRequestHistory>> GetRequestHistoryAsync(Guid requestId)
+        public async Task<IEnumerable<AcademicRequestHistoryResponse>> GetRequestHistoryAsync(Guid requestId)
         {
-            return await _historyRepo.GetByRequestAsync(requestId);
+            var history = await _historyRepo.GetByRequestAsync(requestId);
+            return _mapper.Map<IEnumerable<AcademicRequestHistoryResponse>>(history);
         }
     }
 }

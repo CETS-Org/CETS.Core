@@ -26,7 +26,7 @@ public partial class ACAD_AcademicRequestHistory : EntityBase, IHasModificationT
 
     [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
-
+        
     [ForeignKey(nameof(RequestID))]
     public virtual ACAD_AcademicRequest Request { get; set; } = null!;
 
