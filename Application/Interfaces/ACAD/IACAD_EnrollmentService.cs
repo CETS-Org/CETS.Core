@@ -1,4 +1,6 @@
 ﻿using Domain.Entities;
+using DTOs.ACAD.ACAD_Enrollment.Requests;
+using DTOs.ACAD.ACAD_Enrollment.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +11,9 @@ namespace Application.Interfaces.ACAD
 {
     public interface IACAD_EnrollmentService
     {
-        Task<ACAD_Enrollment> EnrollAsync(Guid studentId, Guid courseId, Guid? classId);
-        Task ApproveEnrollmentAsync(Guid enrollmentId, Guid staffId);
-        Task RejectEnrollmentAsync(Guid enrollmentId, Guid staffId, string reason);
-        Task<IEnumerable<ACAD_Enrollment>> GetStudentEnrollmentsAsync(Guid studentId);
-        Task<IEnumerable<ACAD_Enrollment>> GetClassEnrollmentsAsync(Guid classId);
-        Task<ACAD_Enrollment?> GetEnrollmentDetailAsync(Guid enrollmentId);
+        Task<EnrollmentResponse> EnrollAsync(CreateEnrollmentRequest request);
+        Task<IEnumerable<EnrollmentResponse>> GetStudentEnrollmentsAsync(Guid studentId);
+        Task<IEnumerable<EnrollmentResponse>> GetClassEnrollmentsAsync(Guid classId);
+        Task<EnrollmentDetailResponse?> GetEnrollmentDetailAsync(Guid enrollmentId);
     }
 }
