@@ -1,4 +1,6 @@
 ﻿using Domain.Entities;
+using DTOs.ACAD.ACAD_Assignment.Requests;
+using DTOs.ACAD.ACAD_Assignment.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +11,16 @@ namespace Application.Interfaces.ACAD
 {
     public interface IACAD_AssignmentService
     {
+        Task<AssignmentResponse> CreateAssignmentAsync(CreateAssignmentRequest request);
 
-        Task<ACAD_Assignment> CreateAssignmentAsync(ACAD_Assignment assignment);
-        Task<IEnumerable<ACAD_Assignment>> GetAssignmentsByClassMeetingAsync(Guid classMeetingId);
-        Task<IEnumerable<ACAD_Assignment>> GetAssignmentsByTeacherAsync(Guid teacherId);
-        Task<ACAD_Assignment?> GetAssignmentByIdAsync(Guid id);
-        Task UpdateAssignmentAsync(ACAD_Assignment assignment);
+        Task<IEnumerable<AssignmentResponse>> GetAssignmentsByClassMeetingAsync(Guid classMeetingId);
+
+        Task<IEnumerable<AssignmentResponse>> GetAssignmentsByTeacherAsync(Guid teacherId);
+
+        Task<AssignmentResponse?> GetAssignmentByIdAsync(Guid id);
+
+        Task<AssignmentResponse> UpdateAssignmentAsync(UpdateAssignmentRequest request);
+
         Task DeleteAssignmentAsync(Guid id);
     }
 }

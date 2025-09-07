@@ -1,7 +1,10 @@
 ﻿using Application.Interfaces.ACAD;
+using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using DTOs.ACAD.ACAD_Enrollment.Requests;
+using DTOs.ACAD.ACAD_Enrollment.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,63 +17,47 @@ namespace Application.Implementations.ACAD
     {
         private readonly IACAD_EnrollmentRepository _enrollmentRepo;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
         public ACAD_EnrollmentService(
             IACAD_EnrollmentRepository enrollmentRepo,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _enrollmentRepo = enrollmentRepo;
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
-        public async Task<ACAD_Enrollment> EnrollAsync(Guid studentId, Guid courseId, Guid? classId)
+
+        public async Task<EnrollmentResponse> EnrollAsync(CreateEnrollmentRequest request)
         {
-            var enrollment = new ACAD_Enrollment
-            {
-                Id = Guid.NewGuid(),
-                StudentID = studentId,
-                CourseID = courseId,
-                ClassID = classId,
-                EnrollmentStatusID = Guid.Empty,
-                CreatedAt = DateTime.UtcNow
-            };
+            var enrollment = _mapper.Map<ACAD_Enrollment>(request);
+            enrollment.Id = Guid.NewGuid();
+            enrollment.EnrollmentStatusID = Guid.Empty;
+            enrollment.CreatedAt = DateTime.UtcNow;
 
             _enrollmentRepo.Add(enrollment);
             await _unitOfWork.SaveChangesAsync();
-            return enrollment;
+
+            return _mapper.Map<EnrollmentResponse>(enrollment);
         }
 
-        public async Task ApproveEnrollmentAsync(Guid enrollmentId, Guid staffId)
+        public async Task<IEnumerable<EnrollmentResponse>> GetStudentEnrollmentsAsync(Guid studentId)
         {
-            var enrollment = await _enrollmentRepo.GetByIdAsync(enrollmentId);
-            if (enrollment == null) throw new Exception("Enrollment not found");
-
-            enrollment.EnrollmentStatusID = Guid.Empty; 
-            enrollment.UpdatedBy = staffId;
-            enrollment.UpdatedAt = DateTime.UtcNow;
-
-            _enrollmentRepo.Update(enrollment);
-            await _unitOfWork.SaveChangesAsync();
+            var enrollments = await _enrollmentRepo.GetByStudentAsync(studentId);
+            return _mapper.Map<IEnumerable<EnrollmentResponse>>(enrollments);
         }
 
-        public async Task RejectEnrollmentAsync(Guid enrollmentId, Guid staffId, string reason)
+        public async Task<IEnumerable<EnrollmentResponse>> GetClassEnrollmentsAsync(Guid classId)
         {
-            var enrollment = await _enrollmentRepo.GetByIdAsync(enrollmentId);
-            if (enrollment == null) throw new Exception("Enrollment not found");
-
-            enrollment.EnrollmentStatusID = Guid.Empty; 
-            enrollment.UpdatedBy = staffId;
-            enrollment.UpdatedAt = DateTime.UtcNow;
-
-            _enrollmentRepo.Update(enrollment);
-            await _unitOfWork.SaveChangesAsync();
+            var enrollments = await _enrollmentRepo.GetByClassAsync(classId);
+            return _mapper.Map<IEnumerable<EnrollmentResponse>>(enrollments);
         }
-        public async Task<IEnumerable<ACAD_Enrollment>> GetStudentEnrollmentsAsync(Guid studentId)
-            => await _enrollmentRepo.GetByStudentAsync(studentId);
 
-        public async Task<IEnumerable<ACAD_Enrollment>> GetClassEnrollmentsAsync(Guid classId)
-            => await _enrollmentRepo.GetByClassAsync(classId);
-
-        public async Task<ACAD_Enrollment?> GetEnrollmentDetailAsync(Guid enrollmentId)
-            => await _enrollmentRepo.GetDetailAsync(enrollmentId);
+        public async Task<EnrollmentDetailResponse?> GetEnrollmentDetailAsync(Guid enrollmentId)
+        {
+            var enrollment = await _enrollmentRepo.GetDetailAsync(enrollmentId);
+            return _mapper.Map<EnrollmentDetailResponse?>(enrollment);
+        }
     }
 }

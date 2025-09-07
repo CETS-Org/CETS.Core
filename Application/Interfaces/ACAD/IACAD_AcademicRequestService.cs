@@ -1,4 +1,7 @@
 ﻿using Domain.Entities;
+using DTOs.ACAD.ACAD_AcademicRequest.Requests;
+using DTOs.ACAD.ACAD_AcademicRequest.Responses;
+using DTOs.ACAD.ACAD_AcademicRequestHistory.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +12,12 @@ namespace Application.Interfaces.ACAD
 {
     public interface IACAD_AcademicRequestService
     {
-        Task<ACAD_AcademicRequest> SubmitRequestAsync(
-            Guid studentId, Guid requestTypeId, string reason, Guid fromClassId, Guid? toClassId = null);
-        Task ProcessRequestAsync(
-            Guid requestId, Guid statusId, string description, Guid staffId, string? attachmentUrl = null);
-        Task<IEnumerable<ACAD_AcademicRequest>> GetRequestsByStudentAsync(Guid studentId);
-        Task<IEnumerable<ACAD_AcademicRequestHistory>> GetRequestHistoryAsync(Guid requestId);
+        Task<AcademicRequestResponse> SubmitRequestAsync(CreateAcademicRequest requestDto);
+
+        Task ProcessRequestAsync(ProcessAcademicRequest requestDto);
+
+        Task<IEnumerable<AcademicRequestResponse>> GetRequestsByStudentAsync(Guid studentId);
+
+        Task<IEnumerable<AcademicRequestHistoryResponse>> GetRequestHistoryAsync(Guid requestId);
     }
 }

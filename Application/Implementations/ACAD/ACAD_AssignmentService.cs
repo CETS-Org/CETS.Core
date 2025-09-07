@@ -1,7 +1,10 @@
 ﻿using Application.Interfaces.ACAD;
+using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using DTOs.ACAD.ACAD_Assignment.Requests;
+using DTOs.ACAD.ACAD_Assignment.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,35 +17,58 @@ namespace Application.Implementations.ACAD
     {
         private readonly IACAD_AssignmentRepository _assignmentRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
         public AssignmentService(
             IACAD_AssignmentRepository assignmentRepository,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _assignmentRepository = assignmentRepository;
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
-        public async Task<ACAD_Assignment> CreateAssignmentAsync(ACAD_Assignment assignment)
+        public async Task<AssignmentResponse> CreateAssignmentAsync(CreateAssignmentRequest request)
         {
-            _assignmentRepository.Add(assignment);
+            var entity = _mapper.Map<ACAD_Assignment>(request);
+            entity.Id = Guid.NewGuid();
+            entity.CreatedAt = DateTime.UtcNow;
+
+            _assignmentRepository.Add(entity);
             await _unitOfWork.SaveChangesAsync();
-            return assignment;
+
+            return _mapper.Map<AssignmentResponse>(entity);
         }
 
-        public async Task<IEnumerable<ACAD_Assignment>> GetAssignmentsByClassMeetingAsync(Guid classMeetingId)
-            => await _assignmentRepository.GetByClassMeetingAsync(classMeetingId);
-
-        public async Task<IEnumerable<ACAD_Assignment>> GetAssignmentsByTeacherAsync(Guid teacherId)
-            => await _assignmentRepository.GetByTeacherAsync(teacherId);
-
-        public async Task<ACAD_Assignment?> GetAssignmentByIdAsync(Guid id)
-            => await _assignmentRepository.GetByIdAsync(id);
-
-        public async Task UpdateAssignmentAsync(ACAD_Assignment assignment)
+        public async Task<IEnumerable<AssignmentResponse>> GetAssignmentsByClassMeetingAsync(Guid classMeetingId)
         {
-            _assignmentRepository.Update(assignment);
+            var assignments = await _assignmentRepository.GetByClassMeetingAsync(classMeetingId);
+            return _mapper.Map<IEnumerable<AssignmentResponse>>(assignments);
+        }
+
+        public async Task<IEnumerable<AssignmentResponse>> GetAssignmentsByTeacherAsync(Guid teacherId)
+        {
+            var assignments = await _assignmentRepository.GetByTeacherAsync(teacherId);
+            return _mapper.Map<IEnumerable<AssignmentResponse>>(assignments);
+        }
+
+        public async Task<AssignmentResponse?> GetAssignmentByIdAsync(Guid id)
+        {
+            var assignment = await _assignmentRepository.GetByIdAsync(id);
+            return _mapper.Map<AssignmentResponse?>(assignment);
+        }
+
+        public async Task<AssignmentResponse> UpdateAssignmentAsync(UpdateAssignmentRequest request)
+        {
+            var entity = await _assignmentRepository.GetByIdAsync(request.Id)
+                         ?? throw new KeyNotFoundException("Assignment not found");
+
+            _mapper.Map(request, entity);
+            _assignmentRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<AssignmentResponse>(entity);
         }
 
         public async Task DeleteAssignmentAsync(Guid id)

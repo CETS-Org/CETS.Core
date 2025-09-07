@@ -29,6 +29,11 @@ public partial class ACAD_Class : AuditedEntity
 
     public bool IsDeleted { get; set; }
 
+    public int ClassNum { get; set; }
+
+    [MaxLength(50)]
+    public string ClassName { get; set; }
+
     public virtual ICollection<ACAD_AcademicRequest> ACAD_AcademicRequestFromClasses { get; set; } = new List<ACAD_AcademicRequest>();
 
     public virtual ICollection<ACAD_AcademicRequest> ACAD_AcademicRequestToClasses { get; set; } = new List<ACAD_AcademicRequest>();
