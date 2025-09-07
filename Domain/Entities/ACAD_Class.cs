@@ -11,6 +11,7 @@ namespace Domain.Entities;
 public partial class ACAD_Class : AuditedEntity
 {
     //Add class Name
+    //Add key
     public Guid ClassStatusID { get; set; }
 
     public Guid? CourseFormatID { get; set; }
