@@ -20,7 +20,7 @@ public partial class ACAD_Course : AuditedEntity
 
     public Guid CourseFormatID { get; set; }
 
-    //public string? CourseImage { get; set; }
+    public string? CourseImageUrl { get; set; }
 
     public Guid CategoryID { get; set; }
 
