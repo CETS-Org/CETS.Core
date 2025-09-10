@@ -11,7 +11,7 @@ namespace Application.Interfaces.IDN
     public interface IIDN_AccountService
     {
         Task<IReadOnlyList<AccountStatusResponse>> GetAccountStatusesAsync();
-        Task<IReadOnlyList<AccountResponse>> GetAllAccountsAsync();
+        Task<IEnumerable<AccountResponse>> GetAllAccountsAsync(AccountFilterRequest filter);
         Task<AccountResponse?> GetAccountByIdAsync(Guid id);
         Task<AccountResponse> GetAccountByEmailAsync(string email);
         Task<AccountResponse> UpdateAccountAsync(Guid id, UpdateAccountRequest dto);
