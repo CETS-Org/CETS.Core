@@ -9,7 +9,7 @@ namespace DTOs.ACAD.ACAD_Course.Responses
     public class CourseListItemResponse
     {
         public string Id { get; set; } = null!;
-        public string Title { get; set; } = null!;
+        public string CourseName { get; set; } = null!;
         public string? Description { get; set; }
         public string Teacher { get; set; } = null!;
         public string Duration { get; set; } = null!;

@@ -43,8 +43,12 @@ namespace Infrastructure.Repositories.ACAD
         {
             return await _context.ACAD_Courses
                 .Include(c => c.Category)
-                .Include(c => c.ACAD_Syllabi)
-                .ThenInclude(s => s.ACAD_SyllabusItems)
+                .Include(c => c.CourseLevel)
+                .Include(c => c.CourseFormat)
+                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
+                .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
+                .Include(c => c.COM_Feedbacks)
+                .Include(c => c.ACAD_Enrollments)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
         }
 

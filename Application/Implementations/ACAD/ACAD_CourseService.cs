@@ -90,9 +90,55 @@ namespace Application.Implementations.ACAD
         public async Task<CourseDetailResponse?> GetCourseDetailAsync(Guid courseId)
         {
             var entity = await _courseRepo.GetDetailAsync(courseId);
-            return _mapper.Map<CourseDetailResponse?>(entity);
-        }
+            if (entity == null) return null;
 
+            // Create detailed response with all extra data
+            var response = new CourseDetailResponse
+            {
+                Id = entity.Id,
+                CourseCode = entity.CourseCode,
+                CourseName = entity.CourseName,
+                Description = entity.Description,
+                Price = entity.StandardPrice,
+                CategoryName = entity.Category?.Name ?? "",
+                LevelName = entity.CourseLevel?.Name ?? "",
+                FormatName = entity.CourseFormat?.Name ?? "",
+                
+                // Extra data like in list view
+                Teacher = entity.ACAD_CourseTeacherAssignments
+                    .Select(a => a.Teacher.Account.FullName)
+                    .FirstOrDefault() ?? "TBA",
+                Duration = (entity.ACAD_Syllabi
+                    .SelectMany(s => s.ACAD_SyllabusItems)
+                    .Sum(i => i.EstimatedMinutes ?? 0) / 60.0).ToString("0.0") + " hours",
+                Rating = entity.COM_Feedbacks.Any() ? entity.COM_Feedbacks.Average(f => (double?)f.Rating) ?? 0.0 : 0.0,
+                StudentsCount = entity.ACAD_Enrollments.Count(e => !e.IsDeleted),
+                Image = entity.CourseImageUrl ?? "",
+                IsActive = entity.IsActive,
+                CreatedAt = entity.CreatedAt,
+                UpdatedAt = entity.UpdatedAt,
+                
+                // Additional detail fields
+                Teachers = entity.ACAD_CourseTeacherAssignments
+                    .Select(a => a.Teacher.Account.FullName)
+                    .ToList(),
+                SyllabusItems = entity.ACAD_Syllabi
+                    .SelectMany(s => s.ACAD_SyllabusItems)
+                    .OrderBy(i => i.SessionNumber)
+                    .Select(i => new SyllabusItemResponse
+                    {
+                        SessionNumber = i.SessionNumber,
+                        TopicTitle = i.TopicTitle,
+                        EstimatedMinutes = i.EstimatedMinutes,
+                        Required = i.Required,
+                        Objectives = i.Objectives,
+                        ContentSummary = i.ContentSummary
+                    })
+                    .ToList()
+            };
+
+            return response;
+        }
 
         public async Task<IReadOnlyList<CourseListItemResponse>> GetAllCoursesForListAsync()
         {
@@ -103,7 +149,7 @@ namespace Application.Implementations.ACAD
             var courseDtos = courses.Select(c => new CourseListItemResponse
             {
                 Id = c.Id.ToString(),
-                Title = c.CourseName,
+                CourseName = c.CourseName,
                 Description = c.Description ?? "",
                 Teacher = c.ACAD_CourseTeacherAssignments
                     .Select(a => a.Teacher.Account.FullName)
@@ -115,10 +161,10 @@ namespace Application.Implementations.ACAD
                 Price = c.StandardPrice,
                 Rating = c.COM_Feedbacks.Any() ? c.COM_Feedbacks.Average(f => (double?)f.Rating) ?? 0.0 : 0.0,
                 StudentsCount = c.ACAD_Enrollments.Count(e => !e.IsDeleted),
-                Image = "/images/default-course.png",
+                Image = c.CourseImageUrl ?? "",
                 Category = c.Category.Name
             })
-            .OrderBy(c => c.Title)
+            .OrderBy(c => c.CourseName)
             .ToList();
 
             return courseDtos;
