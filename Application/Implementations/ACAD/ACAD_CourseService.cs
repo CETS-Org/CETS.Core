@@ -5,6 +5,7 @@ using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Course.Requests;
 using DTOs.ACAD.ACAD_Course.Responses;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,10 +63,10 @@ namespace Application.Implementations.ACAD
             );
         }
 
-        public async Task<IEnumerable<CourseResponse>> GetAllCoursesAsync()
+        public async Task<IEnumerable<CourseDetailResponse>> GetAllCoursesAsync()
         {
             var courses = await _courseRepo.GetAllAsync();
-            return _mapper.Map<IEnumerable<CourseResponse>>(courses);
+            return _mapper.Map<IEnumerable<CourseDetailResponse>>(courses);
         }
 
         public async Task<CourseResponse?> GetCourseByIdAsync(Guid id)
@@ -90,6 +91,37 @@ namespace Application.Implementations.ACAD
         {
             var entity = await _courseRepo.GetDetailAsync(courseId);
             return _mapper.Map<CourseDetailResponse?>(entity);
+        }
+
+
+        public async Task<IReadOnlyList<CourseListItemResponse>> GetAllCoursesForListAsync()
+        {
+            var coursesQuery = _courseRepo.GetAllCoursesForListAsync();
+
+            var courses = await coursesQuery.ToListAsync();
+            
+            var courseDtos = courses.Select(c => new CourseListItemResponse
+            {
+                Id = c.Id.ToString(),
+                Title = c.CourseName,
+                Description = c.Description ?? "",
+                Teacher = c.ACAD_CourseTeacherAssignments
+                    .Select(a => a.Teacher.Account.FullName)
+                    .FirstOrDefault() ?? "TBA",
+                Duration = (c.ACAD_Syllabi
+                    .SelectMany(s => s.ACAD_SyllabusItems)
+                    .Sum(i => i.EstimatedMinutes ?? 0) / 60.0).ToString("0.0") + " hours",
+                Level = c.CourseLevel.Name,
+                Price = c.StandardPrice,
+                Rating = c.COM_Feedbacks.Any() ? c.COM_Feedbacks.Average(f => (double?)f.Rating) ?? 0.0 : 0.0,
+                StudentsCount = c.ACAD_Enrollments.Count(e => !e.IsDeleted),
+                Image = "/images/default-course.png",
+                Category = c.Category.Name
+            })
+            .OrderBy(c => c.Title)
+            .ToList();
+
+            return courseDtos;
         }
     }
 

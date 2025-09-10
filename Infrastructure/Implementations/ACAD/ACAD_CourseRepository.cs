@@ -1,6 +1,7 @@
 using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
+using DTOs.ACAD.ACAD_Course.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.ACAD
@@ -45,6 +46,20 @@ namespace Infrastructure.Repositories.ACAD
                 .Include(c => c.ACAD_Syllabi)
                 .ThenInclude(s => s.ACAD_SyllabusItems)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
+        }
+
+
+        public IQueryable<ACAD_Course> GetAllCoursesForListAsync()
+        {
+            return _context.ACAD_Courses
+                .AsNoTracking()
+                .Where(c => !c.IsDeleted && c.IsActive)
+                .Include(c => c.Category)
+                .Include(c => c.CourseLevel)
+                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
+                .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
+                .Include(c => c.COM_Feedbacks)
+                .Include(c => c.ACAD_Enrollments);
         }
     }
 }

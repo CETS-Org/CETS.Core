@@ -17,22 +17,22 @@ namespace Infrastructure.Repositories
             _dbSet = context.Set<TEntity>();
         }
 
-        public async Task<TEntity?> GetByIdAsync(Guid id)
+        public virtual async Task<TEntity?> GetByIdAsync(Guid id)
         {
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task<IReadOnlyList<TEntity>> GetAllAsync()
+        public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync()
         {
             return await _dbSet.AsNoTracking().ToListAsync();
         }
 
-        public async Task<IReadOnlyList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<IReadOnlyList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AsNoTracking().Where(predicate).ToListAsync();
         }
 
-        public async Task<TEntity?> FindFirstAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<TEntity?> FindFirstAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
         }
@@ -62,7 +62,7 @@ namespace Infrastructure.Repositories
             _dbSet.RemoveRange(entities);
         }
 
-        public async Task RemoveByIdAsync(Guid id)
+        public virtual async Task RemoveByIdAsync(Guid id)
         {
             var entity = await GetByIdAsync(id);
             if (entity != null)
@@ -71,17 +71,17 @@ namespace Infrastructure.Repositories
             }
         }
 
-        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.AnyAsync(predicate);
         }
 
-        public async Task<bool> ExistsByIdAsync(Guid id)
+        public virtual async Task<bool> ExistsByIdAsync(Guid id)
         {
             return await _dbSet.AnyAsync(e => e.Id == id);
         }
 
-        public async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.CountAsync(predicate);
         }

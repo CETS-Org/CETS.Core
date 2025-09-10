@@ -13,12 +13,13 @@ namespace Application.Interfaces.ACAD
         Task<Guid> CreateCourseAsync(CreateCourseRequest request);
         Task UpdateCourseAsync(UpdateCourseRequest request);
         Task DeleteCourseAsync(Guid id);
-        Task<IEnumerable<CourseResponse>> GetAllCoursesAsync();
+        Task<IEnumerable<CourseDetailResponse>> GetAllCoursesAsync();
         Task<CourseResponse?> GetCourseByIdAsync(Guid id);
 
         Task<IEnumerable<CourseResponse>> SearchCoursesAsync(string keyword);
         Task<IEnumerable<CourseResponse>> FilterCoursesAsync(FilterCourseRequest request);
         Task<CourseDetailResponse?> GetCourseDetailAsync(Guid courseId);
+        Task<IReadOnlyList<CourseListItemResponse>> GetAllCoursesForListAsync();
     }
 
 }
