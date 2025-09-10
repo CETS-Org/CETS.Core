@@ -6,6 +6,7 @@ using Domain.Interfaces.CORE;
 using Domain.Interfaces.IDN;
 using DTOs.IDN.IDN_Account.Requests;
 using DTOs.IDN.IDN_Account.Responses;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Implementations.IDN
 {
@@ -31,15 +32,50 @@ namespace Application.Implementations.IDN
             return _mapper.Map<IReadOnlyList<AccountStatusResponse>>(lookup);
         }
 
-        public async Task<IReadOnlyList<AccountResponse>> GetAllAccountsAsync()
+        public async Task<IEnumerable<AccountResponse>> GetAllAccountsAsync(AccountFilterRequest filter)
         {
-            var account = await _accountRepository.GetAllAsync();
-            return _mapper.Map<IReadOnlyList<AccountResponse>>(account);
-        }
+            var query = _accountRepository.QueryWithRoles();
 
+            if (!string.IsNullOrEmpty(filter.RoleName))
+            {
+                query = query.Where(a => a.IDN_AccountRoles.Any(r => r.Role.RoleName == filter.RoleName));
+            }
+
+            if (filter.CurrentRole == "Staff")
+            {
+                query = query.Where(a => a.IDN_AccountRoles.Any(r =>
+                    r.Role.RoleName == "Student" || r.Role.RoleName == "Teacher"));
+            }
+
+            if (!string.IsNullOrEmpty(filter.Name))
+                query = query.Where(a => a.FullName.Contains(filter.Name));
+
+            if (!string.IsNullOrEmpty(filter.Email))
+                query = query.Where(a => a.Email.Contains(filter.Email));
+
+            if (!string.IsNullOrEmpty(filter.PhoneNumber))
+                query = query.Where(a => a.PhoneNumber.Contains(filter.PhoneNumber));
+
+            // Filter theo Status
+            if (!string.IsNullOrEmpty(filter.StatusName))
+            {
+                query = query.Where(a => a.AccountStatus.Code == filter.StatusName);
+            }
+            //Sort 
+            if (!string.IsNullOrEmpty(filter.SortOrder) && filter.SortOrder.ToLower() == "desc")
+            {
+                query = query.OrderByDescending(a => a.FullName);
+            }
+            else
+            {
+                query = query.OrderBy(a => a.FullName); 
+            }
+            var accounts = await query.ToListAsync();
+            return _mapper.Map<IEnumerable<AccountResponse>>(accounts);
+        }
         public async Task<AccountResponse?> GetAccountByIdAsync(Guid id)
         {
-            var account = await _accountRepository.GetByIdAsync(id);
+            var account = await _accountRepository.GetDetailByIdAsync(id);
             return _mapper.Map<AccountResponse?>(account);
         }
         public async Task<AccountResponse> GetAccountByEmailAsync(string email)
