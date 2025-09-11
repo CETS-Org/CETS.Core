@@ -22,6 +22,8 @@ public partial class ACAD_Course : AuditedEntity
 
     public string? CourseImageUrl { get; set; }
 
+    public List<string>? CourseObjective { get; set; } = new();
+
     public Guid CategoryID { get; set; }
 
     public string? Description { get; set; }
@@ -58,4 +60,7 @@ public partial class ACAD_Course : AuditedEntity
 
     [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
+
+    public virtual ICollection<ACAD_CourseBenefit> ACAD_CourseBenefits { get; set; } = new List<ACAD_CourseBenefit>();
+    public virtual ICollection<ACAD_CourseRequirement> ACAD_CourseRequirements { get; set; } = new List<ACAD_CourseRequirement>();
 }

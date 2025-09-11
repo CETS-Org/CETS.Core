@@ -67,6 +67,9 @@ public partial class CORE_LookUp : AuditedEntity
 
     public virtual ICollection<RPT_Report> RPT_ReportReportTypes { get; set; } = new List<RPT_Report>();
 
+    public virtual ICollection<ACAD_CourseRequirement> ACAD_CourseRequirements { get; set; } = new List<ACAD_CourseRequirement>();
+    public virtual ICollection<ACAD_CourseBenefit> ACAD_CourseBenefits { get; set; } = new List<ACAD_CourseBenefit>();
+
     [ForeignKey(nameof(LookUpTypeID))]
     public virtual CORE_LookUpType LookUpType { get; set; } = null!;
 

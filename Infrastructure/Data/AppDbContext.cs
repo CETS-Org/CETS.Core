@@ -2,6 +2,7 @@
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 namespace Domain.Data;
@@ -32,6 +33,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<ACAD_ClassReservation> ACAD_ClassReservations { get; set; }
 
     public virtual DbSet<ACAD_Course> ACAD_Courses { get; set; }
+    public virtual DbSet<ACAD_CourseBenefit> ACAD_CourseBenefits { get; set; }
+    public virtual DbSet<ACAD_CourseRequirement> ACAD_CourseRequirements { get; set; }
 
     public virtual DbSet<ACAD_CourseCategory> ACAD_CourseCategories { get; set; }
 
@@ -275,6 +278,12 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.CourseLevel).WithMany(p => p.ACAD_CourseCourseLevels)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ACAD_Courses_Level");
+
+            entity.Property(e => e.CourseObjective)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null!) ?? new())
+                .HasColumnType("nvarchar(max)");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ACAD_CourseCreatedByNavigations).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_ACAD_Courses_Created");
 
@@ -730,6 +739,41 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_RPT_Reports_Submitter");
         });
+
+
+        modelBuilder.Entity<ACAD_CourseBenefit>(entity =>
+        {
+            entity.Property(e => e.Id).HasColumnName("CourseBenefitID").ValueGeneratedNever();
+
+            // 2. Configure the relationship to ACAD_Course.
+            entity.HasOne(cb => cb.Course)
+             .WithMany(c => c.ACAD_CourseBenefits)
+             .HasForeignKey(cb => cb.CourseID)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            // 3. Configure the relationship to CORE_LookUp.
+            entity.HasOne(cb => cb.Benefit)
+                  .WithMany(l => l.ACAD_CourseBenefits) 
+                  .HasForeignKey(cb => cb.BenefitID)
+                  .OnDelete(DeleteBehavior.Restrict); // You shouldn't be able to delete a lookup if it's in use.
+
+        });
+
+        modelBuilder.Entity<ACAD_CourseRequirement>(entity =>
+        {
+            entity.Property(e => e.Id).HasColumnName("CourseRequirementID").ValueGeneratedNever();
+
+            entity.HasOne(cb => cb.Course)
+                .WithMany(c => c.ACAD_CourseRequirements)
+                .HasForeignKey(cb => cb.CourseID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(cb => cb.Requirement)
+               .WithMany(l => l.ACAD_CourseRequirements)
+               .HasForeignKey(cb => cb.RequirementID)
+               .OnDelete(DeleteBehavior.Restrict);
+        });
+
 
         OnModelCreatingPartial(modelBuilder);
     }
