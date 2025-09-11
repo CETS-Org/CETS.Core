@@ -12,7 +12,10 @@ namespace DTOs.ACAD.ACAD_Course.Requests
         public string CourseName { get; set; } = null!;
         public Guid CourseLevelID { get; set; }
         public Guid CourseFormatID { get; set; }
+        public string? CourseImageUrl { get; set; }
+        public List<string>? CourseObjective { get; set; } = new();
         public Guid CategoryID { get; set; }
+        public string? Description { get; set; }
         public decimal StandardPrice { get; set; }
     }
 }

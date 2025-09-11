@@ -11,5 +11,10 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public Guid Id { get; set; }
         public string CourseCode { get; set; } = null!;
         public string CourseName { get; set; } = null!;
+        public string? CourseImageUrl { get; set; }
+        public List<string>? CourseObjective { get; set; } = new();
+        public string? Description { get; set; }
+        public decimal StandardPrice { get; set; }
+        public bool IsActive { get; set; }
     }
 }

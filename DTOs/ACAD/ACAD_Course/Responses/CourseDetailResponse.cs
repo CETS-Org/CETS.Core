@@ -8,8 +8,6 @@ namespace DTOs.ACAD.ACAD_Course.Responses
 {
     public class CourseDetailResponse : CourseResponse
     {
-        public string? Description { get; set; }
-        public decimal Price { get; set; }
         public string CategoryName { get; set; } = null!;
         public string LevelName { get; set; } = null!;
         public string FormatName { get; set; } = null!;
@@ -20,7 +18,6 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public double Rating { get; set; }
         public int StudentsCount { get; set; }
         public string Image { get; set; } = null!;
-        public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         

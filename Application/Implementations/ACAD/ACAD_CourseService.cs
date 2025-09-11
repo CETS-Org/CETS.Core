@@ -98,7 +98,11 @@ namespace Application.Implementations.ACAD
                 Id = entity.Id,
                 CourseCode = entity.CourseCode,
                 CourseName = entity.CourseName,
+                CourseImageUrl = entity.CourseImageUrl,
+                CourseObjective = entity.CourseObjective,
                 Description = entity.Description,
+                StandardPrice = entity.StandardPrice,
+                IsActive = entity.IsActive,
                 Price = entity.StandardPrice,
                 CategoryName = entity.Category?.Name ?? "",
                 LevelName = entity.CourseLevel?.Name ?? "",
@@ -114,7 +118,6 @@ namespace Application.Implementations.ACAD
                 Rating = entity.COM_Feedbacks.Any() ? entity.COM_Feedbacks.Average(f => (double?)f.Rating) ?? 0.0 : 0.0,
                 StudentsCount = entity.ACAD_Enrollments.Count(e => !e.IsDeleted),
                 Image = entity.CourseImageUrl ?? "",
-                IsActive = entity.IsActive,
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt,
                 
@@ -151,6 +154,7 @@ namespace Application.Implementations.ACAD
                 Id = c.Id.ToString(),
                 CourseName = c.CourseName,
                 Description = c.Description ?? "",
+                CourseObjective = c.CourseObjective,
                 Teacher = c.ACAD_CourseTeacherAssignments
                     .Select(a => a.Teacher.Account.FullName)
                     .FirstOrDefault() ?? "TBA",

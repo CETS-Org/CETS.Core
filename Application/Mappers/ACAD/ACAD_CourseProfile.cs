@@ -14,16 +14,20 @@ namespace Application.Mappers.ACAD
     {
         public CourseProfile()
         {
-            CreateMap<CreateCourseRequest, ACAD_Course>();
-            CreateMap<UpdateCourseRequest, ACAD_Course>();
+            CreateMap<CreateCourseRequest, ACAD_Course>()
+                .ForMember(dest => dest.CourseObjective, opt => opt.MapFrom(src => src.CourseObjective));
+            
+            CreateMap<UpdateCourseRequest, ACAD_Course>()
+                .ForMember(dest => dest.CourseObjective, opt => opt.MapFrom(src => src.CourseObjective));
 
-            CreateMap<ACAD_Course, CourseResponse>();
+            CreateMap<ACAD_Course, CourseResponse>()
+                .ForMember(dest => dest.CourseObjective, opt => opt.MapFrom(src => src.CourseObjective));
+
             CreateMap<ACAD_Course, CourseDetailResponse>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : ""))
                 .ForMember(dest => dest.LevelName, opt => opt.MapFrom(src => src.CourseLevel != null ? src.CourseLevel.Name : ""))
-                .ForMember(dest => dest.FormatName, opt => opt.MapFrom(src => src.CourseFormat != null ? src.CourseFormat.Name : ""));
-
-            
+                .ForMember(dest => dest.FormatName, opt => opt.MapFrom(src => src.CourseFormat != null ? src.CourseFormat.Name : ""))
+                .ForMember(dest => dest.CourseObjective, opt => opt.MapFrom(src => src.CourseObjective));
 
         }
     }
