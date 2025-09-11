@@ -46,6 +46,7 @@ namespace Infrastructure.Repositories.ACAD
                 .Include(c => c.CourseLevel)
                 .Include(c => c.CourseFormat)
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
+                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.COM_Feedbacks)
                 .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
                 .Include(c => c.COM_Feedbacks)
                 .Include(c => c.ACAD_Enrollments)
@@ -63,6 +64,7 @@ namespace Infrastructure.Repositories.ACAD
                 .Include(c => c.Category)
                 .Include(c => c.CourseLevel)
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
+                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.COM_Feedbacks)
                 .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
                 .Include(c => c.COM_Feedbacks)
                 .Include(c => c.ACAD_Enrollments);

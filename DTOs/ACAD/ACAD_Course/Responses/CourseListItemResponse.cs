@@ -1,3 +1,4 @@
+using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,6 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public string CourseName { get; set; } = null!;
         public string? Description { get; set; }
         public List<string>? CourseObjective { get; set; } = new();
-        public string Teacher { get; set; } = null!;
         public string Duration { get; set; } = null!;
         public string CourseLevel { get; set; } = null!;
         public decimal StandardPrice { get; set; }
@@ -20,5 +20,7 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public int StudentsCount { get; set; }
         public string CourseImageUrl { get; set; } = null!;
         public string CategoryName { get; set; } = null!;
+        public TeacherAcademicDetailResponse? TeacherDetail { get; set; }
+
     }
 }
