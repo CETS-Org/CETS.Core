@@ -103,7 +103,6 @@ namespace Application.Implementations.ACAD
                 Description = entity.Description,
                 StandardPrice = entity.StandardPrice,
                 IsActive = entity.IsActive,
-                Price = entity.StandardPrice,
                 CategoryName = entity.Category?.Name ?? "",
                 LevelName = entity.CourseLevel?.Name ?? "",
                 FormatName = entity.CourseFormat?.Name ?? "",
