@@ -9,5 +9,7 @@ namespace Domain.Interfaces.IDN
 {
     public interface IIDN_AccountRepository : IBaseRepository<IDN_Account>
     {
+        IQueryable<IDN_Account> QueryWithRoles();
+        Task<IDN_Account?> GetDetailByIdAsync(Guid id);
     }
 }

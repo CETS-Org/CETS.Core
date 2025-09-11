@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Domain.Entities;
 using DTOs.IDN.IDN_Account.Responses;
+using DTOs.IDN.IDN_Student.Responses;
+using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +16,31 @@ namespace Application.Mappers.IDN
         public IDN_AccountProfile()
         {
             CreateMap<IDN_Account, AccountResponse>()
-                .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.AccountId,
+                    opt => opt.MapFrom(src => src.Id))
+
+                .ForMember(dest => dest.StatusName,
+                    opt => opt.MapFrom(src => src.AccountStatus != null ? src.AccountStatus.Name : string.Empty))
+
+                .ForMember(dest => dest.RoleNames,
+                    opt => opt.MapFrom(src =>
+                        src.IDN_AccountRoles != null
+                            ? src.IDN_AccountRoles
+                                .Where(r => r.Role != null)
+                                .Select(r => r.Role.RoleName)
+                                .ToList()
+                            : new List<string>()))
+
+                .ForMember(dest => dest.StudentInfo,
+                    opt => opt.MapFrom(src => src.IDN_StudentAccount))
+
+                .ForMember(dest => dest.TeacherInfo,
+                    opt => opt.MapFrom(src => src.IDN_TeacherAccount))
                 .ReverseMap();
 
+            CreateMap<IDN_Student, StudentResponse>();
+
+            CreateMap<IDN_Teacher, TeacherDetailResponse>();
         }
     }
 }
