@@ -25,7 +25,7 @@ namespace Application.Mappers.ACAD
 
             CreateMap<ACAD_Course, CourseDetailResponse>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : ""))
-                .ForMember(dest => dest.LevelName, opt => opt.MapFrom(src => src.CourseLevel != null ? src.CourseLevel.Name : ""))
+                .ForMember(dest => dest.CourseLevel, opt => opt.MapFrom(src => src.CourseLevel != null ? src.CourseLevel.Name : ""))
                 .ForMember(dest => dest.FormatName, opt => opt.MapFrom(src => src.CourseFormat != null ? src.CourseFormat.Name : ""))
                 .ForMember(dest => dest.CourseObjective, opt => opt.MapFrom(src => src.CourseObjective));
 

@@ -14,11 +14,11 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public List<string>? CourseObjective { get; set; } = new();
         public string Teacher { get; set; } = null!;
         public string Duration { get; set; } = null!;
-        public string Level { get; set; } = null!;
-        public decimal Price { get; set; }
+        public string CourseLevel { get; set; } = null!;
+        public decimal StandardPrice { get; set; }
         public double Rating { get; set; }
         public int StudentsCount { get; set; }
-        public string Image { get; set; } = null!;
-        public string Category { get; set; } = null!;
+        public string CourseImageUrl { get; set; } = null!;
+        public string CategoryName { get; set; } = null!;
     }
 }

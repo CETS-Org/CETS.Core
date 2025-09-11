@@ -49,6 +49,8 @@ namespace Infrastructure.Repositories.ACAD
                 .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
                 .Include(c => c.COM_Feedbacks)
                 .Include(c => c.ACAD_Enrollments)
+                .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
+                .Include(c => c.ACAD_CourseRequirements).ThenInclude(r => r.Requirement)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
         }
 

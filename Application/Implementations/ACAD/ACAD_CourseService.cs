@@ -104,7 +104,7 @@ namespace Application.Implementations.ACAD
                 StandardPrice = entity.StandardPrice,
                 IsActive = entity.IsActive,
                 CategoryName = entity.Category?.Name ?? "",
-                LevelName = entity.CourseLevel?.Name ?? "",
+                CourseLevel = entity.CourseLevel?.Name ?? "",
                 FormatName = entity.CourseFormat?.Name ?? "",
                 
                 // Extra data like in list view
@@ -116,7 +116,6 @@ namespace Application.Implementations.ACAD
                     .Sum(i => i.EstimatedMinutes ?? 0) / 60.0).ToString("0.0") + " hours",
                 Rating = entity.COM_Feedbacks.Any() ? entity.COM_Feedbacks.Average(f => (double?)f.Rating) ?? 0.0 : 0.0,
                 StudentsCount = entity.ACAD_Enrollments.Count(e => !e.IsDeleted),
-                Image = entity.CourseImageUrl ?? "",
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt,
                 
@@ -135,6 +134,22 @@ namespace Application.Implementations.ACAD
                         Required = i.Required,
                         Objectives = i.Objectives,
                         ContentSummary = i.ContentSummary
+                    })
+                    .ToList(),
+                Benefits = entity.ACAD_CourseBenefits
+                    .Select(b => new CourseBenefitItemResponse
+                    {
+                        Id = b.Id,
+                        BenefitID = b.BenefitID,
+                        BenefitName = b.Benefit.Name
+                    })
+                    .ToList(),
+                Requirements = entity.ACAD_CourseRequirements
+                    .Select(r => new CourseRequirementItemResponse
+                    {
+                        Id = r.Id,
+                        RequirementID = r.RequirementID,
+                        RequirementName = r.Requirement.Name
                     })
                     .ToList()
             };
@@ -160,12 +175,12 @@ namespace Application.Implementations.ACAD
                 Duration = (c.ACAD_Syllabi
                     .SelectMany(s => s.ACAD_SyllabusItems)
                     .Sum(i => i.EstimatedMinutes ?? 0) / 60.0).ToString("0.0") + " hours",
-                Level = c.CourseLevel.Name,
-                Price = c.StandardPrice,
+                CourseLevel = c.CourseLevel.Name,
+                StandardPrice = c.StandardPrice,
                 Rating = c.COM_Feedbacks.Any() ? c.COM_Feedbacks.Average(f => (double?)f.Rating) ?? 0.0 : 0.0,
                 StudentsCount = c.ACAD_Enrollments.Count(e => !e.IsDeleted),
-                Image = c.CourseImageUrl ?? "",
-                Category = c.Category.Name
+                CourseImageUrl = c.CourseImageUrl ?? "",
+                CategoryName = c.Category.Name
             })
             .OrderBy(c => c.CourseName)
             .ToList();
