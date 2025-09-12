@@ -64,10 +64,28 @@ namespace Application.Implementations.IDN
             {
                 query = query.Where(a => a.AccountStatus.Code == filter.StatusName);
             }
-            //Sort 
-            if (!string.IsNullOrEmpty(filter.SortOrder) && filter.SortOrder.ToLower() == "desc")
+
+            // Sort
+            if (!string.IsNullOrEmpty(filter.SortBy))
             {
-                query = query.OrderByDescending(a => a.FullName);
+                bool isDesc = !string.IsNullOrEmpty(filter.SortOrder) &&
+                              filter.SortOrder.Equals("desc", StringComparison.OrdinalIgnoreCase);
+
+                switch (filter.SortBy.ToLower())
+                {
+                    case "email":
+                        query = isDesc ? query.OrderByDescending(a => a.Email)
+                                       : query.OrderBy(a => a.Email);
+                        break;
+                    case "createdat":
+                        query = isDesc ? query.OrderByDescending(a => a.CreatedAt)
+                                       : query.OrderBy(a => a.CreatedAt);
+                        break;
+                    default:
+                        query = isDesc ? query.OrderByDescending(a => a.FullName)
+                                       : query.OrderBy(a => a.FullName);
+                        break;
+                }
             }
             else
             {

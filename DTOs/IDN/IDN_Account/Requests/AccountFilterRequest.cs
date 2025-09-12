@@ -14,8 +14,10 @@ namespace DTOs.IDN.IDN_Account.Requests
         public string? PhoneNumber { get; set; }
 
         public string? SortOrder { get; set; }
+        public string? SortBy { get; set; }
         public string? StatusName { get; set; }
         // mô phỏng phân quyền (Admin, Staff, Student, Teacher)
         public string? CurrentRole { get; set; }
+
     }
 }
