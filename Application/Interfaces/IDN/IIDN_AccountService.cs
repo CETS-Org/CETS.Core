@@ -19,5 +19,10 @@ namespace Application.Interfaces.IDN
         Task<AccountResponse?> ActivateAccountAsync(Guid id);
         Task<AccountResponse> SoftDeleteAccountAsync(Guid id);
         Task<AccountResponse> RestoreAccountAsync(Guid id);
+        Task<bool> IsEmailExistsAsync(string email);
+        Task<bool> IsEmailUniqueAsync(string email);
+        Task<bool> IsPhoneNumberExistsAsync(string phoneNumber);
+        Task<bool> IsPhoneUniqueAsync(string phoneNumber);
+        Task<LoginAccountResponse?> ValidateUserCredentialsAsync(string email, string password);
     }
 }

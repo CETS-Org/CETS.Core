@@ -41,6 +41,20 @@ namespace Application.Mappers.IDN
             CreateMap<IDN_Student, StudentResponse>();
 
             CreateMap<IDN_Teacher, TeacherDetailResponse>();
+            CreateMap<AccountResponse,LoginAccountResponse>()
+                .ForMember(dest => dest.StudentInfo,
+                    opt => opt.MapFrom(src => src.StudentInfo))
+                .ForMember(dest => dest.TeacherInfo,
+                    opt => opt.MapFrom(src => src.TeacherInfo))
+                .ForMember(dest => dest.RoleNames,
+                    opt => opt.MapFrom(src => src.RoleNames))
+                .ForMember(dest => dest.Id,
+                    opt => opt.MapFrom(src => src.AccountId))
+                .ForMember(dest => dest.Email,
+                    opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.FullName,
+                    opt => opt.MapFrom(src => src.FullName))
+                .ReverseMap();
         }
     }
 }

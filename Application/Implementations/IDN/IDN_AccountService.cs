@@ -16,13 +16,15 @@ namespace Application.Implementations.IDN
         private readonly ICORE_LookUpRepository _lookUpRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public IDN_AccountService(IIDN_AccountRepository accountRepository, ICORE_LookUpRepository lookUpRepository, IUnitOfWork unitOfWork, IMapper mapper)
+        public IDN_AccountService(IIDN_AccountRepository accountRepository, ICORE_LookUpRepository lookUpRepository, IUnitOfWork unitOfWork, IMapper mapper,IPasswordHasher passwordHasher)
         {
             _accountRepository = accountRepository;
             _lookUpRepository = lookUpRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<IReadOnlyList<AccountStatusResponse>> GetAccountStatusesAsync()
@@ -68,7 +70,7 @@ namespace Application.Implementations.IDN
             }
             else
             {
-                query = query.OrderBy(a => a.FullName); 
+                query = query.OrderBy(a => a.FullName);
             }
             var accounts = await query.ToListAsync();
             return _mapper.Map<IEnumerable<AccountResponse>>(accounts);
@@ -164,6 +166,40 @@ namespace Application.Implementations.IDN
             return _mapper.Map<AccountResponse>(account);
         }
 
+        public async Task<bool> IsEmailExistsAsync(string email)
+        {
+            var user = await _accountRepository.GetUserByEmailAsync(email);
+            return user != null;
+        }
 
+        public async Task<bool> IsEmailUniqueAsync(string email)
+        {
+            return await _accountRepository.IsEmailUniqueAsync(email);
+        }
+
+        public async Task<bool> IsPhoneNumberExistsAsync(string phoneNumber)
+        {
+            var user = await _accountRepository.GetUserByPhoneAsync(phoneNumber);
+            return user != null;
+        }
+
+        public async Task<bool> IsPhoneUniqueAsync(string phoneNumber)
+        {
+            return await _accountRepository.IsPhoneUniqueAsync(phoneNumber);
+        }
+
+        #region Validate User Credentials
+        // Validate user credentials
+        public async Task<LoginAccountResponse?> ValidateUserCredentialsAsync(string email, string password)
+        {
+            var account = await _accountRepository.GetUserByEmailAsync(email);
+            if (account == null || !_passwordHasher.VerifyPassword(password, account.Password!))
+            {
+                return null;
+            }
+            var accountResponse = _mapper.Map<AccountResponse>(account);
+            return _mapper.Map<LoginAccountResponse>(accountResponse);
+        }
+        #endregion
     }
 }
