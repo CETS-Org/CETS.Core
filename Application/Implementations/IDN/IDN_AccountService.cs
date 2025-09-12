@@ -7,6 +7,7 @@ using Domain.Interfaces.IDN;
 using DTOs.IDN.IDN_Account.Requests;
 using DTOs.IDN.IDN_Account.Responses;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Application.Implementations.IDN
 {
@@ -102,6 +103,46 @@ namespace Application.Implementations.IDN
             _accountRepository.Update(account);
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<AccountResponse>(account);
+        }
+
+        public async Task<AccountResponse?> UpdateAccountProfileAsync(Guid accountId,UpdateAccountProfileRequest dto, ClaimsPrincipal user)
+        {
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            if (account == null || account.IsDeleted)
+            {
+                return null;
+            }
+
+            // Lấy updaterId từ user
+            Guid? updaterId = null;
+            var subClaim = user.FindFirst("sub");
+            if (subClaim != null && Guid.TryParse(subClaim.Value, out var parsedId))
+            {
+                updaterId = parsedId;
+            }
+
+            // Update các field profile
+            if (!string.IsNullOrWhiteSpace(dto.FullName))
+                account.FullName = dto.FullName;
+
+            if (dto.DateOfBirth.HasValue)
+                account.DateOfBirth = dto.DateOfBirth;
+
+            if (!string.IsNullOrWhiteSpace(dto.CID))
+                account.CID = dto.CID;
+
+            if (!string.IsNullOrWhiteSpace(dto.Address))
+                account.Address = dto.Address;
+
+            if (!string.IsNullOrWhiteSpace(dto.AvatarUrl))
+                account.AvatarUrl = dto.AvatarUrl;
+
+            account.UpdatedAt = DateTime.UtcNow;
+            account.UpdatedBy = updaterId; 
+
+            _accountRepository.Update(account);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<AccountResponse?>(account);
         }
 
         public async Task<AccountResponse?> DeactivateAccountAsync(Guid id)

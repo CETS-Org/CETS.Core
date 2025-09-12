@@ -7,7 +7,9 @@ using DTOs.IDN.IDN_Student.Requests;
 using DTOs.IDN.IDN_Student.Responses;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -78,7 +80,32 @@ namespace Application.Implementations.IDN
             return _mapper.Map<StudentResponse>(student);
         }
 
- 
+        public async Task<StudentProfileResponse?> UpdateStudentProfileAsync(
+        Guid accountId,
+        UpdateStudentProfileRequest dto,
+        ClaimsPrincipal user)
+        {
+            var student = await _studentRepository.GetStudentWithAccountAsync(accountId);
+            if (student == null) return null;
+
+            var account = student.Account ?? throw new InvalidOperationException("Student does not have linked Account");
+
+            bool isPrivileged = user.IsInRole("AcademicStaff") || user.IsInRole("Admin");
+
+            _mapper.Map(dto, account);
+            _mapper.Map(dto, student);
+
+            if (!isPrivileged)
+            {
+                if (!string.IsNullOrEmpty(dto.CID) && dto.CID != account.CID)
+                    throw new UnauthorizedAccessException("Student is not allowed to update CID");
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<StudentProfileResponse>(student);
+        }
+
         public async Task<StudentResponse> RestoreStudentAsync(Guid id)
         {
             var student = await _studentRepository.GetByIdAsync(id);

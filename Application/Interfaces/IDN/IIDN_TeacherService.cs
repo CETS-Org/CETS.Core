@@ -3,6 +3,7 @@ using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,6 +18,7 @@ namespace Application.Interfaces.IDN
         Task<TeacherDetailResponse?> GetTeacherDetailsAsync(Guid id);
         Task<TeacherResponse> CreateTeacherAsync(CreateTeacherRequest dto);
         Task<TeacherResponse> UpdateTeacherAsync(Guid id, UpdateTeacherRequest dto);
+        Task<TeacherDetailResponse?> UpdateTeacherProfileAsync(Guid teacherId, UpdateTeacherProfileRequest dto, ClaimsPrincipal user);
 
         Task<TeacherResponse> RestoreTeacherAsync(Guid id);
         Task<TeacherResponse> SoftDeleteTeacherAsync(Guid id);

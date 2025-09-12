@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.Entities;
+using DTOs.IDN.IDN_Account.Requests;
 using DTOs.IDN.IDN_Account.Responses;
 using DTOs.IDN.IDN_Student.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;
@@ -37,6 +38,10 @@ namespace Application.Mappers.IDN
                 .ForMember(dest => dest.TeacherInfo,
                     opt => opt.MapFrom(src => src.IDN_TeacherAccount))
                 .ReverseMap();
+
+            // UpdateAccountRequest -> IDN_Account
+            CreateMap<UpdateAccountRequest, IDN_Account>()
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<IDN_Student, StudentResponse>();
 
