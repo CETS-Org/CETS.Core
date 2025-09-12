@@ -8,6 +8,7 @@ using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -94,6 +95,30 @@ namespace Application.Implementations.IDN
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<TeacherResponse>(teacher);
         }
+
+        public async Task<TeacherDetailResponse?> UpdateTeacherProfileAsync(Guid teacherId, UpdateTeacherProfileRequest dto, ClaimsPrincipal user)
+        {
+            var teacher = await _teacherRepository.GetTeacherDetailsByIdAsync(teacherId);
+            if (teacher == null) return null;
+
+            teacher.TeacherCode = dto.TeacherCode ?? teacher.TeacherCode;
+            teacher.YearsExperience = dto.YearsExperience ?? teacher.YearsExperience;
+            teacher.Bio = dto.Bio ?? teacher.Bio;
+
+            teacher.Account.FullName = dto.FullName ?? teacher.Account.FullName;
+            teacher.Account.DateOfBirth = dto.DateOfBirth ?? teacher.Account.DateOfBirth;
+            teacher.Account.CID = dto.CID ?? teacher.Account.CID;
+            teacher.Account.Address = dto.Address ?? teacher.Account.Address;
+            teacher.Account.AvatarUrl = dto.AvatarUrl ?? teacher.Account.AvatarUrl;
+
+            teacher.UpdatedAt = DateTime.UtcNow;
+            teacher.Account.UpdatedAt = DateTime.UtcNow;
+
+            _teacherRepository.Update(teacher);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<TeacherDetailResponse>(teacher);
+        }
+
 
         public async Task<TeacherResponse> RestoreTeacherAsync(Guid id)
         {

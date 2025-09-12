@@ -3,6 +3,7 @@ using DTOs.IDN.IDN_Account.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,6 +16,7 @@ namespace Application.Interfaces.IDN
         Task<AccountResponse?> GetAccountByIdAsync(Guid id);
         Task<AccountResponse> GetAccountByEmailAsync(string email);
         Task<AccountResponse> UpdateAccountAsync(Guid id, UpdateAccountRequest dto);
+        Task<AccountResponse?> UpdateAccountProfileAsync(Guid accountId, UpdateAccountProfileRequest dto, ClaimsPrincipal user);
         Task<AccountResponse?> DeactivateAccountAsync(Guid id);
         Task<AccountResponse?> ActivateAccountAsync(Guid id);
         Task<AccountResponse> SoftDeleteAccountAsync(Guid id);
