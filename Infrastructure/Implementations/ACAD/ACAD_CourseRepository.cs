@@ -1,7 +1,8 @@
-using Domain.Data;
+﻿using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Course.Responses;
+using DTOs.ACAD.ACAD_Course.Search;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.ACAD
@@ -69,5 +70,134 @@ namespace Infrastructure.Repositories.ACAD
                 .Include(c => c.COM_Feedbacks)
                 .Include(c => c.ACAD_Enrollments);
         }
+
+        public async Task<CourseSearchResult> SearchBasicAsync(CourseSearchQuery q, CancellationToken ct)
+        {
+            var baseQ = _context.Set<ACAD_Course>()
+                .Where(c => c.IsActive && !c.IsDeleted)
+                
+                .Include(c => c.Category)
+                .Include(c => c.CourseLevel)
+                .Include(c => c.CourseFormat)
+                .Include(c => c.ACAD_Enrollments)
+                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
+                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.COM_Feedbacks)
+                .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
+                .Include(c => c.COM_Feedbacks)
+                .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
+                .AsQueryable();
+
+            // Search keyword
+            if (!string.IsNullOrWhiteSpace(q.Q))
+            {
+                var keyword = q.Q.Trim();
+                baseQ = baseQ.Where(c =>
+                    EF.Functions.Like(c.CourseName, $"%{keyword}%") ||
+                    EF.Functions.Like(c.Description!, $"%{keyword}%"));
+            }
+
+            // Filters
+            if (q.LevelIds.Count > 0) baseQ = baseQ.Where(c => q.LevelIds.Contains(c.CourseLevelID));
+            if (q.CategoryIds.Count > 0) baseQ = baseQ.Where(c => q.CategoryIds.Contains(c.CategoryID));
+            if (q.PriceMin.HasValue) baseQ = baseQ.Where(c => c.StandardPrice >= q.PriceMin.Value);
+            if (q.PriceMax.HasValue) baseQ = baseQ.Where(c => c.StandardPrice <= q.PriceMax.Value);
+
+            // Sorting
+            baseQ = q.Sort switch
+            {
+                "Created.desc" => baseQ.OrderByDescending(c => c.CreatedAt),
+                "Price.asc" => baseQ.OrderBy(c => c.StandardPrice),
+                "Price.desc" => baseQ.OrderByDescending(c => c.StandardPrice),
+                _ => baseQ.OrderByDescending(c => c.COM_Feedbacks.Average(f => (double?)f.Rating) ?? 0)
+                          .ThenByDescending(c => c.ACAD_Enrollments.Count())
+            };
+
+            // Paging
+            var total = await baseQ.CountAsync(ct);
+
+            var entities = await baseQ
+                .Skip((q.Page - 1) * q.PageSize)
+                .Take(q.PageSize)
+                .AsNoTracking()
+                .ToListAsync(ct);
+
+            var result = new CourseSearchResult
+            {
+                Page = q.Page,
+                PageSize = q.PageSize,
+                Total = total,
+                Items = entities.Select(e => e.ToListItem()).ToList(),
+                Facets = new Dictionary<string, List<CourseSearchResult.FacetItem>>()
+            };
+
+            // ========= Facet Levels =========
+            var levelCounts = await _context.Set<ACAD_Course>()
+                .Where(c => c.IsActive && !c.IsDeleted)
+                .Where(c =>
+                    (string.IsNullOrWhiteSpace(q.Q) ||
+                        EF.Functions.Like(c.CourseName, $"%{q.Q}%") ||
+                        EF.Functions.Like(c.Description!, $"%{q.Q}%")) &&
+                    (q.CategoryIds.Count == 0 || q.CategoryIds.Contains(c.CategoryID)) &&
+                    (!q.PriceMin.HasValue || c.StandardPrice >= q.PriceMin.Value) &&
+                    (!q.PriceMax.HasValue || c.StandardPrice <= q.PriceMax.Value)
+                )
+                .GroupBy(c => c.CourseLevelID)
+                .Select(g => new { Id = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+
+            var levelIds = levelCounts.Select(x => x.Id).ToList();
+            var levelLabels = await _context.Set<CORE_LookUp>()
+                .Where(l => levelIds.Contains(l.Id))
+                .Select(l => new { l.Id, l.Name })
+                .ToListAsync(ct);
+
+            result.Facets["levels"] = levelCounts
+                .Select(x => new CourseSearchResult.FacetItem
+                {
+                    Key = x.Id.ToString(),
+                    Label = levelLabels.FirstOrDefault(l => l.Id == x.Id)?.Name,
+                    Count = x.Count,
+                    Selected = q.LevelIds.Contains(x.Id)
+                })
+                .OrderByDescending(f => f.Count)
+                .ToList();
+
+            // ========= Facet Categories =========
+            var categoryCounts = await _context.Set<ACAD_Course>()
+                .Where(c => c.IsActive && !c.IsDeleted)
+                .Where(c =>
+                    (string.IsNullOrWhiteSpace(q.Q) ||
+                        EF.Functions.Like(c.CourseName, $"%{q.Q}%") ||
+                        EF.Functions.Like(c.Description!, $"%{q.Q}%")) &&
+                    (q.LevelIds.Count == 0 || q.LevelIds.Contains(c.CourseLevelID)) &&
+                    (!q.PriceMin.HasValue || c.StandardPrice >= q.PriceMin.Value) &&
+                    (!q.PriceMax.HasValue || c.StandardPrice <= q.PriceMax.Value)
+                )
+                .GroupBy(c => c.CategoryID)
+                .Select(g => new { Id = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+
+            var catIds = categoryCounts.Select(x => x.Id).ToList();
+            var catLabels = await _context.Set<ACAD_CourseCategory>()
+                .Where(cat => catIds.Contains(cat.Id))
+                .Select(cat => new { cat.Id, cat.Name })
+                .ToListAsync(ct);
+
+            result.Facets["categories"] = categoryCounts
+                .Select(x => new CourseSearchResult.FacetItem
+                {
+                    Key = x.Id.ToString(),
+                    Label = catLabels.FirstOrDefault(c => c.Id == x.Id)?.Name,
+                    Count = x.Count,
+                    Selected = q.CategoryIds.Contains(x.Id)
+                })
+                .OrderByDescending(f => f.Count)
+                .ToList();
+
+            return result;
+        }
+
+
+
     }
 }

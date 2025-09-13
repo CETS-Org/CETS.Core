@@ -1,5 +1,6 @@
 ﻿using DTOs.ACAD.ACAD_Course.Requests;
 using DTOs.ACAD.ACAD_Course.Responses;
+using DTOs.ACAD.ACAD_Course.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<CourseResponse>> FilterCoursesAsync(FilterCourseRequest request);
         Task<CourseDetailResponse?> GetCourseDetailAsync(Guid courseId);
         Task<IReadOnlyList<CourseListItemResponse>> GetAllCoursesForListAsync();
+
+        Task<CourseSearchResult> SearchBasicAsync(CourseSearchQuery q, CancellationToken ct);
     }
 
 }
