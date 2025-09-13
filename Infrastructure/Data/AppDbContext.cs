@@ -772,7 +772,7 @@ public partial class AppDbContext : DbContext
              .OnDelete(DeleteBehavior.Cascade);
 
             // 3. Configure the relationship to CORE_LookUp.
-            entity.HasOne(cb => cb.Benefit)
+            entity.HasOne(cb => cb.Skill)
                   .WithMany(l => l.ACAD_CourseSkills)
                   .HasForeignKey(cb => cb.SkillID)
                   .OnDelete(DeleteBehavior.Restrict); // You shouldn't be able to delete a lookup if it's in use.

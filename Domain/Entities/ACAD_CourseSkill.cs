@@ -18,6 +18,6 @@ namespace Domain.Entities
         public virtual ACAD_Course Course { get; set; } = null!;
 
         [ForeignKey(nameof(SkillID))]
-        public virtual CORE_LookUp Benefit { get; set; } = null!;
+        public virtual CORE_LookUp Skill { get; set; } = null!;
     }
 }
