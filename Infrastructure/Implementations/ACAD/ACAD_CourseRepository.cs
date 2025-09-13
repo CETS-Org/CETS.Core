@@ -4,13 +4,17 @@ using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_Course.Search;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace Infrastructure.Repositories.ACAD
 {
     public class ACAD_CourseRepository : BaseRepository<ACAD_Course>, IACAD_CourseRepository
     {
-        public ACAD_CourseRepository(AppDbContext context) : base(context)
+        private readonly IMapper _mapper;
+
+        public ACAD_CourseRepository(AppDbContext context, IMapper mapper) : base(context)
         {
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<ACAD_Course>> SearchAsync(string keyword)
@@ -126,7 +130,7 @@ namespace Infrastructure.Repositories.ACAD
                 Page = q.Page,
                 PageSize = q.PageSize,
                 Total = total,
-                Items = entities.Select(e => e.ToListItem()).ToList(),
+                Items = _mapper.Map<List<CourseListItemResponse>>(entities),
                 Facets = new Dictionary<string, List<CourseSearchResult.FacetItem>>()
             };
 

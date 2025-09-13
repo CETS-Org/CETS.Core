@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DTOs.ACAD.ACAD_Course.Responses;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,7 @@ namespace DTOs.ACAD.ACAD_Course.Search
     // Application/Courses/Search/CourseSearchResult.cs
     public sealed class CourseSearchResult
     {
-        public List<CourseListItemDto> Items { get; set; } = new();
+        public List<CourseListItemResponse> Items { get; set; } = new();
         public int Page { get; set; }
         public int PageSize { get; set; }
         public int Total { get; set; }
