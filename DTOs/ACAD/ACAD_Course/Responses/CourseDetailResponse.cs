@@ -24,7 +24,7 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public DateTime? UpdatedAt { get; set; }
         
         // Additional detail fields
-        public TeacherAcademicDetailResponse TeacherDetail { get; set; } = new TeacherAcademicDetailResponse();
+        public List<TeacherAcademicDetailResponse> TeacherDetails { get; set; } = new List<TeacherAcademicDetailResponse>();
         public List<SyllabusItemResponse> SyllabusItems { get; set; } = new List<SyllabusItemResponse>();
         public List<CourseBenefitResponse> Benefits { get; set; } = new List<CourseBenefitResponse>();
         public List<CourseRequirementResponse> Requirements { get; set; } = new List<CourseRequirementResponse>();
