@@ -1,4 +1,4 @@
-using Domain.Data;
+﻿using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +28,24 @@ namespace Infrastructure.Repositories.ACAD
             return await _context.ACAD_Submissions
                 .CountAsync(s => s.StudentID == studentId && !s.IsDeleted);
         }
+
+        public async Task<(int submitted, int total)> GetSubmissionSummaryAsync(Guid studentId, Guid courseId)
+        {
+            var totalAssignments = await _context.ACAD_Assignments
+                .Where(a => a.ClassMeeting.Class.Id ==
+                    _context.ACAD_Enrollments
+                        .Where(e => e.StudentID == studentId && e.CourseID == courseId)
+                        .Select(e => e.ClassID)
+                        .FirstOrDefault())
+                .CountAsync();
+
+            var submitted = await _context.ACAD_Submissions
+                .Where(s => s.StudentID == studentId && !s.IsDeleted)
+                .CountAsync();
+
+            return (submitted, totalAssignments);
+        }
+
     }
 }
 
