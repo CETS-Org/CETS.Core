@@ -13,5 +13,6 @@ namespace Application.Interfaces.ACAD
         Task<AttendanceResponse> MarkAttendanceAsync(Guid meetingId, Guid studentId, Guid statusId, Guid teacherId, string? notes = null);
         Task<IEnumerable<AttendanceResponse>> GetAttendanceByMeetingAsync(Guid meetingId);
         Task<IEnumerable<AttendanceResponse>> GetAttendanceByStudentAsync(Guid studentId);
+        Task<StudentAttendanceSummaryResponse?> GetStudentAttendanceSummaryAsync(Guid studentId, Guid courseId);
     }
 }

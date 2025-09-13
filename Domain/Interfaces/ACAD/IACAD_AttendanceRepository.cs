@@ -7,6 +7,8 @@ namespace Domain.Interfaces.ACAD
         Task<IEnumerable<ACAD_Attendance>> GetByMeetingAsync(Guid meetingId);
         Task<IEnumerable<ACAD_Attendance>> GetByStudentAsync(Guid studentId);
         Task<ACAD_Attendance?> GetByMeetingAndStudentAsync(Guid meetingId, Guid studentId);
+        Task<int> CountTotalMeetingsByCourseAsync(Guid courseId);
+        Task<List<ACAD_Attendance>> GetByStudentAndCourseAsync(Guid studentId, Guid courseId);
     }
 }
 

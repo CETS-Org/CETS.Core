@@ -55,6 +55,8 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
                 .ForMember(dest => dest.TeacherDetails, opt => opt.MapFrom(src => 
                     src.ACAD_CourseTeacherAssignments.Select(a => a.Teacher).ToList()))
+                 .ForMember(dest => dest.CourseSkills, opt => opt.MapFrom(src =>
+                    src.ACAD_CourseSkills))
                 .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => 
                     (src.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).Sum(i => i.EstimatedMinutes ?? 0) / 60.0).ToString("0.0") + " hours"))
                 .ForMember(dest => dest.CourseLevel, opt => opt.MapFrom(src => src.CourseLevel.Name))
@@ -63,6 +65,7 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src => 
                     src.ACAD_Enrollments.Count(e => !e.IsDeleted)))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
+
 
             // Nested object mappings
             CreateMap<IDN_Teacher, TeacherAcademicDetailResponse>()

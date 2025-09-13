@@ -13,13 +13,13 @@ using System.Threading.Tasks;
 
 namespace Application.Implementations.ACAD
 {
-    public class SubmissionService : ISubmissionService
+    public class ACAD_SubmissionService : IACAD_SubmissionService
     {
         private readonly IACAD_SubmissionRepository _submissionRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public SubmissionService(
+        public ACAD_SubmissionService(
             IACAD_SubmissionRepository submissionRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper)
@@ -65,6 +65,10 @@ namespace Application.Implementations.ACAD
             await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<SubmissionResponse>(entity);
+        }
+        public async Task<int> GetAssignmentsSubmittedAsync(Guid studentId)
+        {
+            return await _submissionRepository.CountByStudentAsync(studentId);
         }
     }
 }

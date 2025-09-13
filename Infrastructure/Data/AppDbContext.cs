@@ -36,6 +36,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<ACAD_CourseBenefit> ACAD_CourseBenefits { get; set; }
     public virtual DbSet<ACAD_CourseRequirement> ACAD_CourseRequirements { get; set; }
 
+    public virtual DbSet<ACAD_CourseSkill> ACAD_CourseSkills { get; set; }
+
     public virtual DbSet<ACAD_CourseCategory> ACAD_CourseCategories { get; set; }
 
     public virtual DbSet<ACAD_CoursePackage> ACAD_CoursePackages { get; set; }
@@ -755,6 +757,24 @@ public partial class AppDbContext : DbContext
             entity.HasOne(cb => cb.Benefit)
                   .WithMany(l => l.ACAD_CourseBenefits) 
                   .HasForeignKey(cb => cb.BenefitID)
+                  .OnDelete(DeleteBehavior.Restrict); // You shouldn't be able to delete a lookup if it's in use.
+
+        });
+
+        modelBuilder.Entity<ACAD_CourseSkill>(entity =>
+        {
+            entity.Property(e => e.Id).HasColumnName("CourseSkillID").ValueGeneratedNever();
+
+            // 2. Configure the relationship to ACAD_Course.
+            entity.HasOne(cb => cb.Course)
+             .WithMany(c => c.ACAD_CourseSkills)
+             .HasForeignKey(cb => cb.CourseID)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            // 3. Configure the relationship to CORE_LookUp.
+            entity.HasOne(cb => cb.Skill)
+                  .WithMany(l => l.ACAD_CourseSkills)
+                  .HasForeignKey(cb => cb.SkillID)
                   .OnDelete(DeleteBehavior.Restrict); // You shouldn't be able to delete a lookup if it's in use.
 
         });

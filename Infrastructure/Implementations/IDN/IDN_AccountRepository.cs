@@ -28,6 +28,7 @@ namespace Infrastructure.Repositories.IDN
                 .Include(a => a.IDN_StudentAccount)
                 .Include(a => a.IDN_TeacherAccount)
                 .Include(a => a.IDN_AccountRoles)
+                    .ThenInclude( q => q.Role)
                 .Include(a => a.AccountStatus)
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
