@@ -23,6 +23,11 @@ namespace Infrastructure.Repositories.ACAD
                 .Where(s => s.StudentID == studentId && !s.IsDeleted)
                 .ToListAsync();
         }
+        public async Task<int> CountByStudentAsync(Guid studentId)
+        {
+            return await _context.ACAD_Submissions
+                .CountAsync(s => s.StudentID == studentId && !s.IsDeleted);
+        }
     }
 }
 

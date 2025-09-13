@@ -73,5 +73,24 @@ namespace Application.Implementations.ACAD
             var list = await _attendanceRepository.GetByStudentAsync(studentId);
             return _mapper.Map<IEnumerable<AttendanceResponse>>(list);
         }
+        public async Task<StudentAttendanceSummaryResponse?> GetStudentAttendanceSummaryAsync(Guid studentId, Guid courseId)
+        {
+            var totalMeetings = await _attendanceRepository.CountTotalMeetingsByCourseAsync(courseId);
+            var attendances = await _attendanceRepository.GetByStudentAndCourseAsync(studentId, courseId);
+
+            if (!attendances.Any())
+                return null;
+
+            var dto = new StudentAttendanceSummaryResponse
+            {
+                StudentId = studentId,
+                TotalMeetings = totalMeetings,
+                TotalPresent = attendances.Count(a => a.AttendanceStatus.Code == "Present"),
+                TotalAbsent = attendances.Count(a => a.AttendanceStatus.Code == "Absent")
+            };
+
+            return dto;
+        }
+
     }
 }
