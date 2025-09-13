@@ -763,7 +763,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_CourseSkill>(entity =>
         {
-            entity.Property(e => e.Id).HasColumnName("CourseBenefitID").ValueGeneratedNever();
+            entity.Property(e => e.Id).HasColumnName("CourseSkillID").ValueGeneratedNever();
 
             // 2. Configure the relationship to ACAD_Course.
             entity.HasOne(cb => cb.Course)
