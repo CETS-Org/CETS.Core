@@ -1,3 +1,4 @@
+using DTOs.ACAD.ACAD_CourseSkill.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,8 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public int StudentsCount { get; set; }
         public string CourseImageUrl { get; set; } = null!;
         public string CategoryName { get; set; } = null!;
-        public TeacherAcademicDetailResponse? TeacherDetail { get; set; }
+        public List<TeacherAcademicDetailResponse> TeacherDetails { get; set; } = new List<TeacherAcademicDetailResponse>();
+        public List<CourseSkillResponse> CourseSkills { get; set; } = new List<CourseSkillResponse>();
 
     }
 }

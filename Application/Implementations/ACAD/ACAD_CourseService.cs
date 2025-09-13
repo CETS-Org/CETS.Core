@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DTOs.ACAD.ACAD_Course.Search;
 
 namespace Application.Implementations.ACAD
 {
@@ -101,6 +102,11 @@ namespace Application.Implementations.ACAD
         {
             var courses = await _courseRepo.GetAllCoursesForListAsync().ToListAsync();
             return _mapper.Map<IReadOnlyList<CourseListItemResponse>>(courses);
+        }
+
+        public async Task<CourseSearchResult> SearchBasicAsync(CourseSearchQuery q, CancellationToken ct)
+        {
+            return await _courseRepo.SearchBasicAsync(q, ct);
         }
     }
 

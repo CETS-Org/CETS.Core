@@ -21,4 +21,8 @@
     <Folder Include="Interfaces\RPT\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DTOs\DTOs.csproj" />
+  </ItemGroup>
+
 </Project>

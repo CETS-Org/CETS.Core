@@ -1,4 +1,5 @@
 using Domain.Entities;
+using DTOs.ACAD.ACAD_Course.Search;
 
 
 namespace Domain.Interfaces.ACAD
@@ -9,6 +10,9 @@ namespace Domain.Interfaces.ACAD
         Task<IEnumerable<ACAD_Course>> FilterAsync(Guid? levelId, Guid? formatId, Guid? teacherId);
         Task<ACAD_Course?> GetDetailAsync(Guid courseId);
         IQueryable<ACAD_Course> GetAllCoursesForListAsync();
+
+        Task<CourseSearchResult> SearchBasicAsync(CourseSearchQuery query, CancellationToken ct);
+       
     }
 }
 
