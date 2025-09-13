@@ -59,5 +59,13 @@ namespace Application.Implementations.ACAD
             var enrollment = await _enrollmentRepo.GetDetailAsync(enrollmentId);
             return _mapper.Map<EnrollmentDetailResponse?>(enrollment);
         }
+
+        public async Task<IEnumerable<CourseEnrollmentListResponse>> GetStudentCoursesEnrollmentAsync(Guid studentId)
+        {
+            var enrollments = await _enrollmentRepo.GetByStudentAsync(studentId);
+
+            return _mapper.Map<IEnumerable<CourseEnrollmentListResponse>>(enrollments);
+        }
+
     }
 }

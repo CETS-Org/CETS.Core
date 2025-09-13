@@ -24,20 +24,21 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.ClassName, opt => opt.MapFrom(src => src.Class != null ? src.Class.ClassName : null))
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.EnrollmentStatus != null ? src.EnrollmentStatus.Name : null));
 
-            // Map từ Enrollment -> CourseListItemResponse
-            //CreateMap<ACAD_Enrollment, CourseListItemResponse>()
-            //    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Course.Id.ToString()))
-            //    .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.CourseName))
-            //    .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Course.Description))
-            //    .ForMember(dest => dest.Teacher, opt => opt.MapFrom(src =>
-            //        string.Join(", ", src.Course.ACAD_CourseTeacherAssignments.Select(ta => ta.Teacher.Account.FullName))))
-            //    .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => src.Course.Duration))
-            //    .ForMember(dest => dest.Level, opt => opt.MapFrom(src => src.Course.Level.Name))
-            //    .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Course.Price))
-            //    .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Course.Rating))
-            //    .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src => src.Course.Enrollments.Count))
-            //    .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Course.Image))
-            //    .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Course.Category.Name));
+            CreateMap<ACAD_Enrollment, CourseEnrollmentListResponse>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Course != null ? src.Course.Id : Guid.Empty))
+            .ForMember(dest => dest.CourseCode, opt => opt.MapFrom(src => src.Course != null ? src.Course.CourseCode : string.Empty))
+            .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course != null ? src.Course.CourseName : string.Empty))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Course.Description))
+            .ForMember(dest => dest.CourseImageUrl, opt => opt.MapFrom(src => src.Course.CourseImageUrl))
+            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Course != null && src.Course.IsActive))
+            .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src =>
+                src.Course != null && src.Course.ACAD_CourseTeacherAssignments != null
+                    ? src.Course.ACAD_CourseTeacherAssignments
+                        .Where(ta => ta.Teacher != null)
+                        .Select(ta => ta.Teacher.Account.FullName)
+                        .ToList()
+                    : new List<string>()))
+            .ForMember(dest => dest.EnrollmentStatus, opt => opt.MapFrom(src => src.EnrollmentStatus.Name != null ? src.EnrollmentStatus.Name.ToString() : string.Empty));
         }
     }
 }

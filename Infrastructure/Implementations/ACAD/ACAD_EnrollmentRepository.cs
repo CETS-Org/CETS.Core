@@ -15,6 +15,10 @@ namespace Infrastructure.Repositories.ACAD
             return await _context.ACAD_Enrollments
                 .Include(e => e.Class)
                 .Include(e => e.Course)
+                    .ThenInclude(c => c.ACAD_CourseTeacherAssignments)
+                        .ThenInclude(cta => cta.Teacher)
+                        .ThenInclude(t => t.Account)
+                .Include(e => e.EnrollmentStatus)
                 .Where(e => e.StudentID == studentId)
                 .ToListAsync();
         }
