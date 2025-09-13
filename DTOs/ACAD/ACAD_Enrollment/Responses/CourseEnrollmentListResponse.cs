@@ -16,5 +16,7 @@ namespace DTOs.ACAD.ACAD_Enrollment.Responses
         public bool IsActive { get; set; }
         public List<string> Teachers { get; set; } = new();
         public string? EnrollmentStatus { get; set; }
+        public DateTime CreatedAt { get; set; }
+
     }
 }

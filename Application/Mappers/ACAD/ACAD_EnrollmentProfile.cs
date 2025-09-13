@@ -31,6 +31,7 @@ namespace Application.Mappers.ACAD
             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Course.Description))
             .ForMember(dest => dest.CourseImageUrl, opt => opt.MapFrom(src => src.Course.CourseImageUrl))
             .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Course != null && src.Course.IsActive))
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
             .ForMember(dest => dest.Teachers, opt => opt.MapFrom(src =>
                 src.Course != null && src.Course.ACAD_CourseTeacherAssignments != null
                     ? src.Course.ACAD_CourseTeacherAssignments
