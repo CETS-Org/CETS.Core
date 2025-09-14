@@ -66,9 +66,10 @@ namespace Application.Implementations.ACAD
 
             return _mapper.Map<SubmissionResponse>(entity);
         }
-        public async Task<int> GetAssignmentsSubmittedAsync(Guid studentId)
+        public async Task<(int submitted, int total)> GetAssignmentsSubmittedSummaryAsync(Guid studentId, Guid courseId)
         {
-            return await _submissionRepository.CountByStudentAsync(studentId);
+            return await _submissionRepository.GetSubmissionSummaryAsync(studentId, courseId);
         }
+
     }
 }
