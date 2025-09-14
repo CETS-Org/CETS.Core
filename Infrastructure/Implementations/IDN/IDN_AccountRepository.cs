@@ -18,6 +18,7 @@ namespace Infrastructure.Repositories.IDN
         public IQueryable<IDN_Account> QueryWithRoles()
         {
             return _context.IDN_Accounts
+                .Include(a => a.AccountStatus)
                 .Include(a => a.IDN_AccountRoles)
                 .ThenInclude(r => r.Role);
         }
