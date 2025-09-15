@@ -269,6 +269,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.StandardPrice).HasColumnType("decimal(18, 2)");
 
+            // Configure AverageRating as computed column using scalar function
+            entity.Property(e => e.AverageRating)
+                .HasColumnType("decimal(3, 2)");
+
             entity.HasOne(d => d.Category).WithMany(p => p.ACAD_Courses)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ACAD_Courses_Category");

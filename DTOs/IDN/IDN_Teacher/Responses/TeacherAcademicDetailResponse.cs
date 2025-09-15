@@ -10,8 +10,8 @@ namespace DTOs.IDN.IDN_Teacher.Responses
     {
         public Guid Id { get; set; }
         public string FullName { get; set; } = null!;
+        public string? AvatarUrl { get; set; }
         public string? Bio { get; set; }
-        public double Rating { get; set; }
         public int TotalStudents { get; set; }
         public int TotalCourses { get; set; }
         public int? YearsExperience { get; set; }

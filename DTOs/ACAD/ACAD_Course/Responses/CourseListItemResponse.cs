@@ -12,7 +12,6 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public string Id { get; set; } = null!;
         public string CourseName { get; set; } = null!;
         public string? Description { get; set; }
-        public List<string>? CourseObjective { get; set; } = new();
         public string Duration { get; set; } = null!;
         public string CourseLevel { get; set; } = null!;
         public decimal StandardPrice { get; set; }
