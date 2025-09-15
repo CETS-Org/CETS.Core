@@ -29,6 +29,27 @@ namespace Infrastructure.Repositories.ACAD
             return await _context.ACAD_Attendances
                 .FirstOrDefaultAsync(a => a.MeetingID == meetingId && a.StudentID == studentId);
         }
+
+        public async Task<int> CountTotalMeetingsByCourseAsync(Guid courseId)
+        {
+            return await _context.ACAD_ClassMeetings
+                .Where(m => m.TeacherAssignment != null &&
+                            m.TeacherAssignment.CourseID == courseId &&
+                            m.StartsAt <= DateTime.UtcNow)
+                .CountAsync();
+        }
+
+        public async Task<List<ACAD_Attendance>> GetByStudentAndCourseAsync(Guid studentId, Guid courseId)
+        {
+            return await _context.ACAD_Attendances
+                .Include(a => a.AttendanceStatus)
+                .Include(a => a.Meeting)
+                    .ThenInclude(m => m.TeacherAssignment)
+                .Where(a => a.StudentID == studentId &&
+                            a.Meeting.TeacherAssignment != null &&
+                            a.Meeting.TeacherAssignment.CourseID == courseId)
+                .ToListAsync();
+        }
     }
 }
 

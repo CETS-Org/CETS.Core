@@ -2,6 +2,7 @@
 using Domain.Entities;
 using DTOs.IDN.IDN_Account.Requests;
 using DTOs.IDN.IDN_Account.Responses;
+using DTOs.IDN.IDN_Staff;
 using DTOs.IDN.IDN_Student.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;
 using System;
@@ -51,6 +52,25 @@ namespace Application.Mappers.IDN
                     opt => opt.MapFrom(src => src.StudentInfo))
                 .ForMember(dest => dest.TeacherInfo,
                     opt => opt.MapFrom(src => src.TeacherInfo))
+                .ForMember(dest => dest.StaffInfo,
+                    opt => opt.MapFrom(src =>
+                        src.RoleNames != null &&
+                        src.RoleNames.Any(r => r == "AcademicStaff" || r == "AccountantStaff" || r == "Admin")
+                            ? new StaffDetailResponse
+                            {
+                                DateOfBirth = src.DateOfBirth,
+                                CID = src.CID,
+                                Address = src.Address,
+                                AvatarUrl = src.AvatarUrl,
+                                AccountStatusID = src.AccountStatusID,
+                                CreatedAt = src.CreatedAt,
+                                UpdatedAt = src.UpdatedAt,
+                                UpdatedBy = src.UpdatedBy,
+                                IsDeleted = src.IsDeleted,
+                                StatusName = src.StatusName
+                            }
+                            : null
+                    ))
                 .ForMember(dest => dest.RoleNames,
                     opt => opt.MapFrom(src => src.RoleNames))
                 .ForMember(dest => dest.Id,
@@ -59,7 +79,13 @@ namespace Application.Mappers.IDN
                     opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.FullName,
                     opt => opt.MapFrom(src => src.FullName))
-                .ReverseMap();
+                .ForMember(dest => dest.IsVerified,
+                    opt => opt.MapFrom(src => src.IsVerified))
+                .ForMember(dest => dest.VerifiedCode,
+                    opt => opt.MapFrom(src => src.VerifiedCode))
+                .ForMember(dest => dest.VerifiedCodeExpiresAt,
+                    opt => opt.MapFrom(src => src.VerifiedCodeExpiresAt))
+               .ReverseMap();
         }
     }
 }

@@ -75,7 +75,6 @@ namespace Infrastructure.Repositories.ACAD
         {
             var baseQ = _context.Set<ACAD_Course>()
                 .Where(c => c.IsActive && !c.IsDeleted)
-                
                 .Include(c => c.Category)
                 .Include(c => c.CourseLevel)
                 .Include(c => c.CourseFormat)
@@ -83,6 +82,7 @@ namespace Infrastructure.Repositories.ACAD
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
                 .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
                 .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
+                .Include(c => c.ACAD_CourseSkills).ThenInclude(cs => cs.Skill)   // <-- mới thêm
                 .AsQueryable();
 
             // Search keyword
@@ -91,12 +91,15 @@ namespace Infrastructure.Repositories.ACAD
                 var keyword = q.Q.Trim();
                 baseQ = baseQ.Where(c =>
                     EF.Functions.Like(c.CourseName, $"%{keyword}%") ||
-                    EF.Functions.Like(c.Description!, $"%{keyword}%"));
+                    EF.Functions.Like(c.Description!, $"%{keyword}%") ||
+                    c.ACAD_CourseSkills.Any(cs => EF.Functions.Like(cs.Skill.Name, $"%{keyword}%"))  // <-- tìm theo skill
+                );
             }
 
             // Filters
             if (q.LevelIds.Count > 0) baseQ = baseQ.Where(c => q.LevelIds.Contains(c.CourseLevelID));
             if (q.CategoryIds.Count > 0) baseQ = baseQ.Where(c => q.CategoryIds.Contains(c.CategoryID));
+            if (q.SkillIds.Count > 0) baseQ = baseQ.Where(c => c.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))); // <-- filter skill
             if (q.PriceMin.HasValue) baseQ = baseQ.Where(c => c.StandardPrice >= q.PriceMin.Value);
             if (q.PriceMax.HasValue) baseQ = baseQ.Where(c => c.StandardPrice <= q.PriceMax.Value);
 
@@ -112,7 +115,6 @@ namespace Infrastructure.Repositories.ACAD
 
             // Paging
             var total = await baseQ.CountAsync(ct);
-
             var entities = await baseQ
                 .Skip((q.Page - 1) * q.PageSize)
                 .Take(q.PageSize)
@@ -136,6 +138,7 @@ namespace Infrastructure.Repositories.ACAD
                         EF.Functions.Like(c.CourseName, $"%{q.Q}%") ||
                         EF.Functions.Like(c.Description!, $"%{q.Q}%")) &&
                     (q.CategoryIds.Count == 0 || q.CategoryIds.Contains(c.CategoryID)) &&
+                    (q.SkillIds.Count == 0 || c.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))) &&
                     (!q.PriceMin.HasValue || c.StandardPrice >= q.PriceMin.Value) &&
                     (!q.PriceMax.HasValue || c.StandardPrice <= q.PriceMax.Value)
                 )
@@ -168,6 +171,7 @@ namespace Infrastructure.Repositories.ACAD
                         EF.Functions.Like(c.CourseName, $"%{q.Q}%") ||
                         EF.Functions.Like(c.Description!, $"%{q.Q}%")) &&
                     (q.LevelIds.Count == 0 || q.LevelIds.Contains(c.CourseLevelID)) &&
+                    (q.SkillIds.Count == 0 || c.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))) &&
                     (!q.PriceMin.HasValue || c.StandardPrice >= q.PriceMin.Value) &&
                     (!q.PriceMax.HasValue || c.StandardPrice <= q.PriceMax.Value)
                 )
@@ -192,8 +196,43 @@ namespace Infrastructure.Repositories.ACAD
                 .OrderByDescending(f => f.Count)
                 .ToList();
 
+            // ========= Facet Skills =========
+            var skillCounts = await _context.Set<ACAD_CourseSkill>()
+                .Where(cs => cs.Course.IsActive && !cs.Course.IsDeleted)
+                .Where(cs =>
+                    (string.IsNullOrWhiteSpace(q.Q) ||
+                        EF.Functions.Like(cs.Course.CourseName, $"%{q.Q}%") ||
+                        EF.Functions.Like(cs.Course.Description!, $"%{q.Q}%") ||
+                        EF.Functions.Like(cs.Skill.Name, $"%{q.Q}%")) &&
+                    (q.LevelIds.Count == 0 || q.LevelIds.Contains(cs.Course.CourseLevelID)) &&
+                    (q.CategoryIds.Count == 0 || q.CategoryIds.Contains(cs.Course.CategoryID)) &&
+                    (!q.PriceMin.HasValue || cs.Course.StandardPrice >= q.PriceMin.Value) &&
+                    (!q.PriceMax.HasValue || cs.Course.StandardPrice <= q.PriceMax.Value)
+                )
+                .GroupBy(cs => cs.SkillID)
+                .Select(g => new { Id = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+
+            var skillIds = skillCounts.Select(x => x.Id).ToList();
+            var skillLabels = await _context.Set<CORE_LookUp>() // giả sử Skill lưu trong LookUp
+                .Where(s => skillIds.Contains(s.Id))
+                .Select(s => new { s.Id, s.Name })
+                .ToListAsync(ct);
+
+            result.Facets["skills"] = skillCounts
+                .Select(x => new CourseSearchResult.FacetItem
+                {
+                    Key = x.Id.ToString(),
+                    Label = skillLabels.FirstOrDefault(s => s.Id == x.Id)?.Name,
+                    Count = x.Count,
+                    Selected = q.SkillIds.Contains(x.Id)
+                })
+                .OrderByDescending(f => f.Count)
+                .ToList();
+
             return result;
         }
+
 
 
 
