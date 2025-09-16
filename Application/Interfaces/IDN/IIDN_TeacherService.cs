@@ -16,7 +16,7 @@ namespace Application.Interfaces.IDN
         Task<TeacherResponse?> GetTeacherByCodeAsync(string teacherCode);
         Task<TeacherResponse?> GetTeacherByEmailAsync(string email);
         Task<TeacherDetailResponse?> GetTeacherDetailsAsync(Guid id);
-        Task<TeacherResponse> CreateTeacherAsync(CreateTeacherRequest dto);
+        Task<TeacherDetailResponse> CreateTeacherWithAccountAsync(CreateTeacherRequest dto);
         Task<TeacherResponse> UpdateTeacherAsync(Guid id, UpdateTeacherRequest dto);
         Task<TeacherDetailResponse?> UpdateTeacherProfileAsync(Guid teacherId, UpdateTeacherProfileRequest dto, ClaimsPrincipal user);
 

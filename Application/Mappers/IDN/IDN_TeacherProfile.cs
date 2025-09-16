@@ -2,6 +2,7 @@
 using Domain.Entities;
 using DTOs.IDN.IDN_Teacher.Requests;
 using DTOs.IDN.IDN_Teacher.Responses;
+using DTOs.IDN.IDN_TeacherCredential.Requests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,8 +19,8 @@ namespace Application.Mappers.IDN
                 .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Id))
                 .ReverseMap();
 
-            CreateMap<CreateTeacherRequest, IDN_Teacher>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccountId));
+            //CreateMap<CreateTeacherRequest, IDN_Teacher>()
+            //    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccountId));
        
 
             CreateMap<IDN_Teacher, UpdateTeacherRequest>()
@@ -54,6 +55,35 @@ namespace Application.Mappers.IDN
             CreateMap<IDN_TeacherCredential, TeacherCredentialDetail>()
                 .ForMember(dest => dest.CredentialId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.CredentialTypeName, opt => opt.MapFrom(src => src.CredentialType.Name));
+
+            //CreateTeacherRequest -> IDN_Account
+            CreateMap<CreateTeacherRequest, IDN_Account>()
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
+            .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth))
+            .ForMember(dest => dest.CID, opt => opt.MapFrom(src => src.CID))
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+            .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.AvatarUrl))
+            .ForMember(dest => dest.IDN_StudentAccount, opt => opt.Ignore())
+            .ForMember(dest => dest.IDN_TeacherAccount, opt => opt.Ignore())
+            .ForMember(dest => dest.IDN_AccountRoles, opt => opt.Ignore())
+            .ForMember(dest => dest.AccountStatus, opt => opt.Ignore());
+
+
+            // CreateTeacherRequest -> Teacher
+            CreateMap<CreateTeacherRequest, IDN_Teacher>()
+                .ForMember(dest => dest.YearsExperience, opt => opt.MapFrom(src => src.YearsExperience))
+                .ForMember(dest => dest.Bio, opt => opt.MapFrom(src => src.Bio));
+
+
+            // CreateTeacherCredentialRequest -> TeacherCredential
+            CreateMap<CreateTeacherCredentialRequest, IDN_TeacherCredential>()
+                .ForMember(dest => dest.CredentialTypeID, opt => opt.MapFrom(src => src.CredentialTypeId))
+                .ForMember(dest => dest.PictureUrl, opt => opt.MapFrom(src => src.PictureUrl))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Level, opt => opt.MapFrom(src => src.Level));
+
         }
     }
 }

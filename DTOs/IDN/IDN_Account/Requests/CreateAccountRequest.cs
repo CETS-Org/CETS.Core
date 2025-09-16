@@ -1,24 +1,23 @@
-﻿using DTOs.IDN.IDN_TeacherCredential.Requests;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DTOs.IDN.IDN_Teacher.Requests
+namespace DTOs.IDN.IDN_Account.Requests
 {
-    public class CreateTeacherRequest
+    public class CreateAccountRequest
     {
         public string Email { get; set; } = null!;
         public string? PhoneNumber { get; set; }
         public string FullName { get; set; } = null!;
         public DateOnly? DateOfBirth { get; set; }
-        public string? CID { get; set; }
+        public string? CID { get; set; }         
         public string? Address { get; set; }
         public string? AvatarUrl { get; set; }
-        public int? YearsExperience { get; set; }
-        public string? Bio { get; set; }
 
-        public List<CreateTeacherCredentialRequest>? Credentials { get; set; }
+        public Guid RoleID { get; set; } 
+
+
     }
 }

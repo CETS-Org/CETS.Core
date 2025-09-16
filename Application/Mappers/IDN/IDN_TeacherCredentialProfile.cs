@@ -22,7 +22,6 @@ namespace Application.Mappers.IDN
 
             CreateMap<IDN_TeacherCredential, CreateTeacherCredentialRequest>()
                 .ForMember(dest => dest.CredentialTypeId, opt => opt.MapFrom(src => src.CredentialTypeID))
-                .ForMember(dest => dest.TeacherId, opt => opt.MapFrom(src => src.TeacherID))
                 .ReverseMap();
 
             CreateMap<IDN_TeacherCredential, UpdateTeacherCredentialRequest>()
