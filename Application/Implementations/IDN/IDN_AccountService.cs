@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces.IDN;
 using AutoMapper;
 using Domain.Constants;
+using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.CORE;
 using Domain.Interfaces.IDN;
@@ -33,6 +34,50 @@ namespace Application.Implementations.IDN
             var lookup = await _lookUpRepository.GetByTypeAsync(LookUpTypes.AccountStatus);
 
             return _mapper.Map<IReadOnlyList<AccountStatusResponse>>(lookup);
+        }
+
+        public async Task<AccountResponse> CreateAccountAsync(CreateAccountRequest dto)
+        {
+            if (!await IsEmailUniqueAsync(dto.Email))
+            {
+                throw new InvalidOperationException($"Email {dto.Email} is already in use.");
+            }
+            if (!await IsPhoneUniqueAsync(dto.PhoneNumber))
+            {
+                throw new InvalidOperationException($"Phone number {dto.PhoneNumber} is already in use.");
+            }
+            var account = _mapper.Map<IDN_Account>(dto);
+
+            var rawPassword = Guid.NewGuid().ToString("N")[..8];
+
+            account.Password = _passwordHasher.HashPassword(rawPassword);
+            
+            var activeStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, AccountStatuses.Active.ToString());
+            if (activeStatus == null)
+            {
+                throw new InvalidOperationException("Active status not found in lookup.");
+            }
+
+            //Set account attributes
+            account.Id = Guid.NewGuid();
+            account.AccountStatusID = activeStatus.Id;
+            account.IsVerified = false;
+            account.IsDeleted = false;
+            account.IDN_AccountRoles = new List<IDN_AccountRole>
+            {
+                new IDN_AccountRole
+                {
+                    AccountID = account.Id,
+                    RoleID = dto.RoleID
+                }
+            };
+
+            _accountRepository.Add(account);
+            await _unitOfWork.SaveChangesAsync();
+
+            var createdAccount = await _accountRepository.GetDetailByIdAsync(account.Id);
+
+            return _mapper.Map<AccountResponse>(createdAccount);
         }
 
         public async Task<IEnumerable<AccountResponse>> GetAllAccountsAsync(AccountFilterRequest filter)

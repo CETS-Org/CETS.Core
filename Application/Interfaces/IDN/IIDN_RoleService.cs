@@ -6,6 +6,7 @@ namespace Application.Interfaces.IDN
 {
     public interface IIDN_RoleService : IBaseService<IDN_Role, RoleResponse, UpdateRoleRequest, CreateRoleRequest>
     {
+        Task<IReadOnlyList<IDN_Role>> SearchRolesByKeywordAsync(string keyword);
     }
 }
 

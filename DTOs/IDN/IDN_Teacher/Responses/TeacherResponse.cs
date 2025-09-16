@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DTOs.IDN.IDN_TeacherCredential.Responses;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,12 @@ namespace DTOs.IDN.IDN_Teacher.Responses
     public class TeacherResponse
     {
         public Guid AccountId { get; set; }
+        public string Email { get; set; } = null!;
+        public string? PhoneNumber { get; set; }
+        public string FullName { get; set; } = null!;
+        public string? AvatarUrl { get; set; }
+        public DateOnly? DateOfBirth { get; set; }
+
         public string TeacherCode { get; set; } = null!;
 
         public int? YearsExperience { get; set; }
@@ -21,5 +28,7 @@ namespace DTOs.IDN.IDN_Teacher.Responses
 
         public Guid? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; }
+
+        public List<TeacherCredentialResponse> Credentials { get; set; } = new();
     }
 }
