@@ -1,8 +1,11 @@
 ﻿using Application.Interfaces.IDN;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Entities;
 using Domain.Interfaces;
+using Domain.Interfaces.CORE;
 using Domain.Interfaces.IDN;
+using DTOs.IDN.IDN_Account.Responses;
 using DTOs.IDN.IDN_Teacher.Requests;
 using DTOs.IDN.IDN_Teacher.Responses;
 using System;
@@ -10,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Application.Implementations.IDN
@@ -18,15 +22,27 @@ namespace Application.Implementations.IDN
     {
         private readonly IIDN_TeacherRepository _teacherRepository;
         private readonly IIDN_AccountRepository _accountRepository;
+        private readonly IIDN_RoleRepository _roleRepository;
+        private readonly ICORE_LookUpRepository _lookUpRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public IDN_TeacherService(IIDN_TeacherRepository teacherRepository, IIDN_AccountRepository accountRepository, IUnitOfWork unitOfWork, IMapper mapper)
+        public IDN_TeacherService(IIDN_TeacherRepository teacherRepository, 
+            IIDN_AccountRepository accountRepository, 
+            IIDN_RoleRepository roleRepository,
+            ICORE_LookUpRepository lookUpRepository,
+            IUnitOfWork unitOfWork, 
+            IMapper mapper, 
+            IPasswordHasher passwordHasher)
         {
             _teacherRepository = teacherRepository;
             _accountRepository = accountRepository;
+            _roleRepository = roleRepository;
+            _lookUpRepository = lookUpRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _passwordHasher = passwordHasher;
         }
 
         /* Get methods */
@@ -58,29 +74,66 @@ namespace Application.Implementations.IDN
             return _mapper.Map<TeacherDetailResponse?>(teacher);
         }
 
-
-        /* Post methods */
-        public async Task<TeacherResponse> CreateTeacherAsync(CreateTeacherRequest dto)
+        public async Task<TeacherDetailResponse> CreateTeacherWithAccountAsync(CreateTeacherRequest dto)
         {
-            var account = await _accountRepository.GetByIdAsync(dto.AccountId);
-            if (account == null || account.IsDeleted)
-            {
-                throw new KeyNotFoundException($"Account with id {dto.AccountId} not found.");
-            }
+            if (!await _accountRepository.IsEmailUniqueAsync(dto.Email))
+                throw new InvalidOperationException("Email already exists.");
+            if (!string.IsNullOrEmpty(dto.PhoneNumber) &&
+                !await _accountRepository.IsPhoneUniqueAsync(dto.PhoneNumber))
+                throw new InvalidOperationException("Phone number already exists.");
+            if (string.IsNullOrWhiteSpace(dto.FullName))
+                throw new ArgumentException("FullName is required.");
 
-            var existingTeacher = await _teacherRepository.FindFirstAsync(t => t.Id == dto.AccountId);
-            if (existingTeacher != null)
+            var account = _mapper.Map<IDN_Account>(dto);
+            var activeStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, AccountStatuses.Active.ToString());
+            var rawPassword = Guid.NewGuid().ToString("N")[..8];
+
+            //Set account attributes
+            account.Id = Guid.NewGuid();
+            account.AccountStatusID = activeStatus.Id;
+            account.Password = _passwordHasher.HashPassword(rawPassword);
+            account.IsVerified = false;
+
+            account.IDN_AccountRoles = new List<IDN_AccountRole>
             {
-                throw new InvalidOperationException($"A teacher already exists for account {dto.AccountId}.");
-            }
+                new IDN_AccountRole
+                {
+                    RoleID = await _roleRepository.GetRoleIdByNameAsync("Teacher"),
+                    AccountID = account.Id
+                }
+            };
+
+            _accountRepository.Add(account);
 
             var teacher = _mapper.Map<IDN_Teacher>(dto);
+            teacher.Id = account.Id;
+            teacher.CreatedAt = DateTime.UtcNow;
+
+            foreach (var credDto in dto.Credentials)
+            {
+                var credentialType = await _lookUpRepository.GetByIdAsync(credDto.CredentialTypeId);
+                if (credentialType == null)
+                    throw new InvalidOperationException($"CredentialType {credDto.CredentialTypeId} không tồn tại.");
+
+                if (string.IsNullOrWhiteSpace(credDto.Name))
+                    throw new ArgumentException("Credential name is required.");
+                if (string.IsNullOrWhiteSpace(credDto.Level))
+                    throw new ArgumentException("Credential level is required.");
+
+                var credential = _mapper.Map<IDN_TeacherCredential>(credDto);
+                teacher.IDN_TeacherCredentials.Add(credential);
+            }
 
             _teacherRepository.Add(teacher);
-            
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<TeacherResponse>(teacher);
+
+            var createdTeacher = await _teacherRepository.GetTeacherDetailsByIdAsync(teacher.Id);
+
+            var response = _mapper.Map<TeacherDetailResponse>(createdTeacher);
+
+            return response;
         }
+
 
         /* Put methods */
         public async Task<TeacherResponse> UpdateTeacherAsync(Guid id, UpdateTeacherRequest dto)

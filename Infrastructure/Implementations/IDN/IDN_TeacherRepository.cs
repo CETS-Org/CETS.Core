@@ -15,6 +15,8 @@ namespace Infrastructure.Repositories.IDN
         {
             return await _context.IDN_Teachers
                 .Include(t => t.Account)
+                    .ThenInclude(a => a.IDN_AccountRoles)
+                        .ThenInclude(ar => ar.Role)
                 .Include(t => t.IDN_TeacherCredentials)
                     .ThenInclude(tc => tc.CredentialType)
                 .FirstOrDefaultAsync(t => t.Id == id);
