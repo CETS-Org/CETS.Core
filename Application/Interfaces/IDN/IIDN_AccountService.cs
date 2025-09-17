@@ -29,5 +29,6 @@ namespace Application.Interfaces.IDN
         Task<bool> IsPhoneNumberExistsAsync(string phoneNumber);
         Task<bool> IsPhoneUniqueAsync(string phoneNumber);
         Task<LoginAccountResponse?> ValidateUserCredentialsAsync(string email, string password);
+        Task<LoginAccountResponse> ValidateGoogleAccountAsync(GoogleLoginRequest googleLoginRequest);
     }
 }

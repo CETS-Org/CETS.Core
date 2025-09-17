@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.IDN;
+﻿using Application.Interfaces;
+using Application.Interfaces.IDN;
 using AutoMapper;
 using Domain.Constants;
 using Domain.Entities;
@@ -19,14 +20,16 @@ namespace Application.Implementations.IDN
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IMailService _mailService;
 
-        public IDN_AccountService(IIDN_AccountRepository accountRepository, ICORE_LookUpRepository lookUpRepository, IUnitOfWork unitOfWork, IMapper mapper,IPasswordHasher passwordHasher)
+        public IDN_AccountService(IIDN_AccountRepository accountRepository, ICORE_LookUpRepository lookUpRepository, IUnitOfWork unitOfWork, IMapper mapper,IPasswordHasher passwordHasher, IMailService mailService)
         {
             _accountRepository = accountRepository;
             _lookUpRepository = lookUpRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
+            _mailService = mailService;
         }
 
         public async Task<IReadOnlyList<AccountStatusResponse>> GetAccountStatusesAsync()
@@ -300,6 +303,44 @@ namespace Application.Implementations.IDN
             if (account == null || !_passwordHasher.VerifyPassword(password, account.Password!))
             {
                 return null;
+            }
+            var accountResponse = _mapper.Map<AccountResponse>(account);
+            return _mapper.Map<LoginAccountResponse>(accountResponse);
+        }
+        #endregion
+
+        #region Validate Google Account
+        public async Task<LoginAccountResponse> ValidateGoogleAccountAsync(GoogleLoginRequest googleLoginRequest)
+        {
+            var account = await _accountRepository.GetUserByEmailAsync(googleLoginRequest.Email);
+            if (account == null)
+            {
+                // Tạo tài khoản mới nếu chưa tồn tại
+                account = new Domain.Entities.IDN_Account
+                {
+                    Email = googleLoginRequest.Email,
+                    FullName = googleLoginRequest.FullName,
+                    AvatarUrl = googleLoginRequest.picture,
+                    AccountStatusID = (await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, AccountStatuses.Active.ToString()))?.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    IsDeleted = false,
+                    IsVerified = false,
+                    // Các trường khác có thể để null hoặc giá trị mặc định
+                };
+                _accountRepository.Add(account);
+                await _unitOfWork.SaveChangesAsync();
+                string subject = "Your OTP Code for Verification";
+                string body = $@"
+                <div style='font-family:Arial, sans-serif; font-size:16px; color:#333; padding:20px;'>
+                    <h2 style='color:#007bff;'>Email Verification</h2>
+                    <p>Dear user,</p>
+                    <p>Your One-Time Password (OTP) is:</p>
+                    <p>This code is valid for the next 10 minutes.</p>
+                    <p>If you did not request this, please ignore this email.</p>
+                    <br/>
+                    <p>Thanks,<br/>Your App Team</p>
+                </div>";
+                await _mailService.SendEmailAsync(account.Email, subject, body);
             }
             var accountResponse = _mapper.Map<AccountResponse>(account);
             return _mapper.Map<LoginAccountResponse>(accountResponse);
