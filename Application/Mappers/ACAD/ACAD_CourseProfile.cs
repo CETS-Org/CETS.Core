@@ -41,7 +41,7 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => 
                     (src.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).Sum(i => i.EstimatedMinutes ?? 0) / 60.0).ToString("0.0") + " hours"))
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => 
-                    src.COM_Feedbacks.Any() ? src.COM_Feedbacks.Average(f => (double?)f.Rating) ?? 0.0 : 0.0))
+                    (double)(src.AverageRating ?? 0)))
                 .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src => 
                     src.ACAD_Enrollments.Count(e => !e.IsDeleted)))
                 
@@ -61,7 +61,7 @@ namespace Application.Mappers.ACAD
                     (src.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).Sum(i => i.EstimatedMinutes ?? 0) / 60.0).ToString("0.0") + " hours"))
                 .ForMember(dest => dest.CourseLevel, opt => opt.MapFrom(src => src.CourseLevel.Name))
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => 
-                    src.COM_Feedbacks.Any() ? src.COM_Feedbacks.Average(f => (double?)f.Rating) ?? 0.0 : 0.0))
+                    (double)(src.AverageRating ?? 0)))
                 .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src => 
                     src.ACAD_Enrollments.Count(e => !e.IsDeleted)))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
@@ -70,11 +70,10 @@ namespace Application.Mappers.ACAD
             // Nested object mappings
             CreateMap<IDN_Teacher, TeacherAcademicDetailResponse>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Account.FullName))
-                .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => 
-                    src.COM_Feedbacks.Any(f => f.Rating.HasValue) ? 
-                    Math.Round(src.COM_Feedbacks.Where(f => f.Rating.HasValue).Average(f => (double)f.Rating!.Value), 1) : 0.0))
                 .ForMember(dest => dest.TotalStudents, opt => opt.Ignore())
-                .ForMember(dest => dest.TotalCourses, opt => opt.Ignore());
+                .ForMember(dest => dest.TotalCourses, opt => opt.Ignore())
+                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Account.AvatarUrl));
+
 
             CreateMap<ACAD_SyllabusItem, SyllabusItemResponse>();
 

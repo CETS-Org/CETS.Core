@@ -44,6 +44,15 @@ namespace Application.Mappers.IDN
             CreateMap<UpdateAccountRequest, IDN_Account>()
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
+            CreateMap<CreateAccountRequest, IDN_Account>()
+               .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+               .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+               .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
+               .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.DateOfBirth))
+               .ForMember(dest => dest.CID, opt => opt.MapFrom(src => src.CID))
+               .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+               .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.AvatarUrl));
+
             CreateMap<IDN_Student, StudentResponse>();
 
             CreateMap<IDN_Teacher, TeacherDetailResponse>();

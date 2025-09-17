@@ -1,5 +1,7 @@
 ﻿using DTOs.IDN.IDN_Account.Requests;
 using DTOs.IDN.IDN_Account.Responses;
+using DTOs.IDN.IDN_Teacher.Requests;
+using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +15,7 @@ namespace Application.Interfaces.IDN
     {
         Task<IReadOnlyList<AccountStatusResponse>> GetAccountStatusesAsync();
         Task<IEnumerable<AccountResponse>> GetAllAccountsAsync(AccountFilterRequest filter);
+        Task<AccountResponse> CreateAccountAsync(CreateAccountRequest dto);
         Task<AccountResponse?> GetAccountByIdAsync(Guid id);
         Task<AccountResponse> GetAccountByEmailAsync(string email);
         Task<AccountResponse> UpdateAccountAsync(Guid id, UpdateAccountRequest dto);

@@ -51,9 +51,7 @@ namespace Infrastructure.Repositories.ACAD
                 .Include(c => c.CourseLevel)
                 .Include(c => c.CourseFormat)
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
-                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.COM_Feedbacks)
                 .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
-                .Include(c => c.COM_Feedbacks)
                 .Include(c => c.ACAD_Enrollments)
                 .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
                 .Include(c => c.ACAD_CourseRequirements).ThenInclude(r => r.Requirement)
@@ -69,9 +67,7 @@ namespace Infrastructure.Repositories.ACAD
                 .Include(c => c.Category)
                 .Include(c => c.CourseLevel)
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
-                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.COM_Feedbacks)
                 .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
-                .Include(c => c.COM_Feedbacks)
                 .Include(c => c.ACAD_Enrollments);
         }
 
@@ -84,9 +80,7 @@ namespace Infrastructure.Repositories.ACAD
                 .Include(c => c.CourseFormat)
                 .Include(c => c.ACAD_Enrollments)
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
-                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.COM_Feedbacks)
                 .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
-                .Include(c => c.COM_Feedbacks)
                 .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
                 .Include(c => c.ACAD_CourseSkills).ThenInclude(cs => cs.Skill)   // <-- mới thêm
                 .AsQueryable();
@@ -115,7 +109,7 @@ namespace Infrastructure.Repositories.ACAD
                 "Created.desc" => baseQ.OrderByDescending(c => c.CreatedAt),
                 "Price.asc" => baseQ.OrderBy(c => c.StandardPrice),
                 "Price.desc" => baseQ.OrderByDescending(c => c.StandardPrice),
-                _ => baseQ.OrderByDescending(c => c.COM_Feedbacks.Average(f => (double?)f.Rating) ?? 0)
+                _ => baseQ.OrderByDescending(c => c.AverageRating ?? 0)
                           .ThenByDescending(c => c.ACAD_Enrollments.Count())
             };
 

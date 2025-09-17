@@ -1,10 +1,7 @@
 {
   "profiles": {
     "Infrastructure": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      "commandName": "Project"
     }
   }
 }

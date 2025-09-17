@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250914053337_AddCourseAverageRating")]
+    partial class AddCourseAverageRating
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -696,7 +699,7 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CourseSkillID");
+                        .HasColumnName("CourseBenefitID");
 
                     b.Property<Guid>("CourseID")
                         .HasColumnType("uniqueidentifier");
@@ -2688,15 +2691,15 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.CORE_LookUp", "Skill")
+                    b.HasOne("Domain.Entities.CORE_LookUp", "Benefit")
                         .WithMany("ACAD_CourseSkills")
                         .HasForeignKey("SkillID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Course");
+                    b.Navigation("Benefit");
 
-                    b.Navigation("Skill");
+                    b.Navigation("Course");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CourseTeacherAssignment", b =>
