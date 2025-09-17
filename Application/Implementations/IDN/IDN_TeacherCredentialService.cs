@@ -28,12 +28,13 @@ namespace Application.Implementations.IDN
 
         public async Task<IReadOnlyList<TeacherCredentialResponse>> GetCredentialsByTeacherIdAsync(Guid teacherId)
         {
-            var credentials = await _repository.FindFirstAsync(cr => cr.Teacher.Id == teacherId);
+            var credentials = await _repository.FindAsync(cr => cr.Teacher.Id == teacherId);
             return _mapper.Map<IReadOnlyList<TeacherCredentialResponse>>(credentials);
         }
+
         public async Task<IReadOnlyList<TeacherCredentialResponse>> GetCredentialsByTeacherCodeAsync(string teacherCode)
         {
-            var credentials = await _repository.FindFirstAsync(cr => cr.Teacher.TeacherCode == teacherCode);
+            var credentials = await _repository.FindAsync(cr => cr.Teacher.TeacherCode == teacherCode);
             return _mapper.Map<IReadOnlyList<TeacherCredentialResponse>>(credentials);
         }
         public async Task<IReadOnlyList<CredentialTypeResponse>> GetCredentialTypesAsync()
