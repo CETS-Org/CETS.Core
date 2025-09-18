@@ -108,7 +108,14 @@ public partial class AppDbContext : DbContext
 
     #endregion
 
-
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", true, true);
+        var configuration = builder.Build();
+        optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -752,7 +759,7 @@ public partial class AppDbContext : DbContext
 
             // 3. Configure the relationship to CORE_LookUp.
             entity.HasOne(cb => cb.Benefit)
-                  .WithMany(l => l.ACAD_CourseBenefits) 
+                  .WithMany(l => l.ACAD_CourseBenefits)
                   .HasForeignKey(cb => cb.BenefitID)
                   .OnDelete(DeleteBehavior.Restrict); // You shouldn't be able to delete a lookup if it's in use.
 
@@ -1084,7 +1091,7 @@ public partial class AppDbContext : DbContext
         });
 
         modelBuilder.HasSequence<int>("InvoiceSequence", schema: "dbo")
-               .StartsAt(1000000) 
+               .StartsAt(1000000)
                .IncrementsBy(1);
         modelBuilder.Entity<FIN_Invoice>(entity =>
         {
@@ -1098,7 +1105,7 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable(tb => tb.HasCheckConstraint("CK_FIN_Invoices_Sequence", "[PaymentSequence] IS NULL OR [PaymentSequence] >= 1"));
         });
-}
+    }
 
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -1120,7 +1127,7 @@ public partial class AppDbContext : DbContext
 
         //TODO: Replace with actual system user ID or a dedicated service account ID.
         //Temporary hardcoded admin ID for system processes when no user is logged in.
-        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2282A267-AD55-4059-9D0D-EED123AED820");   
+        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");
         var now = DateTime.Now;
 
         foreach (var entry in entries)
