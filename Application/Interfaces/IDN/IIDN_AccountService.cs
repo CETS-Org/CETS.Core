@@ -33,5 +33,8 @@ namespace Application.Interfaces.IDN
         Task<bool> VerifyAccountAsync(VerifyAccountRequest dto);
         Task<bool> ResendVerificationCodeAsync(string email);
         Task<AccountResponse> RegisterAsync(RegisterRequest dto);
+        Task<string?> GetOTP(string email);
+        bool VerifyOTP(VerifyOtpRequest dto);
+        Task<bool> ChangePassword(string password, string email);
     }
 }

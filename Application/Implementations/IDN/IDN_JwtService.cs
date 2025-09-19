@@ -73,5 +73,88 @@ namespace Application.Implementations.IDN
                 return false;
             }
         }
+
+        public string GenerateOtpJwt(string email, string otp)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Email, email),
+                    new Claim("otp", otp),
+                    new Claim("type", "PasswordReset"),
+                    new Claim("expiresAt", DateTime.UtcNow.AddMinutes(5).ToString("o")) // ISO 8601
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(5),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+
+        public bool ValidateOtpJwt(string token, string emailInput, string otpInput)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token,
+                    new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ClockSkew = TimeSpan.Zero
+                    },
+                    out SecurityToken validatedToken);
+
+                var emailFromToken = principal.FindFirst(ClaimTypes.Email)?.Value
+                     ?? principal.FindFirst("email")?.Value;
+                var otpFromToken = principal.FindFirst("otp")?.Value;
+
+                return emailFromToken == emailInput && otpFromToken == otpInput;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool ValidatePasswordResetToken(string token, string emailInput)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token,
+                    new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ClockSkew = TimeSpan.Zero
+                    },
+                    out SecurityToken validatedToken);
+
+                var emailFromToken = principal.FindFirst(ClaimTypes.Email)?.Value
+                     ?? principal.FindFirst("email")?.Value;
+                var tokenType = principal.FindFirst("type")?.Value;
+
+                return emailFromToken == emailInput && tokenType == "PasswordReset";
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

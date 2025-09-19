@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Principal;
 
 namespace Application.Implementations.IDN
 {
@@ -26,8 +27,9 @@ namespace Application.Implementations.IDN
         private readonly IConfiguration _configuration;
         private readonly IIDN_RoleRepository _roleRepository;
         private readonly IIDN_StudentRepository _studentRepository;
+        private readonly IIDN_JwtService _jwtService;
 
-        public IDN_AccountService(IIDN_AccountRepository accountRepository, ICORE_LookUpRepository lookUpRepository, IUnitOfWork unitOfWork, IMapper mapper,IPasswordHasher passwordHasher, IMailService mailService, IConfiguration configuration, IIDN_RoleRepository roleRepository, IIDN_StudentRepository studentRepository)
+        public IDN_AccountService(IIDN_AccountRepository accountRepository, ICORE_LookUpRepository lookUpRepository, IUnitOfWork unitOfWork, IMapper mapper,IPasswordHasher passwordHasher, IMailService mailService, IConfiguration configuration, IIDN_RoleRepository roleRepository, IIDN_StudentRepository studentRepository, IIDN_JwtService jwtService)
         {
             _accountRepository = accountRepository;
             _lookUpRepository = lookUpRepository;
@@ -38,6 +40,7 @@ namespace Application.Implementations.IDN
             _configuration = configuration;
             _roleRepository = roleRepository;
             _studentRepository = studentRepository;
+            _jwtService = jwtService;
         }
 
         public async Task<IReadOnlyList<AccountStatusResponse>> GetAccountStatusesAsync()
@@ -656,6 +659,56 @@ namespace Application.Implementations.IDN
             // Return created account
             var createdAccount = await _accountRepository.GetDetailByIdAsync(account.Id);
             return _mapper.Map<AccountResponse>(createdAccount);
+        }
+        #endregion
+
+        #region forgot password
+        public async Task<string?> GetOTP(string email)
+        {
+            var account = await _accountRepository.GetUserByEmailAsync(email);
+            if (account == null)
+            {
+                return null;
+            }
+            // Generate new OTP code
+            var otpCode = GenerateVerificationCode();
+            var jwtToken = _jwtService.GenerateOtpJwt(email, otpCode);
+            // Send OTP email
+            string subject = "Your OTP Code for Verification";
+            string body = $@"
+                <div style='font-family:Arial, sans-serif; font-size:16px; color:#333; padding:20px;'>
+                    <h2 style='color:#007bff;'>Email Verification</h2>
+                    <p>Dear user,</p>
+                    <p>Your One-Time Password (OTP) is:</p>
+                    <div style='font-size:24px; font-weight:bold; color:#28a745; margin:20px 0;'>{otpCode}</div>
+                    <p>This code is valid for the next 10 minutes.</p>
+                    <p>If you did not request this, please ignore this email.</p>
+                    <br/>
+                    <p>Thanks,<br/>Your App Team</p>
+                </div>";
+            await _mailService.SendEmailAsync(email, subject, body);
+            return jwtToken;
+        }
+
+        public bool VerifyOTP(VerifyOtpRequest dto)
+        {
+            var result = _jwtService.ValidateOtpJwt(dto.Token, dto.Email, dto.Otp);
+            return result;
+        }
+
+        public async Task<bool> ChangePassword(string password, string email)
+        {
+            var account = await _accountRepository.GetUserByEmailAsync(email);
+            if (account == null)
+            {
+                return false;
+            }
+            var hashedPassword = _passwordHasher.HashPassword(password);           
+            account.Password = hashedPassword;
+
+            _accountRepository.Update(account);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
         }
         #endregion
     }
