@@ -370,6 +370,18 @@ namespace Application.Implementations.IDN
                 
                 _accountRepository.Add(account);
                 await _unitOfWork.SaveChangesAsync();
+
+                // Create Student record immediately after Google account creation
+                var student = new IDN_Student
+                {
+                    Id = account.Id,
+                    StudentCode = GenerateStudentCode(),
+                    StudentNumber = await GetNextStudentNumberAsync(),
+                    CreatedAt = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+                _studentRepository.Add(student);
+                await _unitOfWork.SaveChangesAsync();
                 
                 // Send verification email
                 await SendVerificationEmailAsync(account.Email, account.FullName, verificationCode);
@@ -382,76 +394,36 @@ namespace Application.Implementations.IDN
         #region Account Verification
         public async Task<bool> VerifyAccountAsync(VerifyAccountRequest dto)
         {
-            using var transaction = await _unitOfWork.BeginTransactionAsync();
-            try
+            var account = await _accountRepository.GetDetailByIdAsync(await GetAccountIdByEmailAsync(dto.Email));
+            if (account == null)
             {
-                var account = await _accountRepository.GetDetailByIdAsync(await GetAccountIdByEmailAsync(dto.Email));
-                if (account == null)
-                {
-                    throw new KeyNotFoundException($"Account with email {dto.Email} not found.");
-                }
-                if (account.IsVerified)
-                {
-                    throw new InvalidOperationException("Account is already verified.");
-                }
-                if (string.IsNullOrEmpty(account.VerifiedCode))
-                {
-                    throw new InvalidOperationException("No verification code found for this account.");
-                }
-                if (account.VerifiedCodeExpiresAt.HasValue && account.VerifiedCodeExpiresAt.Value < DateTime.UtcNow)
-                {
-                    throw new InvalidOperationException("Verification code has expired.");
-                }
-                if (!VerifyVerificationCode(dto.VerificationCode, account.VerifiedCode))
-                {
-                    throw new InvalidOperationException("Invalid verification code.");
-                }
-
-                // Mark account as verified and clear verification code
-                account.IsVerified = true;
-                account.VerifiedCode = null;
-                account.VerifiedCodeExpiresAt = null;
-                _accountRepository.Update(account);
-
-                // Get Student role
-                var studentRoleId = await _roleRepository.GetRoleIdByNameAsync("Student");
-                if (studentRoleId != Guid.Empty)
-                {
-                    // Check if role already exists (avoid duplicates)
-                    if (!account.IDN_AccountRoles.Any(ar => ar.RoleID == studentRoleId))
-                    {
-                        // Add Student role to the same tracked entity
-                        var studentRole = new IDN_AccountRole
-                        {
-                            AccountID = account.Id,
-                            RoleID = studentRoleId
-                        };
-                        account.IDN_AccountRoles.Add(studentRole);
-
-                        // Create Student record
-                        var student = new IDN_Student
-                        {
-                            Id = account.Id,
-                            StudentCode = GenerateStudentCode(),
-                            StudentNumber = await GetNextStudentNumberAsync(),
-                            CreatedAt = DateTime.UtcNow,
-                            IsDeleted = false
-                        };
-                        _studentRepository.Add(student);
-                    }
-                }
-
-                // Single save operation for all changes
-                await _unitOfWork.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return true;
+                throw new KeyNotFoundException($"Account with email {dto.Email} not found.");
             }
-            catch
+            if (account.IsVerified)
             {
-                await transaction.RollbackAsync();
-                throw;
+                throw new InvalidOperationException("Account is already verified.");
             }
+            if (string.IsNullOrEmpty(account.VerifiedCode))
+            {
+                throw new InvalidOperationException("No verification code found for this account.");
+            }
+            if (account.VerifiedCodeExpiresAt.HasValue && account.VerifiedCodeExpiresAt.Value < DateTime.UtcNow)
+            {
+                throw new InvalidOperationException("Verification code has expired.");
+            }
+            if (!VerifyVerificationCode(dto.VerificationCode, account.VerifiedCode))
+            {
+                throw new InvalidOperationException("Invalid verification code.");
+            }
+
+            // Mark account as verified and clear verification code
+            account.IsVerified = true;
+            account.VerifiedCode = null;
+            account.VerifiedCodeExpiresAt = null;
+            _accountRepository.Update(account);
+            await _unitOfWork.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<bool> ResendVerificationCodeAsync(string email)
@@ -651,6 +623,18 @@ namespace Application.Implementations.IDN
 
             // Save account
             _accountRepository.Add(account);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Create Student record immediately after account creation
+            var student = new IDN_Student
+            {
+                Id = account.Id,
+                StudentCode = GenerateStudentCode(),
+                StudentNumber = await GetNextStudentNumberAsync(),
+                CreatedAt = DateTime.UtcNow,
+                IsDeleted = false
+            };
+            _studentRepository.Add(student);
             await _unitOfWork.SaveChangesAsync();
 
             // Send verification email
