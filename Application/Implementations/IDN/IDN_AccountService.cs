@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.Interfaces.ExternalServices.Email;
+using Application.Interfaces.ExternalServices.Security;
 using Application.Interfaces.IDN;
 using AutoMapper;
 using Domain.Constants;
@@ -27,9 +28,9 @@ namespace Application.Implementations.IDN
         private readonly IConfiguration _configuration;
         private readonly IIDN_RoleRepository _roleRepository;
         private readonly IIDN_StudentRepository _studentRepository;
-        private readonly IIDN_JwtService _jwtService;
+        private readonly IJwtService _jwtService;
 
-        public IDN_AccountService(IIDN_AccountRepository accountRepository, ICORE_LookUpRepository lookUpRepository, IUnitOfWork unitOfWork, IMapper mapper,IPasswordHasher passwordHasher, IMailService mailService, IConfiguration configuration, IIDN_RoleRepository roleRepository, IIDN_StudentRepository studentRepository, IIDN_JwtService jwtService)
+        public IDN_AccountService(IIDN_AccountRepository accountRepository, ICORE_LookUpRepository lookUpRepository, IUnitOfWork unitOfWork, IMapper mapper,IPasswordHasher passwordHasher, IMailService mailService, IConfiguration configuration, IIDN_RoleRepository roleRepository, IIDN_StudentRepository studentRepository, IJwtService jwtService)
         {
             _accountRepository = accountRepository;
             _lookUpRepository = lookUpRepository;
