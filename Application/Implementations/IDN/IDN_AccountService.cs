@@ -79,7 +79,7 @@ namespace Application.Implementations.IDN
             account.IsVerified = false;
             account.IsDeleted = false;
             account.VerifiedCode = HashVerificationCode(verificationCode); // Hash the verification code
-            account.VerifiedCodeExpiresAt = DateTime.UtcNow.AddMinutes(15); // Code expires in 15 minutes
+            account.VerifiedCodeExpiresAt = DateTime.Now.AddMinutes(15); // Code expires in 15 minutes
             account.IDN_AccountRoles = new List<IDN_AccountRole>
             {
                 new IDN_AccountRole
@@ -220,7 +220,7 @@ namespace Application.Implementations.IDN
             if (!string.IsNullOrWhiteSpace(dto.AvatarUrl))
                 account.AvatarUrl = dto.AvatarUrl;
 
-            account.UpdatedAt = DateTime.UtcNow;
+            account.UpdatedAt = DateTime.Now;
             account.UpdatedBy = updaterId; 
 
             _accountRepository.Update(account);
@@ -347,7 +347,7 @@ namespace Application.Implementations.IDN
                     FullName = googleLoginRequest.FullName,
                     AvatarUrl = googleLoginRequest.picture,
                     AccountStatusID = (await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, AccountStatuses.Active.ToString()))?.Id,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     IsDeleted = false,
                     IsVerified = false,
                     // Các trường khác có thể để null hoặc giá trị mặc định
@@ -366,7 +366,7 @@ namespace Application.Implementations.IDN
                 // Generate verification code for Google account
                 var verificationCode = GenerateVerificationCode();
                 account.VerifiedCode = HashVerificationCode(verificationCode); // Hash the verification code
-                account.VerifiedCodeExpiresAt = DateTime.UtcNow.AddMinutes(15);
+                account.VerifiedCodeExpiresAt = DateTime.Now.AddMinutes(15);
                 
                 _accountRepository.Add(account);
                 await _unitOfWork.SaveChangesAsync();
@@ -377,7 +377,7 @@ namespace Application.Implementations.IDN
                     Id = account.Id,
                     StudentCode = GenerateStudentCode(),
                     StudentNumber = await GetNextStudentNumberAsync(),
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     IsDeleted = false
                 };
                 _studentRepository.Add(student);
@@ -407,7 +407,7 @@ namespace Application.Implementations.IDN
             {
                 throw new InvalidOperationException("No verification code found for this account.");
             }
-            if (account.VerifiedCodeExpiresAt.HasValue && account.VerifiedCodeExpiresAt.Value < DateTime.UtcNow)
+            if (account.VerifiedCodeExpiresAt.HasValue && account.VerifiedCodeExpiresAt.Value < DateTime.Now)
             {
                 throw new InvalidOperationException("Verification code has expired.");
             }
@@ -442,7 +442,7 @@ namespace Application.Implementations.IDN
             // Generate new verification code
             var verificationCode = GenerateVerificationCode();
             account.VerifiedCode = HashVerificationCode(verificationCode); // Hash the verification code
-            account.VerifiedCodeExpiresAt = DateTime.UtcNow.AddMinutes(15); // Code expires in 15 minutes
+            account.VerifiedCodeExpiresAt = DateTime.Now.AddMinutes(15); // Code expires in 15 minutes
 
             _accountRepository.Update(account);
             await _unitOfWork.SaveChangesAsync();
@@ -589,11 +589,10 @@ namespace Application.Implementations.IDN
             // Create account entity
             var account = new IDN_Account
             {
-                Id = Guid.NewGuid(),
                 Email = dto.Email,
                 FullName = dto.FullName,
                 Password = _passwordHasher.HashPassword(dto.Password),
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 IsDeleted = false,
                 IsVerified = false
             };
@@ -601,7 +600,7 @@ namespace Application.Implementations.IDN
             // Generate verification code
             var verificationCode = GenerateVerificationCode();
             account.VerifiedCode = HashVerificationCode(verificationCode); // Hash the verification code
-            account.VerifiedCodeExpiresAt = DateTime.UtcNow.AddMinutes(15);
+            account.VerifiedCodeExpiresAt = DateTime.Now.AddMinutes(15);
 
             // Get active status
             var activeStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, AccountStatuses.Active.ToString());
@@ -631,7 +630,7 @@ namespace Application.Implementations.IDN
                 Id = account.Id,
                 StudentCode = GenerateStudentCode(),
                 StudentNumber = await GetNextStudentNumberAsync(),
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 IsDeleted = false
             };
             _studentRepository.Add(student);
