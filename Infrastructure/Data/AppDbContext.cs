@@ -44,6 +44,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<ACAD_CoursePackageItem> ACAD_CoursePackageItems { get; set; }
 
+    public virtual DbSet<ACAD_CourseSchedule> ACAD_CourseSchedules { get; set; }
+
     public virtual DbSet<ACAD_CourseTeacherAssignment> ACAD_CourseTeacherAssignments { get; set; }
 
     public virtual DbSet<ACAD_Enrollment> ACAD_Enrollments { get; set; }
@@ -794,6 +796,24 @@ public partial class AppDbContext : DbContext
                .WithMany(l => l.ACAD_CourseRequirements)
                .HasForeignKey(cb => cb.RequirementID)
                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ACAD_CourseSchedule>(entity =>
+        {
+            entity.Property(e => e.Id).HasColumnName("CourseScheduleID").ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+
+            entity.HasOne(d => d.Course)
+                .WithMany(p => p.ACAD_CourseSchedules)
+                .HasForeignKey(d => d.CourseID)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_ACAD_CourseSchedules_Course");
+
+            entity.HasOne(d => d.TimeSlot)
+                .WithMany(p => p.ACAD_CourseSchedules)
+                .HasForeignKey(d => d.LookUpID)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_ACAD_CourseSchedules_TimeSlot");
         });
 
 
