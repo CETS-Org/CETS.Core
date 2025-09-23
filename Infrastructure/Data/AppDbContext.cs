@@ -108,14 +108,7 @@ public partial class AppDbContext : DbContext
 
     #endregion
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        var builder = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", true, true);
-        var configuration = builder.Build();
-        optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
-    }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -228,6 +221,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("MeetingID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsStudy).HasDefaultValue(false);
 
             entity.HasOne(d => d.Class).WithMany(p => p.ACAD_ClassMeetings)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -246,6 +240,10 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.TeacherAssignment).WithMany(p => p.ACAD_ClassMeetings).HasConstraintName("FK_ACAD_ClassMeetings_Assignment");
 
             entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_ClassMeetingUpdatedByNavigations).HasConstraintName("FK_ACAD_ClassMeetings_Updated");
+
+            entity.HasOne(d => d.Slot).WithMany(p => p.ACAD_ClassMeetings)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ACAD_ClassMeetings_Slot");
         });
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>
@@ -937,7 +935,7 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<ACAD_ClassMeeting>(entity =>
         {
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
-            entity.ToTable("ACAD_ClassMeetings", t => t.HasCheckConstraint("CK_ACAD_ClassMeetings_Times", "[EndsAt] > [StartsAt]"));
+            entity.Property(e => e.IsStudy).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>

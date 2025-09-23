@@ -35,8 +35,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
             return await _context.ACAD_ClassMeetings
                 .Where(m => m.TeacherAssignment != null &&
-                            m.TeacherAssignment.CourseID == courseId &&
-                            m.StartsAt <= DateTime.UtcNow)
+                            m.TeacherAssignment.CourseID == courseId)
                 .CountAsync();
         }
 

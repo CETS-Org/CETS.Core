@@ -23,6 +23,22 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.ACAD_Enrollments)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<ACAD_CourseTeacherAssignment>> GetCourseTeacherAssignmentsByTeacherIdAsync(Guid teacherId)
+        {
+            return await _context.ACAD_CourseTeacherAssignments
+                .Where(cta => cta.TeacherID == teacherId)
+                .Include(cta => cta.Course)
+                    .ThenInclude(c => c.Category)
+                .Include(cta => cta.Course)
+                    .ThenInclude(c => c.CourseLevel)
+                .Include(cta => cta.Course)
+                    .ThenInclude(c => c.CourseFormat)
+                .Include(cta => cta.ACAD_ClassMeetings)
+                    .ThenInclude(cm => cm.Room)
+                .Include(cta => cta.ACAD_ClassMeetings)
+                    .ThenInclude(cm => cm.Class)
+                .ToListAsync();
+        }
     }
 }
 

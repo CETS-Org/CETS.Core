@@ -82,6 +82,15 @@ namespace Application.Mappers.ACAD
 
             CreateMap<ACAD_CourseRequirement, CourseRequirementResponse>()
                 .ForMember(dest => dest.RequirementName, opt => opt.MapFrom(src => src.Requirement.Name));
+            CreateMap<ACAD_Course, TeachingCourseResponse>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.CourseLevel, opt => opt.MapFrom(src => src.CourseLevel.Name))
+                .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.CourseName))
+                .ForMember(dest => dest.CourseCode, opt => opt.MapFrom(src => src.CourseCode))
+                .ForMember(dest => dest.CourseImageUrl, opt => opt.MapFrom(src => src.CourseImageUrl))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
+                .ForMember(dest => dest.FormatName, opt => opt.MapFrom(src => src.CourseFormat.Name));
+
 
         }
     }
