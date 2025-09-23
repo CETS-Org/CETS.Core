@@ -110,7 +110,14 @@ public partial class AppDbContext : DbContext
 
     #endregion
 
-
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", true, true);
+        var configuration = builder.Build();
+        optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
