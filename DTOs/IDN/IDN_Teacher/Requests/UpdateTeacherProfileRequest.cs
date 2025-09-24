@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DTOs.IDN.IDN_TeacherCredential.Requests;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,7 @@ namespace DTOs.IDN.IDN_Teacher.Requests
         public string? CID { get; set; }
         public string? Address { get; set; }
         public string? AvatarUrl { get; set; }
+        public List<UpdateTeacherCredentialRequest>? Credentials { get; set; }
 
     }
 }
