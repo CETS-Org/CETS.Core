@@ -84,6 +84,22 @@ namespace Application.Mappers.IDN
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Level, opt => opt.MapFrom(src => src.Level));
 
+
+             CreateMap<UpdateTeacherProfileRequest, IDN_Teacher>()
+                .ForMember(dest => dest.TeacherCode, opt => opt.Condition(src => src.TeacherCode != null))
+                .ForMember(dest => dest.YearsExperience, opt => opt.Condition(src => src.YearsExperience.HasValue))
+                .ForMember(dest => dest.Bio, opt => opt.Condition(src => src.Bio != null))
+                .ForMember(dest => dest.IDN_TeacherCredentials, opt => opt.Ignore()); 
+
+
+            // UpdateTeacherProfileRequest -> IDN_Account
+            CreateMap<UpdateTeacherProfileRequest, IDN_Account>()
+                .ForMember(dest => dest.FullName, opt => opt.Condition(src => src.FullName != null))
+                .ForMember(dest => dest.DateOfBirth, opt => opt.Condition(src => src.DateOfBirth.HasValue))
+                .ForMember(dest => dest.CID, opt => opt.Condition(src => src.CID != null))
+                .ForMember(dest => dest.Address, opt => opt.Condition(src => src.Address != null))
+                .ForMember(dest => dest.AvatarUrl, opt => opt.Condition(src => src.AvatarUrl != null));
+
         }
     }
 }
