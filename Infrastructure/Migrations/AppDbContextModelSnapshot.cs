@@ -352,9 +352,8 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("EndsAt")
-                        .HasPrecision(0)
-                        .HasColumnType("datetime2(0)");
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -362,6 +361,11 @@ namespace Infrastructure.Migrations
                         .HasDefaultValue(true);
 
                     b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsStudy")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
@@ -382,9 +386,8 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("RoomID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("StartsAt")
-                        .HasPrecision(0)
-                        .HasColumnType("datetime2(0)");
+                    b.Property<Guid>("SlotID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("TeacherAssignmentID")
                         .HasColumnType("uniqueidentifier");
@@ -406,14 +409,13 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("RoomID");
 
+                    b.HasIndex("SlotID");
+
                     b.HasIndex("TeacherAssignmentID");
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_ClassMeetings", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_ACAD_ClassMeetings_Times", "[EndsAt] > [StartsAt]");
-                        });
+                    b.ToTable("ACAD_ClassMeetings");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_ClassReservation", b =>
@@ -690,6 +692,47 @@ namespace Infrastructure.Migrations
                     b.HasIndex("RequirementID");
 
                     b.ToTable("ACAD_CourseRequirements");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ACAD_CourseSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CourseScheduleID");
+
+                    b.Property<Guid>("CourseID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)")
+                        .HasDefaultValueSql("(sysutcdatetime())");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("LookUpID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseID");
+
+                    b.HasIndex("LookUpID");
+
+                    b.ToTable("ACAD_CourseSchedules");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CourseSkill", b =>
@@ -2511,6 +2554,12 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("FK_ACAD_ClassMeetings_Room");
 
+                    b.HasOne("Domain.Entities.CORE_LookUp", "Slot")
+                        .WithMany("ACAD_ClassMeetings")
+                        .HasForeignKey("SlotID")
+                        .IsRequired()
+                        .HasConstraintName("FK_ACAD_ClassMeetings_Slot");
+
                     b.HasOne("Domain.Entities.ACAD_CourseTeacherAssignment", "TeacherAssignment")
                         .WithMany("ACAD_ClassMeetings")
                         .HasForeignKey("TeacherAssignmentID")
@@ -2528,6 +2577,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("CreatedByNavigation");
 
                     b.Navigation("Room");
+
+                    b.Navigation("Slot");
 
                     b.Navigation("TeacherAssignment");
 
@@ -2678,6 +2729,27 @@ namespace Infrastructure.Migrations
                     b.Navigation("Course");
 
                     b.Navigation("Requirement");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ACAD_CourseSchedule", b =>
+                {
+                    b.HasOne("Domain.Entities.ACAD_Course", "Course")
+                        .WithMany("ACAD_CourseSchedules")
+                        .HasForeignKey("CourseID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_ACAD_CourseSchedules_Course");
+
+                    b.HasOne("Domain.Entities.CORE_LookUp", "TimeSlot")
+                        .WithMany("ACAD_CourseSchedules")
+                        .HasForeignKey("LookUpID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_ACAD_CourseSchedules_TimeSlot");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("TimeSlot");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CourseSkill", b =>
@@ -3448,6 +3520,8 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("ACAD_CourseRequirements");
 
+                    b.Navigation("ACAD_CourseSchedules");
+
                     b.Navigation("ACAD_CourseSkills");
 
                     b.Navigation("ACAD_CourseTeacherAssignments");
@@ -3504,6 +3578,8 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("ACAD_ClassCourseFormats");
 
+                    b.Navigation("ACAD_ClassMeetings");
+
                     b.Navigation("ACAD_CourseBenefits");
 
                     b.Navigation("ACAD_CourseCourseFormats");
@@ -3511,6 +3587,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("ACAD_CourseCourseLevels");
 
                     b.Navigation("ACAD_CourseRequirements");
+
+                    b.Navigation("ACAD_CourseSchedules");
 
                     b.Navigation("ACAD_CourseSkills");
 

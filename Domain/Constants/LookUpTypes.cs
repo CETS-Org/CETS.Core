@@ -30,5 +30,8 @@ namespace Domain.Constants
         public const string InvoiceStatus = "InvoiceStatus";
         public const string PaymentMethod = "PaymentMethod";
         public const string CredentialType = "CredentialType";
+        public const string TimeSlot = "TimeSlot";
+        public const string CourseSkill = "CourseSkill";
+
     }
 }

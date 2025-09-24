@@ -11,11 +11,11 @@ public partial class ACAD_ClassMeeting : AuditedEntity
 {
     public Guid ClassID { get; set; }
 
-    [Precision(0)]
-    public DateTime StartsAt { get; set; }
+    public Guid SlotID { get; set; }
 
-    [Precision(0)]
-    public DateTime EndsAt { get; set; }
+    public DateOnly Date { get; set; }
+
+    public bool IsStudy { get; set; }
 
     public Guid? RoomID { get; set; }
 
@@ -57,4 +57,7 @@ public partial class ACAD_ClassMeeting : AuditedEntity
 
     [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
+
+    [ForeignKey(nameof(SlotID))]
+    public virtual CORE_LookUp Slot { get; set; } = null!;
 }

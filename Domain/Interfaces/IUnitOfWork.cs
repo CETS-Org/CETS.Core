@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -22,7 +23,8 @@ namespace Domain.Interfaces
             Func<Task> work,
             IsolationLevel isolation = IsolationLevel.ReadCommitted,
             CancellationToken ct = default);
-
+        Task<IDbContextTransaction> BeginTransactionAsync();
+        Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
         /*
          Task BeginTransactionAsync();
          Task CommitTransactionAsync();

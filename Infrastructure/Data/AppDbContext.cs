@@ -44,6 +44,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<ACAD_CoursePackageItem> ACAD_CoursePackageItems { get; set; }
 
+    public virtual DbSet<ACAD_CourseSchedule> ACAD_CourseSchedules { get; set; }
+
     public virtual DbSet<ACAD_CourseTeacherAssignment> ACAD_CourseTeacherAssignments { get; set; }
 
     public virtual DbSet<ACAD_Enrollment> ACAD_Enrollments { get; set; }
@@ -228,6 +230,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("MeetingID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsStudy).HasDefaultValue(false);
 
             entity.HasOne(d => d.Class).WithMany(p => p.ACAD_ClassMeetings)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -246,6 +249,10 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.TeacherAssignment).WithMany(p => p.ACAD_ClassMeetings).HasConstraintName("FK_ACAD_ClassMeetings_Assignment");
 
             entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_ClassMeetingUpdatedByNavigations).HasConstraintName("FK_ACAD_ClassMeetings_Updated");
+
+            entity.HasOne(d => d.Slot).WithMany(p => p.ACAD_ClassMeetings)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ACAD_ClassMeetings_Slot");
         });
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>
@@ -759,7 +766,7 @@ public partial class AppDbContext : DbContext
 
             // 3. Configure the relationship to CORE_LookUp.
             entity.HasOne(cb => cb.Benefit)
-                  .WithMany(l => l.ACAD_CourseBenefits) 
+                  .WithMany(l => l.ACAD_CourseBenefits)
                   .HasForeignKey(cb => cb.BenefitID)
                   .OnDelete(DeleteBehavior.Restrict); // You shouldn't be able to delete a lookup if it's in use.
 
@@ -796,6 +803,24 @@ public partial class AppDbContext : DbContext
                .WithMany(l => l.ACAD_CourseRequirements)
                .HasForeignKey(cb => cb.RequirementID)
                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ACAD_CourseSchedule>(entity =>
+        {
+            entity.Property(e => e.Id).HasColumnName("CourseScheduleID").ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+
+            entity.HasOne(d => d.Course)
+                .WithMany(p => p.ACAD_CourseSchedules)
+                .HasForeignKey(d => d.CourseID)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_ACAD_CourseSchedules_Course");
+
+            entity.HasOne(d => d.TimeSlot)
+                .WithMany(p => p.ACAD_CourseSchedules)
+                .HasForeignKey(d => d.LookUpID)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_ACAD_CourseSchedules_TimeSlot");
         });
 
 
@@ -937,7 +962,7 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<ACAD_ClassMeeting>(entity =>
         {
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
-            entity.ToTable("ACAD_ClassMeetings", t => t.HasCheckConstraint("CK_ACAD_ClassMeetings_Times", "[EndsAt] > [StartsAt]"));
+            entity.Property(e => e.IsStudy).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>
@@ -1091,7 +1116,7 @@ public partial class AppDbContext : DbContext
         });
 
         modelBuilder.HasSequence<int>("InvoiceSequence", schema: "dbo")
-               .StartsAt(1000000) 
+               .StartsAt(1000000)
                .IncrementsBy(1);
         modelBuilder.Entity<FIN_Invoice>(entity =>
         {
@@ -1105,7 +1130,7 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable(tb => tb.HasCheckConstraint("CK_FIN_Invoices_Sequence", "[PaymentSequence] IS NULL OR [PaymentSequence] >= 1"));
         });
-}
+    }
 
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -1127,7 +1152,7 @@ public partial class AppDbContext : DbContext
 
         //TODO: Replace with actual system user ID or a dedicated service account ID.
         //Temporary hardcoded admin ID for system processes when no user is logged in.
-        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");   
+        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");
         var now = DateTime.Now;
 
         foreach (var entry in entries)
