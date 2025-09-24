@@ -6,6 +6,7 @@ namespace Domain.Interfaces.ACAD
     {
         Task<IEnumerable<ACAD_Course>> GetCoursesByTeacherIdAsync(Guid teacherId);
         Task<IEnumerable<ACAD_CourseTeacherAssignment>> GetCourseTeacherAssignmentsByTeacherIdAsync(Guid teacherId);
+        Task<IEnumerable<ACAD_CourseTeacherAssignment>> GetCourseTeacherAssignmentsByTeacherIdAndCourseIdAsync(Guid teacherId, Guid courseId);
     }
 }
 
