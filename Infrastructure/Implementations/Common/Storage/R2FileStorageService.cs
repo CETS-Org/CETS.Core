@@ -125,5 +125,12 @@ namespace Infrastructure.Implementations.Common.Storage
             // Or just return the filePath and construct the full URL in the client/service.
             //return filePath;
         }
+
+
+        public async Task<string> GetTestPresignedUrlAsync()
+        {
+            var testPath = $"test/connection-test-{DateTime.Now:yyyyMMdd-HHmmss}.txt";
+            return await GetPresignedPutUrlAsync(testPath, "text/plain");
+        }
     }
 }
