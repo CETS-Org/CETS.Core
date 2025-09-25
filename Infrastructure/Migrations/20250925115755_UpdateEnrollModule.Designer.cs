@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250925081730_UpdateEnrollModule")]
+    [Migration("20250925115755_UpdateEnrollModule")]
     partial class UpdateEnrollModule
     {
         /// <inheritdoc />
@@ -822,7 +822,7 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("EnrollmentStatusID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("InvoiceID")
+                    b.Property<Guid?>("InvoiceID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsDeleted")
@@ -851,7 +851,8 @@ namespace Infrastructure.Migrations
                     b.HasIndex("EnrollmentStatusID");
 
                     b.HasIndex("InvoiceID")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[InvoiceID] IS NOT NULL");
 
                     b.HasIndex("StudentID");
 
@@ -1564,7 +1565,7 @@ namespace Infrastructure.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)")
                         .HasColumnName("InvoiceNumber")
-                        .HasComputedColumnSql("'INV-' + CONVERT(VARCHAR(4), YEAR(GETDATE())) + RIGHT('0000000' + CONVERT(VARCHAR(7), [InvoiceSequence]), 7)", true);
+                        .HasComputedColumnSql("'INV-' + CONVERT(VARCHAR(4), YEAR(GETDATE())) + RIGHT('0000000' + CONVERT(VARCHAR(7), [InvoiceSequence]), 7)", false);
 
                     b.Property<int>("InvoiceSequence")
                         .ValueGeneratedOnAdd()
@@ -1608,9 +1609,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("StudentID");
 
                     b.HasIndex("UpdatedBy");
-
-                    b.HasIndex(new[] { "InvoiceNumber" }, "UQ_FIN_Invoices_Number")
-                        .IsUnique();
 
                     b.ToTable("FIN_Invoices");
                 });
@@ -2838,7 +2836,6 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Entities.FIN_Invoice", "Invoice")
                         .WithOne("ACAD_Enrollment")
                         .HasForeignKey("Domain.Entities.ACAD_Enrollment", "InvoiceID")
-                        .IsRequired()
                         .HasConstraintName("FK_ACAD_Enrollments_Invoice");
 
                     b.HasOne("Domain.Entities.IDN_Student", "Student")

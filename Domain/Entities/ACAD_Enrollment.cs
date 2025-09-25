@@ -9,7 +9,7 @@ namespace Domain.Entities;
 
 public partial class ACAD_Enrollment : AuditedEntity
 {
-    public Guid InvoiceID { get; set; }
+    public Guid? InvoiceID { get; set; }
     public Guid StudentID { get; set; }
 
     public Guid? ClassID { get; set; }
@@ -39,5 +39,5 @@ public partial class ACAD_Enrollment : AuditedEntity
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 
     [ForeignKey(nameof(InvoiceID))]
-    public virtual FIN_Invoice Invoice { get; set; } = null!;
+    public virtual FIN_Invoice? Invoice { get; set; }
 }

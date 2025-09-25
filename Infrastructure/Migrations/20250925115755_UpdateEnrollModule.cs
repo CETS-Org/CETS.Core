@@ -31,6 +31,10 @@ namespace Infrastructure.Migrations
                 name: "IX_FIN_Invoices_SeriesSeq_Filtered",
                 table: "FIN_Invoices");
 
+            migrationBuilder.DropIndex(
+                name: "UQ_FIN_Invoices_Number",
+                table: "FIN_Invoices");
+
             migrationBuilder.DropCheckConstraint(
                 name: "CK_FIN_Invoices_Sequence",
                 table: "FIN_Invoices");
@@ -47,15 +51,7 @@ namespace Infrastructure.Migrations
                 name: "UQ_ACAD_ClassReservations",
                 table: "ACAD_ClassReservations");
 
-            // First: Drop the computed column that depends on PaymentSequence
-            migrationBuilder.DropColumn(
-                name: "InvoiceNumber",
-                table: "FIN_Invoices");
-
-            // Now we can safely drop the PaymentSequence column
-            migrationBuilder.DropColumn(
-                name: "PaymentSequence",
-                table: "FIN_Invoices");
+           
 
             migrationBuilder.DropColumn(
                 name: "PlanTypeID",
@@ -84,8 +80,7 @@ namespace Infrastructure.Migrations
                 name: "InvoiceID",
                 table: "ACAD_Enrollments",
                 type: "uniqueidentifier",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                nullable: true);
 
             migrationBuilder.AlterColumn<Guid>(
                 name: "ReservationID",
@@ -96,8 +91,7 @@ namespace Infrastructure.Migrations
                 oldType: "uniqueidentifier",
                 oldDefaultValueSql: "(newid())");
 
-            // Now recreate the InvoiceNumber computed column with the new formula
-            migrationBuilder.AddColumn<string>(
+            migrationBuilder.AlterColumn<string>(
                 name: "InvoiceNumber",
                 table: "FIN_Invoices",
                 type: "varchar(50)",
@@ -105,7 +99,17 @@ namespace Infrastructure.Migrations
                 maxLength: 50,
                 nullable: false,
                 computedColumnSql: "'INV-' + CONVERT(VARCHAR(4), YEAR(GETDATE())) + RIGHT('0000000' + CONVERT(VARCHAR(7), [InvoiceSequence]), 7)",
-                stored: true);
+                stored: false,
+                oldClrType: typeof(string),
+                oldType: "varchar(50)",
+                oldUnicode: false,
+                oldMaxLength: 50,
+                oldComputedColumnSql: "'INV-' + CONVERT(VARCHAR(10), [InvoiceSequence]) + '-' + RIGHT('000' + CONVERT(VARCHAR(3), [PaymentSequence]), 3)",
+                oldStored: true);
+
+            migrationBuilder.DropColumn(
+               name: "PaymentSequence",
+               table: "FIN_Invoices");
 
             migrationBuilder.RestartSequence(
                 name: "InvoiceSequence",
@@ -146,7 +150,8 @@ namespace Infrastructure.Migrations
                 name: "IX_ACAD_Enrollments_InvoiceID",
                 table: "ACAD_Enrollments",
                 column: "InvoiceID",
-                unique: true);
+                unique: true,
+                filter: "[InvoiceID] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ACAD_ClassReservations_CoursePackageID",
@@ -267,13 +272,7 @@ namespace Infrastructure.Migrations
                 nullable: false,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
 
-            // First: Drop the current computed column
-            migrationBuilder.DropColumn(
-                name: "InvoiceNumber",
-                table: "FIN_Invoices");
-
-            // Then: Recreate it with the old formula that uses PaymentSequence
-            migrationBuilder.AddColumn<string>(
+            migrationBuilder.AlterColumn<string>(
                 name: "InvoiceNumber",
                 table: "FIN_Invoices",
                 type: "varchar(50)",
@@ -281,7 +280,13 @@ namespace Infrastructure.Migrations
                 maxLength: 50,
                 nullable: false,
                 computedColumnSql: "'INV-' + CONVERT(VARCHAR(10), [InvoiceSequence]) + '-' + RIGHT('000' + CONVERT(VARCHAR(3), [PaymentSequence]), 3)",
-                stored: true);
+                stored: true,
+                oldClrType: typeof(string),
+                oldType: "varchar(50)",
+                oldUnicode: false,
+                oldMaxLength: 50,
+                oldComputedColumnSql: "'INV-' + CONVERT(VARCHAR(4), YEAR(GETDATE())) + RIGHT('0000000' + CONVERT(VARCHAR(7), [InvoiceSequence]), 7)",
+                oldStored: false);
 
             migrationBuilder.RestartSequence(
                 name: "InvoiceSequence",
@@ -299,6 +304,12 @@ namespace Infrastructure.Migrations
                 columns: new[] { "SeriesID", "PaymentSequence" },
                 unique: true,
                 filter: "([SeriesID] IS NOT NULL AND [PaymentSequence] IS NOT NULL)");
+
+            migrationBuilder.CreateIndex(
+                name: "UQ_FIN_Invoices_Number",
+                table: "FIN_Invoices",
+                column: "InvoiceNumber",
+                unique: true);
 
             migrationBuilder.AddCheckConstraint(
                 name: "CK_FIN_Invoices_Sequence",

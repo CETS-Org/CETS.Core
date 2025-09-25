@@ -364,11 +364,12 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_EnrollmentUpdatedByNavigations).HasConstraintName("FK_ACAD_Enrollments_Updated");
 
-            // 1-1 relationship with Invoice
+            // 1-1 relationship with Invoice (nullable - enrollments can exist without invoices initially)
             entity.HasOne(d => d.Invoice).WithOne(p => p.ACAD_Enrollment)
                 .HasForeignKey<ACAD_Enrollment>(d => d.InvoiceID)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ACAD_Enrollments_Invoice");
+                .HasConstraintName("FK_ACAD_Enrollments_Invoice")
+                .IsRequired(false);
         });
 
         modelBuilder.Entity<ACAD_LearningMaterial>(entity =>
@@ -1024,7 +1025,6 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<FIN_Invoice>(entity =>
         {
-            entity.HasIndex(e => e.InvoiceNumber, "UQ_FIN_Invoices_Number").IsUnique();
             entity.Property(e => e.Subtotal).HasDefaultValue(0);
             entity.Property(e => e.TaxAmount).HasDefaultValue(0);
             entity.Property(e => e.TotalAmount).HasDefaultValue(0);
@@ -1140,7 +1140,7 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.InvoiceNumber)
               .HasColumnName("InvoiceNumber")
-              .HasComputedColumnSql("'INV-' + CONVERT(VARCHAR(4), YEAR(GETDATE())) + RIGHT('0000000' + CONVERT(VARCHAR(7), [InvoiceSequence]), 7)", stored: true);
+              .HasComputedColumnSql("'INV-' + CONVERT(VARCHAR(4), YEAR(GETDATE())) + RIGHT('0000000' + CONVERT(VARCHAR(7), [InvoiceSequence]), 7)", stored: false);
         });
     }
 
