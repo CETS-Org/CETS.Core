@@ -40,8 +40,6 @@ public partial class ACAD_Class : AuditedEntity
 
     public virtual ICollection<ACAD_ClassMeeting> ACAD_ClassMeetings { get; set; } = new List<ACAD_ClassMeeting>();
 
-    public virtual ICollection<ACAD_ClassReservation> ACAD_ClassReservations { get; set; } = new List<ACAD_ClassReservation>();
-
     public virtual ICollection<ACAD_Enrollment> ACAD_Enrollments { get; set; } = new List<ACAD_Enrollment>();
 
     public virtual ICollection<ACAD_LearningMaterial> ACAD_LearningMaterials { get; set; } = new List<ACAD_LearningMaterial>();

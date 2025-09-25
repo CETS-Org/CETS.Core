@@ -90,6 +90,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<FIN_Promotion> FIN_Promotions { get; set; }
 
+    public virtual DbSet<ACAD_ReservationItem> FIN_ReservationItems { get; set; }
+
     public virtual DbSet<HR_Contract> HR_Contracts { get; set; }
 
     public virtual DbSet<HR_TeacherAvailability> HR_TeacherAvailabilities { get; set; }
@@ -257,13 +259,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>
         {
-            entity.Property(e => e.Id).HasColumnName("ReservationID").HasDefaultValueSql("(newid())");
-
-            entity.HasOne(d => d.Class).WithMany(p => p.ACAD_ClassReservations)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ACAD_ClassReservations_Class");
-
-            entity.HasOne(d => d.Invoice).WithMany(p => p.ACAD_ClassReservations).HasConstraintName("FK_ACAD_ClassReservations_Invoice");
+            entity.Property(e => e.Id).HasColumnName("ReservationID").ValueGeneratedNever();
 
             entity.HasOne(d => d.Student).WithMany(p => p.ACAD_ClassReservations)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -367,6 +363,12 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK_ACAD_Enrollments_Student");
 
             entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_EnrollmentUpdatedByNavigations).HasConstraintName("FK_ACAD_Enrollments_Updated");
+
+            // 1-1 relationship with Invoice
+            entity.HasOne(d => d.Invoice).WithOne(p => p.ACAD_Enrollment)
+                .HasForeignKey<ACAD_Enrollment>(d => d.InvoiceID)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ACAD_Enrollments_Invoice");
         });
 
         modelBuilder.Entity<ACAD_LearningMaterial>(entity =>
@@ -550,10 +552,6 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<FIN_Invoice>(entity =>
         {
-            entity.HasIndex(e => new { e.SeriesID, e.PaymentSequence }, "IX_FIN_Invoices_SeriesSeq_Filtered")
-                .IsUnique()
-                .HasFilter("([SeriesID] IS NOT NULL AND [PaymentSequence] IS NOT NULL)");
-
             entity.Property(e => e.Id).HasColumnName("InvoiceID").ValueGeneratedNever();
             entity.Property(e => e.CreateDate).HasDefaultValueSql("(CONVERT([date],sysutcdatetime()))");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
@@ -565,7 +563,6 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_FIN_Invoices_Status");
 
-            entity.HasOne(d => d.PlanType).WithMany(p => p.FIN_InvoicePlanTypes).HasConstraintName("FK_FIN_Invoices_PlanType");
 
             entity.HasOne(d => d.Student).WithMany(p => p.FIN_Invoices)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -647,6 +644,24 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK_FIN_Promotions_Type");
 
             entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.FIN_PromotionUpdatedByNavigations).HasConstraintName("FK_FIN_Promotions_Updated");
+        });
+
+        modelBuilder.Entity<ACAD_ReservationItem>(entity =>
+        {
+            entity.Property(e => e.Id).HasColumnName("ReservationItemID").ValueGeneratedNever();
+
+            // 1-1 relationship with Invoice
+            entity.HasOne(d => d.Invoice).WithOne(p => p.FIN_ReservationItem)
+                .HasForeignKey<ACAD_ReservationItem>(d => d.InvoiceID)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FIN_ReservationItems_Invoice");
+
+            entity.HasOne(d => d.Course).WithMany(p => p.FIN_ReservationItems)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FIN_ReservationItems_Course");
+
+            entity.HasOne(d => d.PlanType).WithMany(p => p.FIN_ReservationItems)
+                .HasConstraintName("FK_FIN_ReservationItems_PlanType");
         });
 
         modelBuilder.Entity<HR_Contract>(entity =>
@@ -966,7 +981,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>
         {
-            entity.HasIndex(e => new { e.ClassID, e.StudentID }, "UQ_ACAD_ClassReservations").IsUnique();
+            entity.HasIndex(e => e.StudentID, "UQ_ACAD_ClassReservations_Student").IsUnique();
         });
 
         modelBuilder.Entity<ACAD_Enrollment>(entity =>
@@ -1115,7 +1130,7 @@ public partial class AppDbContext : DbContext
         });
 
         modelBuilder.HasSequence<int>("InvoiceSequence", schema: "dbo")
-               .StartsAt(1000000)
+               .StartsAt(1)
                .IncrementsBy(1);
         modelBuilder.Entity<FIN_Invoice>(entity =>
         {
@@ -1125,9 +1140,7 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.InvoiceNumber)
               .HasColumnName("InvoiceNumber")
-              .HasComputedColumnSql("'INV-' + CONVERT(VARCHAR(10), [InvoiceSequence]) + '-' + RIGHT('000' + CONVERT(VARCHAR(3), [PaymentSequence]), 3)", stored: true);
-
-            entity.ToTable(tb => tb.HasCheckConstraint("CK_FIN_Invoices_Sequence", "[PaymentSequence] IS NULL OR [PaymentSequence] >= 1"));
+              .HasComputedColumnSql("'INV-' + CONVERT(VARCHAR(4), YEAR(GETDATE())) + RIGHT('0000000' + CONVERT(VARCHAR(7), [InvoiceSequence]), 7)", stored: true);
         });
     }
 

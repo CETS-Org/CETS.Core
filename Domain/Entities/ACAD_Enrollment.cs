@@ -1,12 +1,15 @@
 ﻿using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 
 namespace Domain.Entities;
 
 public partial class ACAD_Enrollment : AuditedEntity
 {
+    public Guid InvoiceID { get; set; }
     public Guid StudentID { get; set; }
 
     public Guid? ClassID { get; set; }
@@ -14,8 +17,8 @@ public partial class ACAD_Enrollment : AuditedEntity
     public Guid CourseID { get; set; }
 
     public Guid EnrollmentStatusID { get; set; }
-
     public bool IsDeleted { get; set; }
+
 
     [ForeignKey(nameof(ClassID))]
     public virtual ACAD_Class? Class { get; set; }
@@ -34,4 +37,7 @@ public partial class ACAD_Enrollment : AuditedEntity
 
     [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
+
+    [ForeignKey(nameof(InvoiceID))]
+    public virtual FIN_Invoice Invoice { get; set; } = null!;
 }
