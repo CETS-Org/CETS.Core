@@ -59,9 +59,9 @@ namespace Application.Implementations.ACAD
             });
         }
 
-        public async Task UpdateLearningMaterialAsync(UpdateLearningMaterialRequest request)
+        public async Task<LearningMaterialUploadResponse?> UpdateLearningMaterialAsync(UpdateLearningMaterialRequest request)
         {
-            await _uow.ExecuteInTransactionAsync(async () =>
+            return await _uow.ExecuteInTransactionAsync(async () =>
             {
                 var entity = await _learningMaterialRepo.GetByIdAsync(request.Id);
                 if (entity == null)
@@ -70,10 +70,56 @@ namespace Application.Implementations.ACAD
                 if (entity.IsDeleted)
                     throw new InvalidOperationException("Cannot update deleted learning material");
 
+                // Check there is updating file
+                var isFileUpdate = !string.IsNullOrEmpty(request.ContentType) && !string.IsNullOrEmpty(request.FileName);
+                string? oldFilePath = null;
+                string? uploadUrl = null;
+
+                if (isFileUpdate)
+                {
+                    // Store old file path for cleanup
+                    oldFilePath = entity.StoreUrl;
+
+                    // Generate new unique file path
+                    var fileExtension = Path.GetExtension(request.FileName);
+                    var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+                    var newFilePath = $"learning-materials/{DateTime.Now:yyyy/MM/dd}/{uniqueFileName}";
+
+                    // Update file path
+                    entity.StoreUrl = newFilePath;
+
+                    // Get presigned upload URL for new file
+                    uploadUrl = await _fileStorageService.GetPresignedPutUrlAsync(newFilePath, request.ContentType!);
+                }
+
                 _mapper.Map(request, entity);
+                // entity.UpdatedAt = DateTime.Now;
 
                 _learningMaterialRepo.Update(entity);
                 await _uow.SaveChangesAsync();
+
+                // Delete old file from storage
+                if (isFileUpdate && !string.IsNullOrEmpty(oldFilePath))
+                {
+                    try
+                    {
+                        await _fileStorageService.DeleteFileAsync(oldFilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                      
+                        Console.WriteLine($"Warning: Failed to delete old file {oldFilePath}: {ex.Message}");
+                    }
+                }
+
+              
+                return new LearningMaterialUploadResponse
+                    {
+                        Id = entity.Id,
+                        UploadUrl = uploadUrl,
+                        FilePath = entity.StoreUrl!,
+                        Title = entity.Title,
+                    };
             });
         }
 
@@ -138,11 +184,7 @@ namespace Application.Implementations.ACAD
             return await _fileStorageService.GetPresignedGetUrlAsync(entity.StoreUrl);
         }
 
-        public async Task<string> GetTestPresignedUrlAsync()
-        {
-            var testPath = $"test/connection-test-{DateTime.Now:yyyyMMdd-HHmmss}.txt";
-            return await _fileStorageService.GetPresignedPutUrlAsync(testPath, "text/plain");
-        }
+      
 
     }
 }

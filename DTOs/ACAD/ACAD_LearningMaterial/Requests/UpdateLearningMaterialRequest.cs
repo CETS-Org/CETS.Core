@@ -11,5 +11,9 @@ namespace DTOs.ACAD.ACAD_LearningMaterial.Requests
         [Required]
         [StringLength(255)]
         public string Title { get; set; } = null!;
+
+        // Optional file update properties
+        public string? ContentType { get; set; }
+        public string? FileName { get; set; }
     }
 }

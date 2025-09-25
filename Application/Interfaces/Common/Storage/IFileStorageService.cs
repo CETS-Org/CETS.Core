@@ -15,5 +15,7 @@ namespace Application.Interfaces.Common.Storage
         Task<string> GetPresignedPutUrlAsync(string filePath, string contentType);
         Task<string> GetPresignedGetUrlAsync(string filePath);
         string GetPublicUrl(string filePath);
+        Task<string> GetTestPresignedUrlAsync();
+
     }
 }
