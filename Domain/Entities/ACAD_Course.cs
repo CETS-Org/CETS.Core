@@ -60,6 +60,8 @@ public partial class ACAD_Course : AuditedEntity
 
     public virtual ICollection<FIN_InvoiceItem> FIN_InvoiceItems { get; set; } = new List<FIN_InvoiceItem>();
 
+    public virtual ICollection<ACAD_ReservationItem> FIN_ReservationItems { get; set; } = new List<ACAD_ReservationItem>();
+
     [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
 

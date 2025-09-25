@@ -19,6 +19,7 @@ public partial class FIN_InvoiceItem : EntityBase
     public decimal Subtotal { get; set; }
 
     public decimal Total { get; set; }
+    public DateOnly? DueDate { get; set; }
 
     public Guid? PromotionID { get; set; }
 
