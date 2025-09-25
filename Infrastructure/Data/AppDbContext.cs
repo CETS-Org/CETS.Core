@@ -376,13 +376,12 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Class).WithMany(p => p.ACAD_LearningMaterials).HasConstraintName("FK_ACAD_LearningMaterials_Class");
 
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ACAD_LearningMaterialCreatedByNavigations).HasConstraintName("FK_ACAD_LearningMaterials_Created");
-
-            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_LearningMaterialUpdatedByNavigations).HasConstraintName("FK_ACAD_LearningMaterials_Updated");
-
-            entity.HasOne(d => d.Uploader).WithMany(p => p.ACAD_LearningMaterialUploaders)
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ACAD_LearningMaterialCreatedByNavigations)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ACAD_LearningMaterials_Uploader");
+                .HasConstraintName("FK_ACAD_LearningMaterials_Created");
+
+            entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_LearningMaterialUpdatedByNavigations)
+                .HasConstraintName("FK_ACAD_LearningMaterials_Updated");
         });
 
         modelBuilder.Entity<ACAD_Submission>(entity =>

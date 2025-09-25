@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250922111540_CreateCourseSchedule")]
+    [Migration("20250923172221_CreateCourseSchedule")]
     partial class CreateCourseSchedule
     {
         /// <inheritdoc />
@@ -355,9 +355,8 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("EndsAt")
-                        .HasPrecision(0)
-                        .HasColumnType("datetime2(0)");
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -365,6 +364,11 @@ namespace Infrastructure.Migrations
                         .HasDefaultValue(true);
 
                     b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsStudy")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
@@ -385,9 +389,8 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("RoomID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("StartsAt")
-                        .HasPrecision(0)
-                        .HasColumnType("datetime2(0)");
+                    b.Property<Guid>("SlotID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("TeacherAssignmentID")
                         .HasColumnType("uniqueidentifier");
@@ -409,14 +412,13 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("RoomID");
 
+                    b.HasIndex("SlotID");
+
                     b.HasIndex("TeacherAssignmentID");
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("ACAD_ClassMeetings", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_ACAD_ClassMeetings_Times", "[EndsAt] > [StartsAt]");
-                        });
+                    b.ToTable("ACAD_ClassMeetings");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_ClassReservation", b =>
@@ -2555,6 +2557,12 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("FK_ACAD_ClassMeetings_Room");
 
+                    b.HasOne("Domain.Entities.CORE_LookUp", "Slot")
+                        .WithMany("ACAD_ClassMeetings")
+                        .HasForeignKey("SlotID")
+                        .IsRequired()
+                        .HasConstraintName("FK_ACAD_ClassMeetings_Slot");
+
                     b.HasOne("Domain.Entities.ACAD_CourseTeacherAssignment", "TeacherAssignment")
                         .WithMany("ACAD_ClassMeetings")
                         .HasForeignKey("TeacherAssignmentID")
@@ -2572,6 +2580,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("CreatedByNavigation");
 
                     b.Navigation("Room");
+
+                    b.Navigation("Slot");
 
                     b.Navigation("TeacherAssignment");
 
@@ -3570,6 +3580,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("ACAD_ClassClassStatuses");
 
                     b.Navigation("ACAD_ClassCourseFormats");
+
+                    b.Navigation("ACAD_ClassMeetings");
 
                     b.Navigation("ACAD_CourseBenefits");
 

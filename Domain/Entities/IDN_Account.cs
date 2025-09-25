@@ -88,8 +88,6 @@ public partial class IDN_Account : EntityBase, IHasCreationTime, IHasModificatio
 
     public virtual ICollection<ACAD_LearningMaterial> ACAD_LearningMaterialUpdatedByNavigations { get; set; } = new List<ACAD_LearningMaterial>();
 
-    public virtual ICollection<ACAD_LearningMaterial> ACAD_LearningMaterialUploaders { get; set; } = new List<ACAD_LearningMaterial>();
-
 
     public virtual ICollection<ACAD_Submission> ACAD_SubmissionCreatedByNavigations { get; set; } = new List<ACAD_Submission>();
 
