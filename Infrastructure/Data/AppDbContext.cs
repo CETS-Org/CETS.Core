@@ -90,7 +90,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<FIN_Promotion> FIN_Promotions { get; set; }
 
-    public virtual DbSet<ACAD_ReservationItem> FIN_ReservationItems { get; set; }
+    public virtual DbSet<ACAD_ReservationItem> ACAD_ReservationItems { get; set; }
 
     public virtual DbSet<HR_Contract> HR_Contracts { get; set; }
 
@@ -652,17 +652,17 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("ReservationItemID").ValueGeneratedNever();
 
             // 1-1 relationship with Invoice
-            entity.HasOne(d => d.Invoice).WithOne(p => p.FIN_ReservationItem)
+            entity.HasOne(d => d.Invoice).WithOne(p => p.ACAD_ReservationItem)
                 .HasForeignKey<ACAD_ReservationItem>(d => d.InvoiceID)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_FIN_ReservationItems_Invoice");
+                .HasConstraintName("FK_ACAD_ReservationItems_Invoice");
 
-            entity.HasOne(d => d.Course).WithMany(p => p.FIN_ReservationItems)
+            entity.HasOne(d => d.Course).WithMany(p => p.ACAD_ReservationItems)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_FIN_ReservationItems_Course");
+                .HasConstraintName("FK_ACAD_ReservationItems_Course");
 
-            entity.HasOne(d => d.PlanType).WithMany(p => p.FIN_ReservationItems)
-                .HasConstraintName("FK_FIN_ReservationItems_PlanType");
+            entity.HasOne(d => d.PlanType).WithMany(p => p.ACAD_ReservationItems)
+                .HasConstraintName("FK_ACAD_ReservationItems_PlanType");
         });
 
         modelBuilder.Entity<HR_Contract>(entity =>

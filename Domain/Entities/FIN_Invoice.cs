@@ -34,7 +34,7 @@ public partial class FIN_Invoice : AuditedEntity
     public virtual ICollection<FIN_Payment> FIN_Payments { get; set; } = new List<FIN_Payment>();
 
     public virtual ACAD_Enrollment? ACAD_Enrollment { get; set; }
-    public virtual ACAD_ReservationItem? FIN_ReservationItem { get; set; }
+    public virtual ACAD_ReservationItem? ACAD_ReservationItem { get; set; }
 
     [ForeignKey(nameof(InvoiceStatusID))]
     public virtual CORE_LookUp InvoiceStatus { get; set; } = null!;

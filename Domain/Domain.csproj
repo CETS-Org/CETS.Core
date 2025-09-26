@@ -16,7 +16,6 @@
     <Folder Include="Interfaces\COM\" />
     <Folder Include="Interfaces\CORE\" />
     <Folder Include="Interfaces\EVT\" />
-    <Folder Include="Interfaces\FIN\" />
     <Folder Include="Interfaces\HR\" />
     <Folder Include="Interfaces\RPT\" />
   </ItemGroup>

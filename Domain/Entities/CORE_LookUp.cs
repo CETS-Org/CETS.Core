@@ -55,7 +55,7 @@ public partial class CORE_LookUp : AuditedEntity
 
     public virtual ICollection<FIN_Promotion> FIN_Promotions { get; set; } = new List<FIN_Promotion>();
 
-    public virtual ICollection<ACAD_ReservationItem> FIN_ReservationItems { get; set; } = new List<ACAD_ReservationItem>();
+    public virtual ICollection<ACAD_ReservationItem> ACAD_ReservationItems { get; set; } = new List<ACAD_ReservationItem>();
 
     public virtual ICollection<HR_Contract> HR_Contracts { get; set; } = new List<HR_Contract>();
 

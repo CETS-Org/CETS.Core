@@ -10,7 +10,7 @@ namespace Domain.Entities
 {
     public partial class ACAD_ReservationItem : EntityBase
     {
-        public Guid InvoiceID { get; set; }
+        public Guid? InvoiceID { get; set; }
 
         public Guid CourseID { get; set; }
 
