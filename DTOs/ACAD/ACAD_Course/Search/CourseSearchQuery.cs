@@ -17,6 +17,8 @@ namespace DTOs.ACAD.ACAD_Course.Search
         public List<Guid> LevelIds { get; set; } = new();
         public List<Guid> CategoryIds { get; set; } = new();
         public List<Guid> SkillIds { get; set; } = new();
+        public List<Guid> RequirementIds { get; set; } = new();
+        public List<Guid> BenefitIds { get; set; } = new();
         public decimal? PriceMin { get; set; }
         public decimal? PriceMax { get; set; }
     }

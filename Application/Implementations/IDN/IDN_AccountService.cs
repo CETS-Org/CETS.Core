@@ -75,7 +75,6 @@ namespace Application.Implementations.IDN
             }
 
             //Set account attributes
-            account.Id = Guid.NewGuid();
             account.AccountStatusID = activeStatus.Id;
             account.IsVerified = false;
             account.IsDeleted = false;

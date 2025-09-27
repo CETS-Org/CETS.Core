@@ -833,7 +833,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.TimeSlot)
                 .WithMany(p => p.ACAD_CourseSchedules)
-                .HasForeignKey(d => d.LookUpID)
+                .HasForeignKey(d => d.TimeSlotID)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_ACAD_CourseSchedules_TimeSlot");
         });
