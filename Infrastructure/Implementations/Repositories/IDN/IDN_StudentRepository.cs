@@ -17,6 +17,12 @@ namespace Infrastructure.Implementations.Repositories.IDN
                 .Include(s => s.Account)
                 .FirstOrDefaultAsync(s => s.Account.Id == accountId);
         }
+        public async Task<IDN_Student?> GetStudentWithStudentCode(string studentCode)
+        {
+            return await _context.IDN_Students
+                .Include(s => s.Account)
+                .FirstOrDefaultAsync(s => s.StudentCode == studentCode);
+        }
     }
 }
 
