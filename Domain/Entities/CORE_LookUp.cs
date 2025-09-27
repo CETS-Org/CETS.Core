@@ -45,8 +45,6 @@ public partial class CORE_LookUp : AuditedEntity
 
     public virtual ICollection<FIN_Invoice> FIN_InvoiceInvoiceStatuses { get; set; } = new List<FIN_Invoice>();
 
-    public virtual ICollection<FIN_Invoice> FIN_InvoicePlanTypes { get; set; } = new List<FIN_Invoice>();
-
     public virtual ICollection<FIN_Payment> FIN_PaymentGateways { get; set; } = new List<FIN_Payment>();
 
     public virtual ICollection<FIN_Payment> FIN_PaymentPaymentMethods { get; set; } = new List<FIN_Payment>();
@@ -56,6 +54,8 @@ public partial class CORE_LookUp : AuditedEntity
     public virtual ICollection<FIN_PaymentWebhook> FIN_PaymentWebhooks { get; set; } = new List<FIN_PaymentWebhook>();
 
     public virtual ICollection<FIN_Promotion> FIN_Promotions { get; set; } = new List<FIN_Promotion>();
+
+    public virtual ICollection<ACAD_ReservationItem> ACAD_ReservationItems { get; set; } = new List<ACAD_ReservationItem>();
 
     public virtual ICollection<HR_Contract> HR_Contracts { get; set; } = new List<HR_Contract>();
 

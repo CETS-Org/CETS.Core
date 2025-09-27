@@ -14,12 +14,14 @@ namespace Application.Implementations.ACAD
     public class ACAD_CourseTeacherAssignmentService : IACAD_CourseTeacherAssignmentService
     {
         private readonly IACAD_CourseTeacherAssignmentRepository _courseAssignmentRepository;
+        private readonly IACAD_ClassMeetingRepository _classMeetingRepository;
         private readonly IMapper _mapper;
 
-        public ACAD_CourseTeacherAssignmentService(IACAD_CourseTeacherAssignmentRepository courseAssignmentRepository, IMapper mapper)
+        public ACAD_CourseTeacherAssignmentService(IACAD_CourseTeacherAssignmentRepository courseAssignmentRepository, IMapper mapper, IACAD_ClassMeetingRepository classMeetingRepository)
         {
             _courseAssignmentRepository = courseAssignmentRepository;
             _mapper = mapper;
+            _classMeetingRepository = classMeetingRepository;
         }
 
         public async Task<IEnumerable<CourseListAssignmentResponse>> GetCoursesByTeacherIdAsync(Guid teacherId)
@@ -27,21 +29,50 @@ namespace Application.Implementations.ACAD
             var courses = await _courseAssignmentRepository.GetCoursesByTeacherIdAsync(teacherId);
             return _mapper.Map<IEnumerable<CourseListAssignmentResponse>>(courses);
         }
-        public async Task<IEnumerable<TeachingClassResponse>> GetTeachingClassesByTeacherIdAsync(Guid teacherId)
+        public async Task<IEnumerable<ClassTeachingListResponse>?> GetTeachingClassesByTeacherIdAndCourseIdAsync(Guid teacherId, Guid courseId)
         {
-            //var classes = await _courseAssignmentRepository.GetCourseTeacherAssignmentsByTeacherIdAsync(teacherId);
-            //IEnumerable<ClassSession> classSessions = new List<ClassSession>();
-            //foreach (var classItem in classes)
-            //{
-            //    var classmeetings = classItem.ACAD_ClassMeetings.Where(cm => cm.IsStudy!).ToList();
-            //    var classSession = new ClassSession()
-            //    {
-            //        slot = classmeetings.FirstOrDefault()?.Slot.Name,
-            //        Capacity = classItem.ACAD_Classes.,
-
-            //    };
-            //}
-            return null;
+            var courseTeacherAssignment =await _courseAssignmentRepository.GetCourseTeacherAssignmentsByTeacherIdAndCourseIdAsync(teacherId, courseId);
+            var result = new List<ClassTeachingListResponse>();
+            if (courseTeacherAssignment != null)
+            {
+                foreach (var item in courseTeacherAssignment)
+                {
+                    var classes = item.ACAD_Classes;
+                    foreach(var classItem in classes)
+                    {
+                        var classMeetings = await _classMeetingRepository.GetClassMeetingTodayByClassId(classItem.Id);
+                        ClassSession? classSession = null;
+                        if (classMeetings != null)
+                        {
+                            classSession = new ClassSession
+                            {
+                                ClassMeetingsId = classMeetings.Id,
+                                slot = classMeetings.Slot.Name,
+                                RoomCode = classMeetings.Room.RoomCode,
+                                TopicName = classMeetings.CoveredTopic.TopicTitle,
+                                Date = classMeetings.Date,
+                                isStudyingDay = classMeetings.IsStudy
+                            };
+                        }
+                        
+                        var classTeachingListResponseItem = new ClassTeachingListResponse
+                        {                           
+                            ClassId = classItem.Id,
+                            Capacity = classItem.Capacity,
+                            EnrolledCount = classItem.EnrolledCount,
+                            IsActive = classItem.IsActive,
+                            classFormatName = classItem.CourseFormat.Name,
+                            StatusName = classItem.ClassStatus.Name,
+                            classSession = classSession,
+                            className = classItem.ClassName,
+                            classNumber= classItem.ClassNum,
+                        };
+                        result.Add(classTeachingListResponseItem);
+                    }
+                    
+                }
+            }
+            return result;
         }
 
         public async Task<IEnumerable<TeachingCourseResponse>> GetAllTeachingCourses(Guid teacherId)

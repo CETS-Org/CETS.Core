@@ -11,7 +11,7 @@ namespace Application.Interfaces.ACAD
     public interface IACAD_CourseTeacherAssignmentService
     {
         Task<IEnumerable<CourseListAssignmentResponse>> GetCoursesByTeacherIdAsync(Guid teacherId);
-        Task<IEnumerable<TeachingClassResponse>> GetTeachingClassesByTeacherIdAsync(Guid teacherId);
+        Task<IEnumerable<ClassTeachingListResponse>?> GetTeachingClassesByTeacherIdAndCourseIdAsync(Guid teacherId, Guid courseId);
         Task<IEnumerable<TeachingCourseResponse>> GetAllTeachingCourses(Guid teacherId);
     }
 }

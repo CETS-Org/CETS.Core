@@ -8,10 +8,11 @@ namespace DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses
 {
     public class ClassSession
     {
+        public Guid ClassMeetingsId { get; set; }
         public string slot { get; set; } = null!;
         public string RoomCode { get; set; } = null!;
         public string TopicName { get; set; } = null!;
-        public int EnrolledCount { get; set; }
-        public int Capacity { get; set; }
+        public DateOnly Date { get; set; }
+        public bool isStudyingDay { get; set; }
     }
 }

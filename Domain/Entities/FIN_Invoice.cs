@@ -27,26 +27,17 @@ public partial class FIN_Invoice : AuditedEntity
     public decimal TaxAmount { get; set; }
 
     public decimal TotalAmount { get; set; }
-
-    [StringLength(50)]
-    [Unicode(false)]
-    public string? SeriesID { get; set; }
-
-    public int? PaymentSequence { get; set; }
-
-    public Guid? PlanTypeID { get; set; }
-
-    public virtual ICollection<ACAD_ClassReservation> ACAD_ClassReservations { get; set; } = new List<ACAD_ClassReservation>();
+    
 
     public virtual ICollection<FIN_InvoiceItem> FIN_InvoiceItems { get; set; } = new List<FIN_InvoiceItem>();
 
     public virtual ICollection<FIN_Payment> FIN_Payments { get; set; } = new List<FIN_Payment>();
 
+    public virtual ACAD_Enrollment? ACAD_Enrollment { get; set; }
+    public virtual ACAD_ReservationItem? ACAD_ReservationItem { get; set; }
+
     [ForeignKey(nameof(InvoiceStatusID))]
     public virtual CORE_LookUp InvoiceStatus { get; set; } = null!;
-
-    [ForeignKey(nameof(PlanTypeID))]
-    public virtual CORE_LookUp? PlanType { get; set; }
 
     [ForeignKey(nameof(StudentID))]
     public virtual IDN_Student Student { get; set; } = null!;
