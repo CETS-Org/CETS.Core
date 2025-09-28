@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace DTOs.ACAD.ACAD_CoursePackage.Requests
 {
-    public class AddCourseToPackageRequest
+    public class RemoveCourseFromPackageRequest
     {
+        public Guid PackageID { get; set; }
         public Guid CourseID { get; set; }
-        public int Sequence { get; set; }  
     }
 }

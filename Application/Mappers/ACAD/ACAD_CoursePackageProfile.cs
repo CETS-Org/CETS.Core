@@ -2,6 +2,8 @@
 using Domain.Entities;
 using DTOs.ACAD.ACAD_CoursePackage.Requests;
 using DTOs.ACAD.ACAD_CoursePackage.Responses;
+using DTOs.ACAD.ACAD_CoursePackageItem.Requests;
+using DTOs.ACAD.ACAD_CoursePackageItem.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,17 +16,28 @@ namespace Application.Mappers.ACAD
     {
         public ACAD_CoursePackageProfile()
         {
+            // CoursePackage mappings
             CreateMap<CreateCoursePackageRequest, ACAD_CoursePackage>();
-            CreateMap<AddCourseToPackageRequest, ACAD_CoursePackageItem>();
-
+            CreateMap<UpdateCoursePackageRequest, ACAD_CoursePackage>();
             CreateMap<ACAD_CoursePackage, CoursePackageResponse>();
+            CreateMap<ACAD_CoursePackage, CoursePackageDetailResponse>()
+                .ForMember(dest => dest.Courses,
+                           opt => opt.MapFrom(src => src.ACAD_CoursePackageItems));
+
+            // CoursePackageItem mappings
+            CreateMap<AddCourseToPackageRequest, ACAD_CoursePackageItem>();
+            CreateMap<CreateCoursePackageItemRequest, ACAD_CoursePackageItem>();
+            CreateMap<UpdateCoursePackageItemRequest, ACAD_CoursePackageItem>();
+            
             CreateMap<ACAD_CoursePackageItem, CourseInPackageResponse>()
                 .ForMember(dest => dest.CourseName,
                            opt => opt.MapFrom(src => src.Course.CourseName));
 
-            CreateMap<ACAD_CoursePackage, CoursePackageDetailResponse>()
-                .ForMember(dest => dest.Courses,
-                           opt => opt.MapFrom(src => src.ACAD_CoursePackageItems));
+            CreateMap<ACAD_CoursePackageItem, CoursePackageItemResponse>()
+                .ForMember(dest => dest.CourseName,
+                           opt => opt.MapFrom(src => src.Course.CourseName))
+                .ForMember(dest => dest.CourseCode,
+                           opt => opt.MapFrom(src => src.Course.CourseCode));
         }
     }
 }
