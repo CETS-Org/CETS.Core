@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250928164843_AddPackageImageUrl")]
+    partial class AddPackageImageUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -919,7 +922,7 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("CourseID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("InvoiceID")
+                    b.Property<Guid>("InvoiceID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("PaymentSequence")
@@ -933,12 +936,11 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CourseID");
 
                     b.HasIndex("InvoiceID")
-                        .IsUnique()
-                        .HasFilter("[InvoiceID] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("PlanTypeID");
 
-                    b.ToTable("ACAD_ReservationItems");
+                    b.ToTable("FIN_ReservationItems");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_Submission", b =>
@@ -2893,20 +2895,21 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.ACAD_ReservationItem", b =>
                 {
                     b.HasOne("Domain.Entities.ACAD_Course", "Course")
-                        .WithMany("ACAD_ReservationItems")
+                        .WithMany("FIN_ReservationItems")
                         .HasForeignKey("CourseID")
                         .IsRequired()
-                        .HasConstraintName("FK_ACAD_ReservationItems_Course");
+                        .HasConstraintName("FK_FIN_ReservationItems_Course");
 
                     b.HasOne("Domain.Entities.FIN_Invoice", "Invoice")
-                        .WithOne("ACAD_ReservationItem")
+                        .WithOne("FIN_ReservationItem")
                         .HasForeignKey("Domain.Entities.ACAD_ReservationItem", "InvoiceID")
-                        .HasConstraintName("FK_ACAD_ReservationItems_Invoice");
+                        .IsRequired()
+                        .HasConstraintName("FK_FIN_ReservationItems_Invoice");
 
                     b.HasOne("Domain.Entities.CORE_LookUp", "PlanType")
-                        .WithMany("ACAD_ReservationItems")
+                        .WithMany("FIN_ReservationItems")
                         .HasForeignKey("PlanTypeID")
-                        .HasConstraintName("FK_ACAD_ReservationItems_PlanType");
+                        .HasConstraintName("FK_FIN_ReservationItems_PlanType");
 
                     b.Navigation("Course");
 
@@ -3543,13 +3546,13 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("ACAD_Enrollments");
 
-                    b.Navigation("ACAD_ReservationItems");
-
                     b.Navigation("ACAD_Syllabi");
 
                     b.Navigation("COM_Feedbacks");
 
                     b.Navigation("FIN_InvoiceItems");
+
+                    b.Navigation("FIN_ReservationItems");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_CourseCategory", b =>
@@ -3613,8 +3616,6 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("ACAD_Enrollments");
 
-                    b.Navigation("ACAD_ReservationItems");
-
                     b.Navigation("COM_Feedbacks");
 
                     b.Navigation("EVT_Events");
@@ -3632,6 +3633,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("FIN_PaymentWebhooks");
 
                     b.Navigation("FIN_Promotions");
+
+                    b.Navigation("FIN_ReservationItems");
 
                     b.Navigation("HR_Contracts");
 
@@ -3665,11 +3668,11 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("ACAD_Enrollment");
 
-                    b.Navigation("ACAD_ReservationItem");
-
                     b.Navigation("FIN_InvoiceItems");
 
                     b.Navigation("FIN_Payments");
+
+                    b.Navigation("FIN_ReservationItem");
                 });
 
             modelBuilder.Entity("Domain.Entities.FIN_Payment", b =>

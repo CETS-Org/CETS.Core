@@ -16,6 +16,7 @@ namespace DTOs.IDN.IDN_Account.Responses
         public string? Email { get; set; }
         public string? FullName { get; set; }
         public List<string> RoleNames { get; set; } = new();
+        public string? AvatarUrl { get; set; }
         public bool IsVerified { get; set; }
         public string? VerifiedCode { get; set; }
         public DateTime? VerifiedCodeExpiresAt { get; set; }

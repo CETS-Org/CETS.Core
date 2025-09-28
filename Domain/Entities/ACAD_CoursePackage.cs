@@ -17,6 +17,8 @@ public partial class ACAD_CoursePackage : AuditedEntity
 
     public string? Description { get; set; }
 
+    public string? PackageImageUrl { get; set; }
+
     public decimal TotalPrice { get; set; }
 
     public bool IsActive { get; set; }
