@@ -82,5 +82,10 @@ namespace Application.Implementations.ACAD
             var entities = await _classRepo.GetAllAsync();
             return _mapper.Map<IEnumerable<ClassResponse>>(entities);
         }
+
+        public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
+        {
+            return await _classRepo.GetLearningClassByStudentId(studentId);
+        }
     }
 }
