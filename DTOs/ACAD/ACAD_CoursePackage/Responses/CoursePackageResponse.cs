@@ -11,6 +11,9 @@ namespace DTOs.ACAD.ACAD_CoursePackage.Responses
         public Guid Id { get; set; }
         public string PackageCode { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string? PackageImageUrl { get; set; }
         public decimal TotalPrice { get; set; }
+        public decimal TotalIndividualPrice { get; set; }
+        public List<string> CourseNames { get; set; } = new();
     }
 }

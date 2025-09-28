@@ -1,5 +1,6 @@
 ﻿using DTOs.ACAD.ACAD_CoursePackage.Requests;
 using DTOs.ACAD.ACAD_CoursePackage.Responses;
+using DTOs.ACAD.ACAD_CoursePackage.Search;
 using DTOs.ACAD.ACAD_CoursePackageItem.Requests;
 using DTOs.ACAD.ACAD_CoursePackageItem.Responses;
 using System;
@@ -24,9 +25,12 @@ namespace Application.Interfaces.ACAD
         Task DeactivatePackageAsync(Guid packageId);
         
         // CoursePackageItem operations
-        Task AddCourseToPackageAsync(AddCourseToPackageRequest request);
+        Task AddCourseToPackageAsync(Guid packageId, AddCourseToPackageRequest request);
         Task RemoveCourseFromPackageAsync(RemoveCourseFromPackageRequest request);
         Task<IEnumerable<CoursePackageItemResponse>> GetPackageItemsAsync(Guid packageId);
         Task UpdatePackageItemSequenceAsync(Guid packageItemId, int newSequence);
+        
+        // Search operations
+        Task<CoursePackageSearchResult> SearchBasicAsync(CoursePackageSearchQuery query, CancellationToken ct);
     }
 }

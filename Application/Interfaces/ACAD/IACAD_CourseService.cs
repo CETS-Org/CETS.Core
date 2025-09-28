@@ -11,18 +11,24 @@ namespace Application.Interfaces.ACAD
 {
     public interface IACAD_CourseService
     {
+        Task<IReadOnlyList<CourseResponse>> GetAllCoursesAsync();
         Task<Guid> CreateCourseAsync(CreateCourseRequest request);
         Task UpdateCourseAsync(UpdateCourseRequest request);
-        Task DeleteCourseAsync(Guid id);
-        Task<IEnumerable<CourseDetailResponse>> GetAllCoursesAsync();
+        Task SoftDeleteCourseAsync(Guid id);
         Task<CourseResponse?> GetCourseByIdAsync(Guid id);
 
         Task<IEnumerable<CourseResponse>> SearchCoursesAsync(string keyword);
         Task<IEnumerable<CourseResponse>> FilterCoursesAsync(FilterCourseRequest request);
         Task<CourseDetailResponse?> GetCourseDetailAsync(Guid courseId);
+        Task<IReadOnlyList<CourseDetailResponse>> GetAllCoursesDetailsAsync();
+
         Task<IReadOnlyList<CourseListItemResponse>> GetAllCoursesForListAsync();
 
         Task<CourseSearchResult> SearchBasicAsync(CourseSearchQuery q, CancellationToken ct);
+        
+        // Activation/Deactivation methods
+        Task ActivateCourseAsync(Guid courseId);
+        Task DeactivateCourseAsync(Guid courseId);
     }
 
 }

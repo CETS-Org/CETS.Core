@@ -5,6 +5,7 @@ using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_CoursePackage.Requests;
 using DTOs.ACAD.ACAD_CoursePackage.Responses;
+using DTOs.ACAD.ACAD_CoursePackage.Search;
 using DTOs.ACAD.ACAD_CoursePackageItem.Requests;
 using DTOs.ACAD.ACAD_CoursePackageItem.Responses;
 using System;
@@ -39,8 +40,6 @@ namespace Application.Implementations.ACAD
             return await _uow.ExecuteInTransactionAsync(async () =>
             {
                 var entity = _mapper.Map<ACAD_CoursePackage>(request);
-                entity.Id = Guid.NewGuid();
-                entity.CreatedAt = DateTime.UtcNow;
 
                 _packageRepo.Add(entity);
                 await _uow.SaveChangesAsync();
@@ -49,12 +48,12 @@ namespace Application.Implementations.ACAD
             });
         }
 
-        public async Task AddCourseToPackageAsync(AddCourseToPackageRequest request)
+        public async Task AddCourseToPackageAsync(Guid packageId, AddCourseToPackageRequest request)
         {
             await _uow.ExecuteInTransactionAsync(async () =>
             {
                 var entity = _mapper.Map<ACAD_CoursePackageItem>(request);
-                entity.Id = Guid.NewGuid();
+                entity.PackageID = packageId;
 
                 _itemRepo.Add(entity);
                 await _uow.SaveChangesAsync();
@@ -84,7 +83,6 @@ namespace Application.Implementations.ACAD
                     throw new KeyNotFoundException("Course package not found");
 
                 _mapper.Map(request, entity);
-                entity.UpdatedAt = DateTime.UtcNow;
 
                 _packageRepo.Update(entity);
                 await _uow.SaveChangesAsync();
@@ -100,7 +98,6 @@ namespace Application.Implementations.ACAD
                     throw new KeyNotFoundException("Course package not found");
 
                 entity.IsDeleted = true;
-                entity.UpdatedAt = DateTime.UtcNow;
 
                 _packageRepo.Update(entity);
                 await _uow.SaveChangesAsync();
@@ -128,7 +125,6 @@ namespace Application.Implementations.ACAD
                     throw new KeyNotFoundException("Course package not found");
 
                 entity.IsActive = true;
-                entity.UpdatedAt = DateTime.UtcNow;
 
                 _packageRepo.Update(entity);
                 await _uow.SaveChangesAsync();
@@ -144,7 +140,6 @@ namespace Application.Implementations.ACAD
                     throw new KeyNotFoundException("Course package not found");
 
                 entity.IsActive = false;
-                entity.UpdatedAt = DateTime.UtcNow;
 
                 _packageRepo.Update(entity);
                 await _uow.SaveChangesAsync();
@@ -187,6 +182,11 @@ namespace Application.Implementations.ACAD
                 _itemRepo.Update(item);
                 await _uow.SaveChangesAsync();
             });
+        }
+
+        public async Task<CoursePackageSearchResult> SearchBasicAsync(CoursePackageSearchQuery query, CancellationToken ct)
+        {
+            return await _packageRepo.SearchBasicAsync(query, ct);
         }
     }
 }
