@@ -14,6 +14,8 @@ public partial class ACAD_ClassReservation : EntityBase
 
     public Guid? CoursePackageID { get; set; }
 
+    public Guid? ReservationStatusID { get; set; }
+
     [Precision(0)]
     public DateTime ExpiresAt { get; set; }
 
@@ -24,5 +26,8 @@ public partial class ACAD_ClassReservation : EntityBase
 
     [ForeignKey(nameof(CoursePackageID))]
     public virtual ACAD_CoursePackage? CoursePackage { get; set; }
+
+    [ForeignKey(nameof(ReservationStatusID))]
+    public virtual CORE_LookUp? ReservationStatus { get; set; }
 
 }
