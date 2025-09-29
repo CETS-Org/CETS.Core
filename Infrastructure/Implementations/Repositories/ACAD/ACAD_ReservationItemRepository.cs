@@ -1,6 +1,7 @@
 ﻿using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,10 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         }
         public async Task<ACAD_ReservationItem?> GetByReservationIdAsync(Guid reservationItemId)
         {
-            return await _context.ACAD_ReservationItems.FindAsync(reservationItemId);
+            return await _context.ACAD_ReservationItems
+                .Include(ri => ri.Course)
+                .Include(ri => ri.PlanType)
+                .FirstOrDefaultAsync(ri => ri.Id == reservationItemId);
         }
     }
 }

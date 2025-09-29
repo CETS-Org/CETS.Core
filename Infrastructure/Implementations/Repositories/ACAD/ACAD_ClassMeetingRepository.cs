@@ -1,8 +1,10 @@
-using Domain.Data;
+﻿using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
+using DTOs.ACAD.ACAD_ClassMeetings.Responses;
 using Infrastructure.Implementations.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace Infrastructure.Implementations.Repositories.ACAD
 {
@@ -32,8 +34,64 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.CoveredTopic)
                 .FirstOrDefaultAsync();
         }
+<<<<<<< HEAD
 
        
+=======
+        public async Task<IEnumerable<StudentWeeklyScheduleResponse>> WeeklyScheduleGetByStudentAsync(Guid studentId, CancellationToken ct)
+        {
+            var enrolled = await _context.ACAD_Enrollments
+                .Include(e => e.Course)
+                .Where(e => e.StudentID == studentId)
+                .Select(e => new { e.ClassID, e.Course.CourseName })
+                .ToListAsync(ct);
+
+            if (!enrolled.Any())
+                return Enumerable.Empty<StudentWeeklyScheduleResponse>();
+
+            var classIds = enrolled.Select(e => e.ClassID).ToList();
+            var courseMap = enrolled.ToDictionary(e => e.ClassID, e => e.CourseName);
+
+            var meetings = await _context.ACAD_ClassMeetings
+                .Include(m => m.Class)
+                    .ThenInclude(m => m.TeacherAssignment)
+                        .ThenInclude(ta => ta.Teacher.Account)
+                .Include(m => m.Slot)
+                .Include(m => m.Room)
+                .Where(m => classIds.Contains(m.ClassID))
+                .OrderBy(m => m.Date)
+                .ThenBy(m => m.Slot.Name)
+                .ToListAsync(ct);
+
+            var result = meetings
+            .Select(m =>
+            {
+                var startStr = m.Slot.Name?.Trim();
+                string endStr = string.Empty;
+
+                if (TimeSpan.TryParse(startStr, out var start))
+                {
+                    endStr = (start + TimeSpan.FromMinutes(90)).ToString(@"hh\:mm");
+                }
+
+                return new StudentWeeklyScheduleResponse
+                {
+                    Date = m.Date.ToDateTime(TimeOnly.MinValue),
+                    DayOfWeek = m.Date.DayOfWeek.ToString(),
+                    Slot = m.Slot.Code,                
+                    StartTime = startStr,              
+                    EndTime = endStr,               
+                    ClassName = m.Class.ClassName,
+                    CourseName = courseMap.ContainsKey(m.ClassID) ? courseMap[m.ClassID] : string.Empty,
+                    Room = m.Room?.RoomCode,
+                    Teacher = m.Class.TeacherAssignment?.Teacher.Account.FullName,
+                    OnlineMeetingUrl = m.OnlineMeetingUrl
+                };
+            });
+            return result.ToList();
+        }
+
+>>>>>>> 245454c46eb41cf045bca9384d01318ccf6f6369
     }
 }
 

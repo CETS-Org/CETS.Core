@@ -4,6 +4,7 @@ namespace Domain.Interfaces.FIN
 {
     public interface IFIN_InvoiceRepository : IBaseRepository<FIN_Invoice>
     {
+        Task<int> GetNextSequenceInvoiceIdAsync();
     }
 }
 
