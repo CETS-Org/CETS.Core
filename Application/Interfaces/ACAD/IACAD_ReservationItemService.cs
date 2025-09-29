@@ -1,6 +1,7 @@
 ﻿using Domain.Entities;
 using DTOs.ACAD.ACAD_ClassReservation.Requests;
 using DTOs.ACAD.ACAD_ClassReservation.Responses;
+using DTOs.ACAD.ACAD_ReservationItem.Requests;
 using DTOs.ACAD.ACAD_ReservationItem.Responses;
 using System;
 using System.Collections.Generic;
@@ -16,11 +17,11 @@ namespace Application.Interfaces.ACAD
         IQueryable<ReservationItemResponse?> GetAllReservationItemAsync();
         Task<ReservationItemResponse?> GetReservationItemByIdAsync(Guid reservationItemId);
         Task<ReservationItemResponse?> GetReservationItemByReservationId(Guid id);
-        Task<ReservationItemResponse> CreateReservationItemAsync(CreateClassReservationRequest request);
+        Task<ReservationItemResponse> CreateReservationItemAsync(CreateReservationItemRequests request);
 
-        Task<List<ReservationItemResponse>> CreateListReservationItemAsync(List<CreateClassReservationRequest> request);
+        Task<List<ReservationItemResponse>> CreateListReservationItemAsync(List<CreateReservationItemRequests> request);
 
         Task<bool> DeleteReservationItemAsync(Guid id);
-        Task<ClassReservationResponse?> UpdateReservationItemAsync(UpdateClassReservationRequest request);
+        Task<ReservationItemResponse?> UpdateReservationItemAsync(UpdateReservationItemRequest request);
     }
 }

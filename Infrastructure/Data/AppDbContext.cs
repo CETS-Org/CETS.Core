@@ -982,10 +982,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.IsStudy).HasDefaultValue(false);
         });
 
-        modelBuilder.Entity<ACAD_ClassReservation>(entity =>
-        {
-            entity.HasIndex(e => e.StudentID, "UQ_ACAD_ClassReservations_Student").IsUnique();
-        });
+     
 
         modelBuilder.Entity<ACAD_Enrollment>(entity =>
         {

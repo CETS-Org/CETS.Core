@@ -8,6 +8,7 @@ namespace DTOs.ACAD.ACAD_ReservationItem.Requests
 {
     public class UpdateReservationItemRequest
     {
+        public Guid Id { get; set; }
         public Guid CourseID { get; set; }
         public Guid? InvoiceID { get; set; }
         public int? PaymentSequence { get; set; }
