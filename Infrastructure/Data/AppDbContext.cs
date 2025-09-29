@@ -932,7 +932,7 @@ public partial class AppDbContext : DbContext
             entity.ToTable("ACAD_SyllabusItems", t =>
             {
                 t.HasCheckConstraint("CK_ACAD_SyllabusItems_Session", "[SessionNumber] >= 1");
-                t.HasCheckConstraint("CK_ACAD_SyllabusItems_Minutes", "[EstimatedMinutes] > 0");
+                t.HasCheckConstraint("CK_ACAD_SyllabusItems_Slots", "[TotalSlots] > 0");
             });
             entity.HasOne(d => d.Syllabus).WithMany(p => p.ACAD_SyllabusItems).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_ACAD_SyllabusItems_Syllabus");
         });

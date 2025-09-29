@@ -69,25 +69,16 @@ namespace Application.Mappers.ACAD
             if (course.ACAD_Syllabi == null || !course.ACAD_Syllabi.Any())
                 return "Self-paced learning";
 
-            var totalMinutes = course.ACAD_Syllabi
+            var totalSlots = course.ACAD_Syllabi
                 .Where(s => !s.IsDeleted)
                 .SelectMany(s => s.ACAD_SyllabusItems)
-                .Where(item => !item.IsDeleted && item.EstimatedMinutes.HasValue)
-                .Sum(item => item.EstimatedMinutes.Value);
+                .Where(item => !item.IsDeleted && item.TotalSlots.HasValue)
+                .Sum(item => item.TotalSlots.Value);
 
-            if (totalMinutes == 0)
+            if (totalSlots == 0)
                 return "Self-paced learning";
 
-            if (totalMinutes < 60)
-                return $"{totalMinutes} minutes";
-
-            var hours = totalMinutes / 60;
-            var remainingMinutes = totalMinutes % 60;
-
-            if (remainingMinutes == 0)
-                return $"{hours} hour{(hours > 1 ? "s" : "")}";
-
-            return $"{hours}h {remainingMinutes}m";
+            return $"{totalSlots} slot{(totalSlots > 1 ? "s" : "")}";
         }
     }
 }

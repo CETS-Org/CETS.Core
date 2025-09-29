@@ -23,6 +23,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Where(p => p.IsActive)
                 .Include(p => p.ACAD_CoursePackageItems)
                     .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.ACAD_Syllabi)
+                            .ThenInclude(s => s.ACAD_SyllabusItems)
+                .Include(p => p.ACAD_CoursePackageItems)
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.Category)
+                .Include(p => p.ACAD_CoursePackageItems)
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.CourseLevel)
+                .Include(p => p.ACAD_CoursePackageItems)
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.ACAD_Enrollments)
                 .ToListAsync();
         }
 
@@ -31,6 +42,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             return await _context.ACAD_CoursePackages
                 .Include(p => p.ACAD_CoursePackageItems)
                     .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.ACAD_Syllabi)
+                            .ThenInclude(s => s.ACAD_SyllabusItems)
+                .Include(p => p.ACAD_CoursePackageItems)
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.Category)
+                .Include(p => p.ACAD_CoursePackageItems)
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.CourseLevel)
+                .Include(p => p.ACAD_CoursePackageItems)
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.ACAD_Enrollments)
                 .FirstOrDefaultAsync(p => p.Id == packageId && p.IsActive);
         }
 

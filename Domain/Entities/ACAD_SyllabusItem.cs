@@ -15,7 +15,7 @@ public partial class ACAD_SyllabusItem : AuditedEntity
     [StringLength(255)]
     public string TopicTitle { get; set; } = null!;
 
-    public int? EstimatedMinutes { get; set; }
+    public int? TotalSlots { get; set; }
 
     public bool Required { get; set; }
 
