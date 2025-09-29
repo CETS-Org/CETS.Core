@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250928160219_AddForeignKeyForReservationItemWithClassReservation")]
+    partial class AddForeignKeyForReservationItemWithClassReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -615,9 +618,6 @@ namespace Infrastructure.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<string>("PackageImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18, 2)");
 
@@ -713,7 +713,7 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("TimeSlotID")
+                    b.Property<Guid>("LookUpID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -727,7 +727,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CourseID");
 
-                    b.HasIndex("TimeSlotID");
+                    b.HasIndex("LookUpID");
 
                     b.ToTable("ACAD_CourseSchedules");
                 });
@@ -2748,7 +2748,7 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Entities.CORE_LookUp", "TimeSlot")
                         .WithMany("ACAD_CourseSchedules")
-                        .HasForeignKey("TimeSlotID")
+                        .HasForeignKey("LookUpID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("FK_ACAD_CourseSchedules_TimeSlot");

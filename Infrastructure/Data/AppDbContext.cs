@@ -663,6 +663,8 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.PlanType).WithMany(p => p.ACAD_ReservationItems)
                 .HasConstraintName("FK_ACAD_ReservationItems_PlanType");
+            entity.HasOne(d => d.ClassReservation).WithMany(p => p.ACAD_ReservationItems)
+                .HasConstraintName("FK_ACAD_ReservationItems_ClassReservation");
         });
 
         modelBuilder.Entity<HR_Contract>(entity =>
