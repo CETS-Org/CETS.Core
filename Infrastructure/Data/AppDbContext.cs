@@ -272,8 +272,8 @@ public partial class AppDbContext : DbContext
                   .WithMany(p => p.ACAD_ClassReservations)
                   .OnDelete(DeleteBehavior.ClientSetNull)
                   .HasConstraintName("FK_ACAD_ClassReservations_Student");
-
-           
+            entity.HasOne(d => d.ReservationStatus).WithMany(p => p.ACAD_ClassReservations)
+                .HasConstraintName("FK_ACAD_ACAD_ClassReservations_ReservationStatus");
         });
 
         modelBuilder.Entity<ACAD_Course>(entity =>

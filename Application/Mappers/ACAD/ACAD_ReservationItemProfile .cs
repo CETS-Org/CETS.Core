@@ -22,6 +22,7 @@ namespace Application.Mappers.ACAD
 
           
             CreateMap<ACAD_ReservationItem, ReservationItemResponse>()
+                .ForMember(dest => dest.InvoiceStatus, opt => opt.MapFrom(src => src.Invoice.InvoiceStatus.Name))
                 .ForMember(dest => dest.PlanType, opt => opt.MapFrom(src => src.PlanType.Name));
         }
     }

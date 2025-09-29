@@ -23,7 +23,8 @@ namespace Application.Mappers.ACAD
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             // Entity -> Response
-            CreateMap<ACAD_ClassReservation, ClassReservationResponse>();
+            CreateMap<ACAD_ClassReservation, ClassReservationResponse>()
+                .ForMember(dest => dest.ReservationStatus, opt => opt.MapFrom(src => src.ReservationStatus.Name));
             CreateMap<ACAD_ReservationItem, ReservationItemResponse>();
             
         }
