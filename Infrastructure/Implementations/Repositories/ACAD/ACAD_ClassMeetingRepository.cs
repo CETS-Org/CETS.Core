@@ -14,13 +14,11 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
         }
 
-        public async Task<List<ACAD_ClassMeeting>> GetAllClassMeetingByClassId(Guid classId)
+        public async Task<IEnumerable<ACAD_ClassMeeting>> GetAllClassMeetingByClassId(Guid classId)
         {
             return await _context.ACAD_ClassMeetings
                  .Where(cta => cta.ClassID == classId)
-                 .Include(c => c.Slot)
                  .Include(c => c.Room)
-                 .Include(c => c.CoveredTopic)
                  .ToListAsync();
         }
 
@@ -34,10 +32,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.CoveredTopic)
                 .FirstOrDefaultAsync();
         }
-<<<<<<< HEAD
 
-       
-=======
         public async Task<IEnumerable<StudentWeeklyScheduleResponse>> WeeklyScheduleGetByStudentAsync(Guid studentId, CancellationToken ct)
         {
             var enrolled = await _context.ACAD_Enrollments
@@ -91,7 +86,6 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             return result.ToList();
         }
 
->>>>>>> 245454c46eb41cf045bca9384d01318ccf6f6369
     }
 }
 
