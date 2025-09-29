@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250929100447_UpdateFkPackageCourseForClassReservation")]
+    partial class UpdateFkPackageCourseForClassReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1075,6 +1078,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("EstimatedMinutes")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -1102,9 +1108,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int?>("TotalSlots")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
@@ -1122,9 +1125,9 @@ namespace Infrastructure.Migrations
 
                     b.ToTable("ACAD_SyllabusItems", null, t =>
                         {
-                            t.HasCheckConstraint("CK_ACAD_SyllabusItems_Session", "[SessionNumber] >= 1");
+                            t.HasCheckConstraint("CK_ACAD_SyllabusItems_Minutes", "[EstimatedMinutes] > 0");
 
-                            t.HasCheckConstraint("CK_ACAD_SyllabusItems_Slots", "[TotalSlots] > 0");
+                            t.HasCheckConstraint("CK_ACAD_SyllabusItems_Session", "[SessionNumber] >= 1");
                         });
                 });
 

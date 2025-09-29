@@ -111,7 +111,6 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<RPT_Report> RPT_Reports { get; set; }
 
     #endregion
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var builder = new ConfigurationBuilder()
@@ -259,11 +258,22 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>
         {
-            entity.Property(e => e.Id).HasColumnName("ReservationID").ValueGeneratedNever();
+            
 
-            entity.HasOne(d => d.Student).WithMany(p => p.ACAD_ClassReservations)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ACAD_ClassReservations_Student");
+            
+            entity.HasOne(d => d.CoursePackage)
+                  .WithMany(p => p.ACAD_ClassReservations)
+                  .HasForeignKey(d => d.CoursePackageID)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ACAD_ClassReservations_Package");
+
+           
+            entity.HasOne(d => d.Student)
+                  .WithMany(p => p.ACAD_ClassReservations)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ACAD_ClassReservations_Student");
+
+           
         });
 
         modelBuilder.Entity<ACAD_Course>(entity =>
@@ -559,6 +569,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Subtotal).HasColumnType("decimal(14, 2)");
             entity.Property(e => e.TaxAmount).HasColumnType("decimal(14, 2)");
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(14, 2)");
+            entity.Property(e => e.IsInstallment).HasDefaultValue(false);
 
             entity.HasOne(d => d.InvoiceStatus).WithMany(p => p.FIN_InvoiceInvoiceStatuses)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -982,10 +993,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.IsStudy).HasDefaultValue(false);
         });
 
-        modelBuilder.Entity<ACAD_ClassReservation>(entity =>
-        {
-            entity.HasIndex(e => e.StudentID, "UQ_ACAD_ClassReservations_Student").IsUnique();
-        });
+     
 
         modelBuilder.Entity<ACAD_Enrollment>(entity =>
         {
@@ -1166,7 +1174,7 @@ public partial class AppDbContext : DbContext
 
         //TODO: Replace with actual system user ID or a dedicated service account ID.
         //Temporary hardcoded admin ID for system processes when no user is logged in.
-        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");
+        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2282A267-AD55-4059-9D0D-EED123AED820");
         var now = DateTime.Now;
 
         foreach (var entry in entries)

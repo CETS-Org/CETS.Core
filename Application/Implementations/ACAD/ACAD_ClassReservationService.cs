@@ -47,7 +47,7 @@ namespace Application.Implementations.ACAD
         }
         public async Task<ClassReservationResponse?> GetReservationById(Guid id)
         {
-            var reservation = await _reservationRepo.GetByIdAsync(id);
+            var reservation = await _reservationRepo.GetReservationById(id);
             return _mapper.Map<ClassReservationResponse>(reservation);
         }
         public async Task<Guid> CreateReservationAsync(CreateClassReservationRequest request)

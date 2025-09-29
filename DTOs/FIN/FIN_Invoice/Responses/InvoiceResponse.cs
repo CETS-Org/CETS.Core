@@ -21,7 +21,8 @@ namespace DTOs.FIN.FIN_Invoice.Responses
 		public DateTime? UpdatedAt { get; set; }
 		public Guid? UpdatedBy { get; set; }
 		public bool IsDeleted { get; set; }
-	}
+        public bool IsInstallment { get; set; }
+    }
 }
 
 

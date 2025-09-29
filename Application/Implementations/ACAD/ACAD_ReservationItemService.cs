@@ -12,6 +12,7 @@ using DTOs.ACAD.ACAD_ClassReservation.Responses;
 using DTOs.ACAD.ACAD_ReservationItem.Responses;
 using AutoMapper.QueryableExtensions;
 using Domain.Entities;
+using DTOs.ACAD.ACAD_ReservationItem.Requests;
 
 namespace Application.Implementations.ACAD
 {
@@ -49,7 +50,7 @@ namespace Application.Implementations.ACAD
             var reservation = await _reservationItemRepo.GetReservationItemByReservationId(id);
             return _mapper.Map<ReservationItemResponse>(reservation);
         }
-        public async Task<ReservationItemResponse> CreateReservationItemAsync(CreateClassReservationRequest request)
+        public async Task<ReservationItemResponse> CreateReservationItemAsync(CreateReservationItemRequests request)
         {
             var entity = _mapper.Map<ACAD_ReservationItem>(request);
 
@@ -61,7 +62,7 @@ namespace Application.Implementations.ACAD
 
             return _mapper.Map<ReservationItemResponse>(entity);
         }
-        public async Task<List<ReservationItemResponse>> CreateListReservationItemAsync(List<CreateClassReservationRequest> request)
+        public async Task<List<ReservationItemResponse>> CreateListReservationItemAsync(List<CreateReservationItemRequests> request)
         {
             var entity = _mapper.Map<List<ACAD_ReservationItem>>(request);
 
@@ -86,7 +87,7 @@ namespace Application.Implementations.ACAD
                 return true;
             });
         }
-        public async Task<ClassReservationResponse?> UpdateReservationItemAsync(UpdateClassReservationRequest request)
+        public async Task<ReservationItemResponse?> UpdateReservationItemAsync(UpdateReservationItemRequest request)
         {
             return await _uow.ExecuteInTransactionAsync(async () =>
             {
@@ -96,7 +97,7 @@ namespace Application.Implementations.ACAD
                 _mapper.Map(request, existingEntity);
                 _reservationItemRepo.Update(existingEntity);
                 await _uow.SaveChangesAsync();
-                return _mapper.Map<ClassReservationResponse>(existingEntity);
+                return _mapper.Map<ReservationItemResponse>(existingEntity);
             });
         }
 

@@ -6,6 +6,7 @@ namespace Application.Interfaces.FIN
 {
 	public interface IFIN_PaymentService : IBaseService<FIN_Payment, PaymentResponse, UpdatePaymentRequest, CreatePaymentRequest>
 	{
+		Task<FIN_Payment?> CreateMonthlyPayment(Guid invoiceId);
 	}
 }
 

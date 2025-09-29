@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250929080204_RemoveUniqueForStudentIdInClassReservation")]
+    partial class RemoveUniqueForStudentIdInClassReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -420,8 +423,8 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.ACAD_ClassReservation", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("ReservationID");
 
                     b.Property<Guid?>("CoursePackageID")
                         .HasColumnType("uniqueidentifier");
@@ -435,7 +438,9 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CoursePackageID");
+                    b.HasIndex("CoursePackageID")
+                        .IsUnique()
+                        .HasFilter("[CoursePackageID] IS NOT NULL");
 
                     b.HasIndex("StudentID");
 
@@ -1075,6 +1080,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("EstimatedMinutes")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -1102,9 +1110,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int?>("TotalSlots")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
@@ -1122,9 +1127,9 @@ namespace Infrastructure.Migrations
 
                     b.ToTable("ACAD_SyllabusItems", null, t =>
                         {
-                            t.HasCheckConstraint("CK_ACAD_SyllabusItems_Session", "[SessionNumber] >= 1");
+                            t.HasCheckConstraint("CK_ACAD_SyllabusItems_Minutes", "[EstimatedMinutes] > 0");
 
-                            t.HasCheckConstraint("CK_ACAD_SyllabusItems_Slots", "[TotalSlots] > 0");
+                            t.HasCheckConstraint("CK_ACAD_SyllabusItems_Session", "[SessionNumber] >= 1");
                         });
                 });
 
@@ -1577,11 +1582,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<Guid>("InvoiceStatusID")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsInstallment")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<Guid>("StudentID")
                         .HasColumnType("uniqueidentifier");
@@ -2605,9 +2605,8 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.ACAD_ClassReservation", b =>
                 {
                     b.HasOne("Domain.Entities.ACAD_CoursePackage", "CoursePackage")
-                        .WithMany("ACAD_ClassReservations")
-                        .HasForeignKey("CoursePackageID")
-                        .HasConstraintName("FK_ACAD_ClassReservations_Package");
+                        .WithOne("ACAD_ClassReservation")
+                        .HasForeignKey("Domain.Entities.ACAD_ClassReservation", "CoursePackageID");
 
                     b.HasOne("Domain.Entities.IDN_Student", "Student")
                         .WithMany("ACAD_ClassReservations")
@@ -3581,7 +3580,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.ACAD_CoursePackage", b =>
                 {
-                    b.Navigation("ACAD_ClassReservations");
+                    b.Navigation("ACAD_ClassReservation");
 
                     b.Navigation("ACAD_CoursePackageItems");
 
