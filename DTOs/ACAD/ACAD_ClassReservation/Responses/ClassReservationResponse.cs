@@ -18,7 +18,7 @@ namespace DTOs.ACAD.ACAD_ClassReservation.Responses
         public CoursePackageResponse? CoursePackage { get; set; } 
         public DateTime ExpiresAt { get; set; }
         public DateTime CreatedAt { get; set; }
-
         public ICollection<ReservationItemResponse> ACAD_ReservationItems { get; set; } = new List<ReservationItemResponse>();
+
     }
 }
