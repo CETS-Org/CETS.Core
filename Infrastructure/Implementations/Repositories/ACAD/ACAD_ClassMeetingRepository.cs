@@ -12,6 +12,16 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
         }
 
+        public async Task<List<ACAD_ClassMeeting>> GetAllClassMeetingByClassId(Guid classId)
+        {
+            return await _context.ACAD_ClassMeetings
+                 .Where(cta => cta.ClassID == classId)
+                 .Include(c => c.Slot)
+                 .Include(c => c.Room)
+                 .Include(c => c.CoveredTopic)
+                 .ToListAsync();
+        }
+
         public async Task<ACAD_ClassMeeting?> GetClassMeetingTodayByClassId(Guid classId)
         {
             var today = DateOnly.FromDateTime(DateTime.Today);
@@ -22,6 +32,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.CoveredTopic)
                 .FirstOrDefaultAsync();
         }
+
+       
     }
 }
 

@@ -47,6 +47,10 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             return (submitted, totalAssignments);
         }
 
+        public async Task<ACAD_Submission> GetStudentSubmissionByAssignmentID(Guid studentId, Guid assignmentId)
+        {
+            return await _context.ACAD_Submissions.Include(s => s.Assignment).Where(s=> s.Id == studentId && );
+        }
     }
 }
 
