@@ -83,7 +83,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
                 .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
                 .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
-                .Include(c => c.ACAD_CourseSkills).ThenInclude(cs => cs.Skill)   // <-- mới thêm
+                .Include(c => c.ACAD_CourseRequirements).ThenInclude(r => r.Requirement)
+                .Include(c => c.ACAD_CourseSkills).ThenInclude(cs => cs.Skill)
                 .AsQueryable();
 
             // Search keyword
@@ -100,7 +101,9 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             // Filters
             if (q.LevelIds.Count > 0) baseQ = baseQ.Where(c => q.LevelIds.Contains(c.CourseLevelID));
             if (q.CategoryIds.Count > 0) baseQ = baseQ.Where(c => q.CategoryIds.Contains(c.CategoryID));
-            if (q.SkillIds.Count > 0) baseQ = baseQ.Where(c => c.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))); // <-- filter skill
+            if (q.SkillIds.Count > 0) baseQ = baseQ.Where(c => c.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID)));
+            if (q.RequirementIds.Count > 0) baseQ = baseQ.Where(c => c.ACAD_CourseRequirements.Any(cr => q.RequirementIds.Contains(cr.RequirementID)));
+            if (q.BenefitIds.Count > 0) baseQ = baseQ.Where(c => c.ACAD_CourseBenefits.Any(cb => q.BenefitIds.Contains(cb.BenefitID)));
             if (q.PriceMin.HasValue) baseQ = baseQ.Where(c => c.StandardPrice >= q.PriceMin.Value);
             if (q.PriceMax.HasValue) baseQ = baseQ.Where(c => c.StandardPrice <= q.PriceMax.Value);
 
@@ -140,6 +143,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                         EF.Functions.Like(c.Description!, $"%{q.Q}%")) &&
                     (q.CategoryIds.Count == 0 || q.CategoryIds.Contains(c.CategoryID)) &&
                     (q.SkillIds.Count == 0 || c.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))) &&
+                    (q.RequirementIds.Count == 0 || c.ACAD_CourseRequirements.Any(cr => q.RequirementIds.Contains(cr.RequirementID))) &&
+                    (q.BenefitIds.Count == 0 || c.ACAD_CourseBenefits.Any(cb => q.BenefitIds.Contains(cb.BenefitID))) &&
                     (!q.PriceMin.HasValue || c.StandardPrice >= q.PriceMin.Value) &&
                     (!q.PriceMax.HasValue || c.StandardPrice <= q.PriceMax.Value)
                 )
@@ -173,6 +178,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                         EF.Functions.Like(c.Description!, $"%{q.Q}%")) &&
                     (q.LevelIds.Count == 0 || q.LevelIds.Contains(c.CourseLevelID)) &&
                     (q.SkillIds.Count == 0 || c.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))) &&
+                    (q.RequirementIds.Count == 0 || c.ACAD_CourseRequirements.Any(cr => q.RequirementIds.Contains(cr.RequirementID))) &&
+                    (q.BenefitIds.Count == 0 || c.ACAD_CourseBenefits.Any(cb => q.BenefitIds.Contains(cb.BenefitID))) &&
                     (!q.PriceMin.HasValue || c.StandardPrice >= q.PriceMin.Value) &&
                     (!q.PriceMax.HasValue || c.StandardPrice <= q.PriceMax.Value)
                 )
@@ -207,6 +214,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                         EF.Functions.Like(cs.Skill.Name, $"%{q.Q}%")) &&
                     (q.LevelIds.Count == 0 || q.LevelIds.Contains(cs.Course.CourseLevelID)) &&
                     (q.CategoryIds.Count == 0 || q.CategoryIds.Contains(cs.Course.CategoryID)) &&
+                    (q.RequirementIds.Count == 0 || cs.Course.ACAD_CourseRequirements.Any(cr => q.RequirementIds.Contains(cr.RequirementID))) &&
+                    (q.BenefitIds.Count == 0 || cs.Course.ACAD_CourseBenefits.Any(cb => q.BenefitIds.Contains(cb.BenefitID))) &&
                     (!q.PriceMin.HasValue || cs.Course.StandardPrice >= q.PriceMin.Value) &&
                     (!q.PriceMax.HasValue || cs.Course.StandardPrice <= q.PriceMax.Value)
                 )
@@ -227,6 +236,76 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     Label = skillLabels.FirstOrDefault(s => s.Id == x.Id)?.Name,
                     Count = x.Count,
                     Selected = q.SkillIds.Contains(x.Id)
+                })
+                .OrderByDescending(f => f.Count)
+                .ToList();
+
+            // ========= Facet Requirements =========
+            var requirementCounts = await _context.Set<ACAD_CourseRequirement>()
+                .Where(cr => cr.Course.IsActive && !cr.Course.IsDeleted)
+                .Where(cr =>
+                    (string.IsNullOrWhiteSpace(q.Q) ||
+                        EF.Functions.Like(cr.Course.CourseName, $"%{q.Q}%") ||
+                        EF.Functions.Like(cr.Course.Description!, $"%{q.Q}%")) &&
+                    (q.LevelIds.Count == 0 || q.LevelIds.Contains(cr.Course.CourseLevelID)) &&
+                    (q.CategoryIds.Count == 0 || q.CategoryIds.Contains(cr.Course.CategoryID)) &&
+                    (q.SkillIds.Count == 0 || cr.Course.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))) &&
+                    (q.BenefitIds.Count == 0 || cr.Course.ACAD_CourseBenefits.Any(cb => q.BenefitIds.Contains(cb.BenefitID))) &&
+                    (!q.PriceMin.HasValue || cr.Course.StandardPrice >= q.PriceMin.Value) &&
+                    (!q.PriceMax.HasValue || cr.Course.StandardPrice <= q.PriceMax.Value)
+                )
+                .GroupBy(cr => cr.RequirementID)
+                .Select(g => new { Id = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+
+            var requirementIds = requirementCounts.Select(x => x.Id).ToList();
+            var requirementLabels = await _context.Set<CORE_LookUp>()
+                .Where(r => requirementIds.Contains(r.Id))
+                .Select(r => new { r.Id, r.Name })
+                .ToListAsync(ct);
+
+            result.Facets["requirements"] = requirementCounts
+                .Select(x => new CourseSearchResult.FacetItem
+                {
+                    Key = x.Id.ToString(),
+                    Label = requirementLabels.FirstOrDefault(r => r.Id == x.Id)?.Name,
+                    Count = x.Count,
+                    Selected = q.RequirementIds.Contains(x.Id)
+                })
+                .OrderByDescending(f => f.Count)
+                .ToList();
+
+            // ========= Facet Benefits =========
+            var benefitCounts = await _context.Set<ACAD_CourseBenefit>()
+                .Where(cb => cb.Course.IsActive && !cb.Course.IsDeleted)
+                .Where(cb =>
+                    (string.IsNullOrWhiteSpace(q.Q) ||
+                        EF.Functions.Like(cb.Course.CourseName, $"%{q.Q}%") ||
+                        EF.Functions.Like(cb.Course.Description!, $"%{q.Q}%")) &&
+                    (q.LevelIds.Count == 0 || q.LevelIds.Contains(cb.Course.CourseLevelID)) &&
+                    (q.CategoryIds.Count == 0 || q.CategoryIds.Contains(cb.Course.CategoryID)) &&
+                    (q.SkillIds.Count == 0 || cb.Course.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))) &&
+                    (q.RequirementIds.Count == 0 || cb.Course.ACAD_CourseRequirements.Any(cr => q.RequirementIds.Contains(cr.RequirementID))) &&
+                    (!q.PriceMin.HasValue || cb.Course.StandardPrice >= q.PriceMin.Value) &&
+                    (!q.PriceMax.HasValue || cb.Course.StandardPrice <= q.PriceMax.Value)
+                )
+                .GroupBy(cb => cb.BenefitID)
+                .Select(g => new { Id = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+
+            var benefitIds = benefitCounts.Select(x => x.Id).ToList();
+            var benefitLabels = await _context.Set<CORE_LookUp>()
+                .Where(b => benefitIds.Contains(b.Id))
+                .Select(b => new { b.Id, b.Name })
+                .ToListAsync(ct);
+
+            result.Facets["benefits"] = benefitCounts
+                .Select(x => new CourseSearchResult.FacetItem
+                {
+                    Key = x.Id.ToString(),
+                    Label = benefitLabels.FirstOrDefault(b => b.Id == x.Id)?.Name,
+                    Count = x.Count,
+                    Selected = q.BenefitIds.Contains(x.Id)
                 })
                 .OrderByDescending(f => f.Count)
                 .ToList();

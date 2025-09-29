@@ -420,8 +420,8 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.ACAD_ClassReservation", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("ReservationID");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("CoursePackageID")
                         .HasColumnType("uniqueidentifier");
@@ -435,12 +435,9 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CoursePackageID")
-                        .IsUnique()
-                        .HasFilter("[CoursePackageID] IS NOT NULL");
+                    b.HasIndex("CoursePackageID");
 
-                    b.HasIndex(new[] { "StudentID" }, "UQ_ACAD_ClassReservations_Student")
-                        .IsUnique();
+                    b.HasIndex("StudentID");
 
                     b.ToTable("ACAD_ClassReservations");
                 });
@@ -615,6 +612,9 @@ namespace Infrastructure.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<string>("PackageImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18, 2)");
 
@@ -710,7 +710,7 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("LookUpID")
+                    b.Property<Guid>("TimeSlotID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -724,7 +724,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CourseID");
 
-                    b.HasIndex("LookUpID");
+                    b.HasIndex("TimeSlotID");
 
                     b.ToTable("ACAD_CourseSchedules");
                 });
@@ -913,6 +913,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("ReservationItemID");
 
+                    b.Property<Guid>("ClassReservationID")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("CourseID")
                         .HasColumnType("uniqueidentifier");
 
@@ -926,6 +929,8 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClassReservationID");
 
                     b.HasIndex("CourseID");
 
@@ -1070,9 +1075,6 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("EstimatedMinutes")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -1100,6 +1102,9 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int?>("TotalSlots")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
@@ -1117,9 +1122,9 @@ namespace Infrastructure.Migrations
 
                     b.ToTable("ACAD_SyllabusItems", null, t =>
                         {
-                            t.HasCheckConstraint("CK_ACAD_SyllabusItems_Minutes", "[EstimatedMinutes] > 0");
-
                             t.HasCheckConstraint("CK_ACAD_SyllabusItems_Session", "[SessionNumber] >= 1");
+
+                            t.HasCheckConstraint("CK_ACAD_SyllabusItems_Slots", "[TotalSlots] > 0");
                         });
                 });
 
@@ -1572,6 +1577,11 @@ namespace Infrastructure.Migrations
 
                     b.Property<Guid>("InvoiceStatusID")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsInstallment")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<Guid>("StudentID")
                         .HasColumnType("uniqueidentifier");
@@ -2595,8 +2605,9 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.ACAD_ClassReservation", b =>
                 {
                     b.HasOne("Domain.Entities.ACAD_CoursePackage", "CoursePackage")
-                        .WithOne("ACAD_ClassReservation")
-                        .HasForeignKey("Domain.Entities.ACAD_ClassReservation", "CoursePackageID");
+                        .WithMany("ACAD_ClassReservations")
+                        .HasForeignKey("CoursePackageID")
+                        .HasConstraintName("FK_ACAD_ClassReservations_Package");
 
                     b.HasOne("Domain.Entities.IDN_Student", "Student")
                         .WithMany("ACAD_ClassReservations")
@@ -2740,7 +2751,7 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Entities.CORE_LookUp", "TimeSlot")
                         .WithMany("ACAD_CourseSchedules")
-                        .HasForeignKey("LookUpID")
+                        .HasForeignKey("TimeSlotID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("FK_ACAD_CourseSchedules_TimeSlot");
@@ -2889,6 +2900,13 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.ACAD_ReservationItem", b =>
                 {
+                    b.HasOne("Domain.Entities.ACAD_ClassReservation", "ClassReservation")
+                        .WithMany("ACAD_ReservationItems")
+                        .HasForeignKey("ClassReservationID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_ACAD_ReservationItems_ClassReservation");
+
                     b.HasOne("Domain.Entities.ACAD_Course", "Course")
                         .WithMany("ACAD_ReservationItems")
                         .HasForeignKey("CourseID")
@@ -2904,6 +2922,8 @@ namespace Infrastructure.Migrations
                         .WithMany("ACAD_ReservationItems")
                         .HasForeignKey("PlanTypeID")
                         .HasConstraintName("FK_ACAD_ReservationItems_PlanType");
+
+                    b.Navigation("ClassReservation");
 
                     b.Navigation("Course");
 
@@ -3524,6 +3544,11 @@ namespace Infrastructure.Migrations
                     b.Navigation("ACAD_Attendances");
                 });
 
+            modelBuilder.Entity("Domain.Entities.ACAD_ClassReservation", b =>
+                {
+                    b.Navigation("ACAD_ReservationItems");
+                });
+
             modelBuilder.Entity("Domain.Entities.ACAD_Course", b =>
                 {
                     b.Navigation("ACAD_CourseBenefits");
@@ -3556,7 +3581,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.ACAD_CoursePackage", b =>
                 {
-                    b.Navigation("ACAD_ClassReservation");
+                    b.Navigation("ACAD_ClassReservations");
 
                     b.Navigation("ACAD_CoursePackageItems");
 

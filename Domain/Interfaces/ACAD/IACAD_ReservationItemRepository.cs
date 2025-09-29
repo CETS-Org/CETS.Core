@@ -10,5 +10,8 @@ namespace Domain.Interfaces.ACAD
     public interface IACAD_ReservationItemRepository : IBaseRepository<ACAD_ReservationItem>
     {
         Task<ACAD_ReservationItem?> GetByReservationIdAsync(Guid reservationId);
+        Task<ACAD_ReservationItem?> GetReservationItemByIdAsync(Guid reservationItemId);
+        IQueryable<ACAD_ReservationItem?> GetAllReservationItem();
+        IQueryable<ACAD_ReservationItem?> GetReservationItemByReservationId(Guid id);
     }
 }

@@ -12,7 +12,9 @@ namespace DTOs.ACAD.ACAD_CoursePackage.Responses
         public string PackageCode { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public string? PackageImageUrl { get; set; }
         public decimal TotalPrice { get; set; }
+        public decimal TotalIndividualPrice { get; set; }
 
         public List<CourseInPackageResponse> Courses { get; set; } = new();
     }

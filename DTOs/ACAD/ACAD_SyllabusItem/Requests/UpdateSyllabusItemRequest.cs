@@ -10,7 +10,7 @@ namespace DTOs.ACAD.ACAD_SyllabusItem.Requests
     {
         public Guid SyllabusItemID { get; set; }
         public string? TopicTitle { get; set; }
-        public int? EstimatedMinutes { get; set; }
+        public int? TotalSlots { get; set; }
         public bool? Required { get; set; }
         public string? Objectives { get; set; }
         public string? ContentSummary { get; set; }

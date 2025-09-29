@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Implementations\ACAD\" />
     <Folder Include="Implementations\COM\" />
     <Folder Include="Implementations\CORE\" />
     <Folder Include="Implementations\EVT\" />
@@ -28,7 +27,6 @@
     <Folder Include="Implementations\FIN\" />
     <Folder Include="Implementations\HR\" />
     <Folder Include="Implementations\RPT\" />
-    <Folder Include="Interfaces\ACAD\" />
     <Folder Include="Interfaces\COM\" />
     <Folder Include="Interfaces\CORE\" />
     <Folder Include="Interfaces\EVT\" />

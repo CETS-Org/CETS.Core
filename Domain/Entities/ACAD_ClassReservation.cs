@@ -17,6 +17,8 @@ public partial class ACAD_ClassReservation : EntityBase
     [Precision(0)]
     public DateTime ExpiresAt { get; set; }
 
+    public virtual ICollection<ACAD_ReservationItem> ACAD_ReservationItems { get; set; } = new List<ACAD_ReservationItem>();
+
     [ForeignKey(nameof(StudentID))]
     public virtual IDN_Student Student { get; set; } = null!;
 

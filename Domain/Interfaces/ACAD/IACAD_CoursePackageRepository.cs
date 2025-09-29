@@ -1,4 +1,5 @@
 using Domain.Entities;
+using DTOs.ACAD.ACAD_CoursePackage.Search;
 
 namespace Domain.Interfaces.ACAD
 {
@@ -6,6 +7,7 @@ namespace Domain.Interfaces.ACAD
     {
         Task<IEnumerable<ACAD_CoursePackage>> GetActivePackagesAsync();
         Task<ACAD_CoursePackage?> GetDetailAsync(Guid packageId);
+        Task<CoursePackageSearchResult> SearchBasicAsync(CoursePackageSearchQuery query, CancellationToken ct);
     }
 }
 

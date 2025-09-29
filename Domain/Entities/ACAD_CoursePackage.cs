@@ -17,6 +17,8 @@ public partial class ACAD_CoursePackage : AuditedEntity
 
     public string? Description { get; set; }
 
+    public string? PackageImageUrl { get; set; }
+
     public decimal TotalPrice { get; set; }
 
     public bool IsActive { get; set; }
@@ -25,8 +27,7 @@ public partial class ACAD_CoursePackage : AuditedEntity
 
     public virtual ICollection<ACAD_CoursePackageItem> ACAD_CoursePackageItems { get; set; } = new List<ACAD_CoursePackageItem>();
     public virtual ICollection<FIN_InvoiceItem> FIN_InvoiceItems { get; set; } = new List<FIN_InvoiceItem>();
-
-    public virtual ACAD_ClassReservation? ACAD_ClassReservation { get; set; }
+    public virtual ICollection<ACAD_ClassReservation> ACAD_ClassReservations { get; set; } = new List<ACAD_ClassReservation>();
 
     [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }

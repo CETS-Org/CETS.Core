@@ -111,7 +111,6 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<RPT_Report> RPT_Reports { get; set; }
 
     #endregion
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var builder = new ConfigurationBuilder()
@@ -259,11 +258,22 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>
         {
-            entity.Property(e => e.Id).HasColumnName("ReservationID").ValueGeneratedNever();
+            
 
-            entity.HasOne(d => d.Student).WithMany(p => p.ACAD_ClassReservations)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ACAD_ClassReservations_Student");
+            
+            entity.HasOne(d => d.CoursePackage)
+                  .WithMany(p => p.ACAD_ClassReservations)
+                  .HasForeignKey(d => d.CoursePackageID)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ACAD_ClassReservations_Package");
+
+           
+            entity.HasOne(d => d.Student)
+                  .WithMany(p => p.ACAD_ClassReservations)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ACAD_ClassReservations_Student");
+
+           
         });
 
         modelBuilder.Entity<ACAD_Course>(entity =>
@@ -559,6 +569,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Subtotal).HasColumnType("decimal(14, 2)");
             entity.Property(e => e.TaxAmount).HasColumnType("decimal(14, 2)");
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(14, 2)");
+            entity.Property(e => e.IsInstallment).HasDefaultValue(false);
 
             entity.HasOne(d => d.InvoiceStatus).WithMany(p => p.FIN_InvoiceInvoiceStatuses)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -663,6 +674,8 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.PlanType).WithMany(p => p.ACAD_ReservationItems)
                 .HasConstraintName("FK_ACAD_ReservationItems_PlanType");
+            entity.HasOne(d => d.ClassReservation).WithMany(p => p.ACAD_ReservationItems)
+                .HasConstraintName("FK_ACAD_ReservationItems_ClassReservation");
         });
 
         modelBuilder.Entity<HR_Contract>(entity =>
@@ -833,7 +846,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.TimeSlot)
                 .WithMany(p => p.ACAD_CourseSchedules)
-                .HasForeignKey(d => d.LookUpID)
+                .HasForeignKey(d => d.TimeSlotID)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_ACAD_CourseSchedules_TimeSlot");
         });
@@ -930,7 +943,7 @@ public partial class AppDbContext : DbContext
             entity.ToTable("ACAD_SyllabusItems", t =>
             {
                 t.HasCheckConstraint("CK_ACAD_SyllabusItems_Session", "[SessionNumber] >= 1");
-                t.HasCheckConstraint("CK_ACAD_SyllabusItems_Minutes", "[EstimatedMinutes] > 0");
+                t.HasCheckConstraint("CK_ACAD_SyllabusItems_Slots", "[TotalSlots] > 0");
             });
             entity.HasOne(d => d.Syllabus).WithMany(p => p.ACAD_SyllabusItems).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_ACAD_SyllabusItems_Syllabus");
         });
@@ -980,10 +993,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.IsStudy).HasDefaultValue(false);
         });
 
-        modelBuilder.Entity<ACAD_ClassReservation>(entity =>
-        {
-            entity.HasIndex(e => e.StudentID, "UQ_ACAD_ClassReservations_Student").IsUnique();
-        });
+     
 
         modelBuilder.Entity<ACAD_Enrollment>(entity =>
         {
@@ -1164,7 +1174,7 @@ public partial class AppDbContext : DbContext
 
         //TODO: Replace with actual system user ID or a dedicated service account ID.
         //Temporary hardcoded admin ID for system processes when no user is logged in.
-        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");
+        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2282A267-AD55-4059-9D0D-EED123AED820");
         var now = DateTime.Now;
 
         foreach (var entry in entries)
