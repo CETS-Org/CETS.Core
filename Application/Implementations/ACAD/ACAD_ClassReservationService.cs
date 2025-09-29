@@ -40,10 +40,10 @@ namespace Application.Implementations.ACAD
                     .ProjectTo<ClassReservationResponse>(_mapper.ConfigurationProvider);
         }
 
-        public async Task<ClassReservationResponse?> GetReservationByStudentId(Guid id)
+        public IQueryable<ClassReservationResponse> GetReservationByStudentId(Guid id)
         {
-            var reservation = await _reservationRepo.GetReservationByStudentId(id);
-            return _mapper.Map<ClassReservationResponse>(reservation);
+            return _reservationRepo.GetReservationByStudentId(id)
+                    .ProjectTo<ClassReservationResponse>(_mapper.ConfigurationProvider);
         }
         public async Task<ClassReservationResponse?> GetReservationById(Guid id)
         {

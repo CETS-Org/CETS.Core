@@ -12,7 +12,6 @@ namespace Domain.Interfaces.ACAD
         Task<ACAD_ReservationItem?> GetByReservationIdAsync(Guid reservationId);
         Task<ACAD_ReservationItem?> GetReservationItemByIdAsync(Guid reservationItemId);
         IQueryable<ACAD_ReservationItem?> GetAllReservationItem();
-        Task<ACAD_ReservationItem?> GetReservationItemByStudentId(Guid id);
-        Task<ACAD_ReservationItem?> GetReservationItemByReservationId(Guid id);
+        IQueryable<ACAD_ReservationItem?> GetReservationItemByReservationId(Guid id);
     }
 }

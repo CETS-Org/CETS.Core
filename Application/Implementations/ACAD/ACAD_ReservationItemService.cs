@@ -45,10 +45,10 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<ReservationItemResponse>(reservation);
         }
         
-        public async Task<ReservationItemResponse?> GetReservationItemByReservationId(Guid id)
+        public  IQueryable<ReservationItemResponse?> GetReservationItemByReservationId(Guid id)
         {
-            var reservation = await _reservationItemRepo.GetReservationItemByReservationId(id);
-            return _mapper.Map<ReservationItemResponse>(reservation);
+            return _reservationItemRepo.GetReservationItemByReservationId(id)
+                    .ProjectTo<ReservationItemResponse>(_mapper.ConfigurationProvider);
         }
         public async Task<ReservationItemResponse> CreateReservationItemAsync(CreateReservationItemRequests request)
         {
