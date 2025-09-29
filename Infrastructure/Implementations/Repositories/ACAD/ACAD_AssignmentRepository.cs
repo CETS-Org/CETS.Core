@@ -24,6 +24,15 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Where(a => a.CreatedBy == teacherId && !a.IsDeleted)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<ACAD_Assignment>> GetAssignmentsWithSubmissions(Guid classMeetingId, Guid studentId)
+        {
+            return await _context.ACAD_Assignments
+                .Include(a => a.ACAD_Submissions.Where(s => s.StudentID == studentId && !s.IsDeleted))
+                .Where(a => a.ClassMeetingID == classMeetingId && !a.IsDeleted)
+                .ToListAsync();
+        }
+
     }
 }
 

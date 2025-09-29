@@ -5,6 +5,7 @@ using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Assignment.Requests;
 using DTOs.ACAD.ACAD_Assignment.Responses;
+using DTOs.ACAD.ACAD_Submission.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,5 +77,22 @@ namespace Application.Implementations.ACAD
             await _assignmentRepository.RemoveByIdAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<AssignmentAndSubmissionResponse>> GetAssignmentsAndSubmissions(Guid classMeetingId, Guid studentId)
+        {
+            var assignments = await _assignmentRepository.GetAssignmentsWithSubmissions(classMeetingId, studentId);
+
+            var result = assignments.Select(a => new AssignmentAndSubmissionResponse
+            {
+                AssignmentResponse = _mapper.Map<AssignmentResponse>(a),
+                SubmissionResponse = a.ACAD_Submissions.FirstOrDefault() != null
+                    ? _mapper.Map<SubmissionResponse>(a.ACAD_Submissions.FirstOrDefault())
+                    : null
+            });
+
+            return result;
+        }
+
+
     }
 }

@@ -2,6 +2,7 @@
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
+using DTOs.ACAD.ACAD_Assignment.Responses;
 using DTOs.ACAD.ACAD_ClassMeetings.Responses;
 using System;
 using System.Collections.Generic;
@@ -36,5 +37,7 @@ namespace Application.Implementations.ACAD
         {
             return await _classMeetingRepository.WeeklyScheduleGetByStudentAsync(studentId, ct);
         }
+
+        
     }
 }
