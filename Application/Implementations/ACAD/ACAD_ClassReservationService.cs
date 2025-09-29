@@ -33,10 +33,11 @@ namespace Application.Implementations.ACAD
             _mapper = mapper;
         }
 
-        public async Task<IReadOnlyList<ClassReservationResponse>> GetAllReservationAsync()
+        public IQueryable<ClassReservationResponse> GetAllReservationAsync()
         {
-            var reservation = await _reservationRepo.GetAllReservation().ToListAsync();
-            return _mapper.Map<IReadOnlyList<ClassReservationResponse>>(reservation);
+           
+            return _reservationRepo.GetAllReservation()
+                    .ProjectTo<ClassReservationResponse>(_mapper.ConfigurationProvider);
         }
 
         public async Task<ClassReservationResponse?> GetReservationByStudentId(Guid id)
