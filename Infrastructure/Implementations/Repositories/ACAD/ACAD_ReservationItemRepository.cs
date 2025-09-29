@@ -41,22 +41,20 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(ri => ri.PlanType)
                 .AsQueryable();
         }
-        public async Task<ACAD_ReservationItem?> GetReservationItemByStudentId(Guid id)
-        {
-            return await _context.ACAD_ReservationItems
-                .Include(ri => ri.Invoice)
-                .Include(ri => ri.Course)
-                .Include(ri => ri.PlanType)
-                .FirstOrDefaultAsync(ri => ri.ClassReservation.StudentID == id);
-        }
 
-        public async Task<ACAD_ReservationItem?> GetReservationItemByReservationId(Guid id)
+
+        public IQueryable<ACAD_ReservationItem> GetReservationItemByReservationId(Guid reservationId)
         {
-            return await _context.ACAD_ReservationItems
+            return _context.ACAD_ReservationItems
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Where(ri => ri.ClassReservationID == reservationId )
                 .Include(ri => ri.Invoice)
                 .Include(ri => ri.Course)
                 .Include(ri => ri.PlanType)
-                .FirstOrDefaultAsync(ri => ri.ClassReservationID == id);
+                .AsQueryable()
+                .OrderBy(ri => ri.Id);
+               
         }
     }
 }

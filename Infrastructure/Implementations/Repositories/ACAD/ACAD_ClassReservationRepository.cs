@@ -30,19 +30,20 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .AsQueryable()
                 .OrderByDescending(cr => cr.Id);
         }
-        public async Task<ACAD_ClassReservation?> GetReservationByStudentId(Guid id)
+        public IQueryable<ACAD_ClassReservation> GetReservationByStudentId(Guid studentId)
         {
-            return await _context.ACAD_ClassReservations
-                .AsNoTracking()
+            return _context.ACAD_ClassReservations
+                .AsNoTrackingWithIdentityResolution()
+                .AsSplitQuery()
+                .Where(cr => cr.StudentID == studentId)
                 .Include(cr => cr.Student)
                 .Include(cr => cr.CoursePackage)
-                .Include(cr => cr.ACAD_ReservationItems)
-                .ThenInclude(ri => ri.Course)
-                .Include(cr => cr.ACAD_ReservationItems)
-                .ThenInclude(ri => ri.Invoice)
-                .Include(cr => cr.ACAD_ReservationItems)
-                .ThenInclude(ri => ri.PlanType)
-                .FirstOrDefaultAsync(cr => cr.StudentID == id);
+                .Include(cr => cr.ACAD_ReservationItems).ThenInclude(ri => ri.Course)
+                .Include(cr => cr.ACAD_ReservationItems).ThenInclude(ri => ri.Invoice)
+                .Include(cr => cr.ACAD_ReservationItems).ThenInclude(ri => ri.PlanType)
+                .AsQueryable()
+                .OrderByDescending(cr => cr.Id);
+                
         }
         public async Task<ACAD_ClassReservation?> GetReservationById(Guid id)
         {

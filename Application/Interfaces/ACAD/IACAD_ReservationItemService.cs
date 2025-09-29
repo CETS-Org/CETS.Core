@@ -16,7 +16,7 @@ namespace Application.Interfaces.ACAD
         
         IQueryable<ReservationItemResponse?> GetAllReservationItemAsync();
         Task<ReservationItemResponse?> GetReservationItemByIdAsync(Guid reservationItemId);
-        Task<ReservationItemResponse?> GetReservationItemByReservationId(Guid id);
+        IQueryable<ReservationItemResponse?> GetReservationItemByReservationId(Guid id);
         Task<ReservationItemResponse> CreateReservationItemAsync(CreateReservationItemRequests request);
 
         Task<List<ReservationItemResponse>> CreateListReservationItemAsync(List<CreateReservationItemRequests> request);

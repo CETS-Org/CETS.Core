@@ -15,7 +15,7 @@ namespace Application.Interfaces.ACAD
         IQueryable<ClassReservationResponse> GetAllAsQueryable();
         IQueryable<ClassReservationResponse> GetAllReservationAsync();
 
-        Task<ClassReservationResponse?> GetReservationByStudentId(Guid id);
+        IQueryable<ClassReservationResponse?> GetReservationByStudentId(Guid id);
 
         Task<ClassReservationResponse?> GetReservationById(Guid id);
 
