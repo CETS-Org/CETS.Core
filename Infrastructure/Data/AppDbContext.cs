@@ -258,11 +258,22 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>
         {
-            entity.Property(e => e.Id).HasColumnName("ReservationID").ValueGeneratedNever();
+            
 
-            entity.HasOne(d => d.Student).WithMany(p => p.ACAD_ClassReservations)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ACAD_ClassReservations_Student");
+            
+            entity.HasOne(d => d.CoursePackage)
+                  .WithMany(p => p.ACAD_ClassReservations)
+                  .HasForeignKey(d => d.CoursePackageID)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ACAD_ClassReservations_Package");
+
+           
+            entity.HasOne(d => d.Student)
+                  .WithMany(p => p.ACAD_ClassReservations)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_ACAD_ClassReservations_Student");
+
+           
         });
 
         modelBuilder.Entity<ACAD_Course>(entity =>
