@@ -31,11 +31,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .FirstOrDefaultAsync(a => a.MeetingID == meetingId && a.StudentID == studentId);
         }
 
+        //public async Task<int> CountTotalMeetingsByCourseAsync(Guid courseId)
+        //{
+        //    return await _context.ACAD_ClassMeetings
+        //        .Where(m => m.TeacherAssignment != null &&
+        //                    m.TeacherAssignment.CourseID == courseId)
+        //        .CountAsync();
+        //}
         public async Task<int> CountTotalMeetingsByCourseAsync(Guid courseId)
         {
-            return await _context.ACAD_ClassMeetings
-                .Where(m => m.TeacherAssignment != null &&
-                            m.TeacherAssignment.CourseID == courseId)
+            return await _context.ACAD_SyllabusItems
+                .Where(i => i.Syllabus.CourseID == courseId)
                 .CountAsync();
         }
 
@@ -43,8 +49,19 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
             return await _context.ACAD_Attendances
                 .Include(a => a.AttendanceStatus)
+                .Include(a => a.CheckedByNavigation)
+                    .ThenInclude(u => u.Account)
+                .Include(a => a.Meeting)
+                    .ThenInclude(c => c.Class)
+                .Include(a => a.Meeting)
+                    .ThenInclude(m => m.CoveredTopic)
+                .Include(a => a.Meeting)
+                    .ThenInclude(m => m.Slot)
+                .Include(a => a.Meeting)
+                    .ThenInclude(m => m.Room)
                 .Include(a => a.Meeting)
                     .ThenInclude(m => m.TeacherAssignment)
+                        .ThenInclude(t => t.Course)
                 .Where(a => a.StudentID == studentId &&
                             a.Meeting.TeacherAssignment != null &&
                             a.Meeting.TeacherAssignment.CourseID == courseId)
