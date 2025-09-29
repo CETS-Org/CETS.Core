@@ -10,7 +10,7 @@ namespace Domain.Entities
     public class ACAD_CourseSchedule : AuditedEntity
     {
         public Guid CourseID { get; set; }
-        public Guid LookUpID { get; set; } // e.g., Time Slot ID
+        public Guid TimeSlotID { get; set; } // e.g., Time Slot ID
         public string DayOfWeek { get; set; } // Sunday, Monday, ...,Saturday
 
         // Navigation properties

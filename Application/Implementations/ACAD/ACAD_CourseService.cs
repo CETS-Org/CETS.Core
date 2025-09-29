@@ -35,12 +35,18 @@ namespace Application.Implementations.ACAD
          
         }
 
+        public async Task<IReadOnlyList<CourseResponse>> GetAllCoursesAsync()
+        {
+            var courses = await _courseRepo.GetAllAsync();
+            return _mapper.Map<IReadOnlyList<CourseResponse>>(courses);
+        }
+
         public async Task<Guid> CreateCourseAsync(CreateCourseRequest request)
         {
             return await _uow.ExecuteInTransactionAsync(() =>
             {
                 var entity = _mapper.Map<ACAD_Course>(request);
-                entity.IsActive = true;
+                entity.IsActive = false; 
 
                 _courseRepo.Add(entity);
                 return Task.FromResult(entity.Id);
@@ -61,18 +67,20 @@ namespace Application.Implementations.ACAD
             });
         }
 
-        public async Task DeleteCourseAsync(Guid id)
+        public async Task SoftDeleteCourseAsync(Guid id)
         {
-            await _uow.ExecuteInTransactionAsync(() =>
-                _courseRepo.RemoveByIdAsync(id)
-            );
+            await _uow.ExecuteInTransactionAsync(async () =>
+            {
+                var entity = await _courseRepo.GetByIdAsync(id);
+                if (entity == null)
+                    throw new KeyNotFoundException("Course not found");
+
+                entity.IsDeleted = true;
+                _courseRepo.Update(entity);
+            });
         }
 
-        public async Task<IEnumerable<CourseDetailResponse>> GetAllCoursesAsync()
-        {
-            var courses = await _courseRepo.GetAllAsync();
-            return _mapper.Map<IEnumerable<CourseDetailResponse>>(courses);
-        }
+     
 
         public async Task<CourseResponse?> GetCourseByIdAsync(Guid id)
         {
@@ -97,6 +105,11 @@ namespace Application.Implementations.ACAD
             var entity = await _courseRepo.GetDetailAsync(courseId);
             return _mapper.Map<CourseDetailResponse?>(entity);
         }
+        public async Task<IReadOnlyList<CourseDetailResponse>> GetAllCoursesDetailsAsync()
+        {
+            var courses = await _courseRepo.GetAllAsync();
+            return _mapper.Map<IReadOnlyList<CourseDetailResponse>>(courses);
+        }
 
         public async Task<IReadOnlyList<CourseListItemResponse>> GetAllCoursesForListAsync()
         {
@@ -107,6 +120,36 @@ namespace Application.Implementations.ACAD
         public async Task<CourseSearchResult> SearchBasicAsync(CourseSearchQuery q, CancellationToken ct)
         {
             return await _courseRepo.SearchBasicAsync(q, ct);
+        }
+
+        public async Task ActivateCourseAsync(Guid courseId)
+        {
+            await _uow.ExecuteInTransactionAsync(async () =>
+            {
+                var entity = await _courseRepo.GetByIdAsync(courseId);
+                if (entity == null)
+                    throw new KeyNotFoundException("Course not found");
+
+                entity.IsActive = true;
+                entity.UpdatedAt = DateTime.UtcNow;
+
+                _courseRepo.Update(entity);
+            });
+        }
+
+        public async Task DeactivateCourseAsync(Guid courseId)
+        {
+            await _uow.ExecuteInTransactionAsync(async () =>
+            {
+                var entity = await _courseRepo.GetByIdAsync(courseId);
+                if (entity == null)
+                    throw new KeyNotFoundException("Course not found");
+
+                entity.IsActive = false;
+                entity.UpdatedAt = DateTime.UtcNow;
+
+                _courseRepo.Update(entity);
+            });
         }
     }
 

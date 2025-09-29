@@ -8,7 +8,6 @@ namespace DTOs.ACAD.ACAD_CoursePackage.Requests
 {
     public class AddCourseToPackageRequest
     {
-        public Guid PackageID { get; set; }
         public Guid CourseID { get; set; }
         public int Sequence { get; set; }  
     }

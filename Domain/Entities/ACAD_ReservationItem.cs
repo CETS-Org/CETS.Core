@@ -10,6 +10,7 @@ namespace Domain.Entities
 {
     public partial class ACAD_ReservationItem : EntityBase
     {
+        public Guid ClassReservationID { get; set; }
         public Guid? InvoiceID { get; set; }
 
         public Guid CourseID { get; set; }
@@ -17,6 +18,9 @@ namespace Domain.Entities
         public int? PaymentSequence { get; set; }
 
         public Guid? PlanTypeID { get; set; }
+
+        [ForeignKey(nameof(ClassReservationID))]
+        public virtual ACAD_ClassReservation ClassReservation { get; set; } = null!;
 
         [ForeignKey(nameof(InvoiceID))]
         public virtual FIN_Invoice Invoice { get; set; } = null!;

@@ -12,6 +12,5 @@ namespace DTOs.ACAD.ACAD_CoursePackage.Requests
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public decimal TotalPrice { get; set; }
-        public Guid CreatedBy { get; set; }
     }
 }

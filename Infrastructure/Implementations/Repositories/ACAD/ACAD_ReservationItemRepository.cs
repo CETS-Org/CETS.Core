@@ -15,12 +15,48 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         public ACAD_ReservationItemRepository(AppDbContext context) : base(context)
         {
         }
+
         public async Task<ACAD_ReservationItem?> GetByReservationIdAsync(Guid reservationItemId)
         {
             return await _context.ACAD_ReservationItems
+                .Include(ri => ri.Invoice)
                 .Include(ri => ri.Course)
                 .Include(ri => ri.PlanType)
                 .FirstOrDefaultAsync(ri => ri.Id == reservationItemId);
+        }
+        public async Task<ACAD_ReservationItem?> GetReservationItemByIdAsync(Guid reservationItemId)
+        {
+            return await _context.ACAD_ReservationItems
+                .Include(ri => ri.Invoice)
+                .Include(ri => ri.Course)
+                .Include(ri => ri.PlanType)
+                .FirstOrDefaultAsync(ri => ri.Id == reservationItemId);
+        }
+
+        public IQueryable<ACAD_ReservationItem?> GetAllReservationItem()
+        {
+            return _context.ACAD_ReservationItems
+                .Include(ri => ri.Invoice)
+                .Include(ri => ri.Course)
+                .Include(ri => ri.PlanType)
+                .AsQueryable();
+        }
+        public async Task<ACAD_ReservationItem?> GetReservationItemByStudentId(Guid id)
+        {
+            return await _context.ACAD_ReservationItems
+                .Include(ri => ri.Invoice)
+                .Include(ri => ri.Course)
+                .Include(ri => ri.PlanType)
+                .FirstOrDefaultAsync(ri => ri.ClassReservation.StudentID == id);
+        }
+
+        public async Task<ACAD_ReservationItem?> GetReservationItemByReservationId(Guid id)
+        {
+            return await _context.ACAD_ReservationItems
+                .Include(ri => ri.Invoice)
+                .Include(ri => ri.Course)
+                .Include(ri => ri.PlanType)
+                .FirstOrDefaultAsync(ri => ri.ClassReservationID == id);
         }
     }
 }

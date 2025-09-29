@@ -663,6 +663,8 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.PlanType).WithMany(p => p.ACAD_ReservationItems)
                 .HasConstraintName("FK_ACAD_ReservationItems_PlanType");
+            entity.HasOne(d => d.ClassReservation).WithMany(p => p.ACAD_ReservationItems)
+                .HasConstraintName("FK_ACAD_ReservationItems_ClassReservation");
         });
 
         modelBuilder.Entity<HR_Contract>(entity =>
@@ -833,7 +835,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.TimeSlot)
                 .WithMany(p => p.ACAD_CourseSchedules)
-                .HasForeignKey(d => d.LookUpID)
+                .HasForeignKey(d => d.TimeSlotID)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_ACAD_CourseSchedules_TimeSlot");
         });
