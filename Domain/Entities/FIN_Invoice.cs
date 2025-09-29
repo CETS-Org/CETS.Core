@@ -27,7 +27,8 @@ public partial class FIN_Invoice : AuditedEntity
     public decimal TaxAmount { get; set; }
 
     public decimal TotalAmount { get; set; }
-    
+
+    public bool IsInstallment { get; set; } = false;
 
     public virtual ICollection<FIN_InvoiceItem> FIN_InvoiceItems { get; set; } = new List<FIN_InvoiceItem>();
 

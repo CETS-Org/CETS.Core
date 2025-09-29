@@ -49,7 +49,8 @@ namespace Application.Implementations.FIN
                     TotalAmount = amount,
 					CreatedAt = DateTime.Now,
 					InvoiceSequence = nextSequence,
-					InvoiceNumber = invoiceNumber
+					InvoiceNumber = invoiceNumber,
+					IsInstallment = true,
                 };
                 _repository.Add(invoice);
                 await _unitOfWork.SaveChangesAsync();
@@ -78,8 +79,20 @@ namespace Application.Implementations.FIN
 				_invoiceItemRepository.Add(invoiceItemSecond);
                 await _unitOfWork.SaveChangesAsync();
                 return invoice;
-        }			
-	}
+        }
+		public async Task<FIN_Invoice> updateInvoiceStatus(Guid invoiceId, Guid statusId)
+		{
+			var invoice = await _repository.GetByIdAsync(invoiceId);
+			if (invoice == null)
+			{
+				throw new Exception("Invoice not found");
+			}
+			invoice.InvoiceStatusID = statusId;
+			_repository.Update(invoice);
+			await _unitOfWork.SaveChangesAsync();
+			return invoice;
+        }
+    }
 }
 
 

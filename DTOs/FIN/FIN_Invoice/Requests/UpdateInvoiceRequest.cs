@@ -31,7 +31,8 @@ namespace DTOs.FIN.FIN_Invoice.Requests
 		public int? PaymentSequence { get; set; }
 
 		public Guid? PlanTypeID { get; set; }
-	}
+		public bool? IsInstallment { get; set; }
+    }
 }
 
 

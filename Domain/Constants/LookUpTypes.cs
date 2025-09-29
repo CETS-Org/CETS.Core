@@ -32,6 +32,6 @@ namespace Domain.Constants
         public const string CredentialType = "CredentialType";
         public const string TimeSlot = "TimeSlot";
         public const string CourseSkill = "CourseSkill";
-
+        public const string PaymentStatus = "PaymentStatus";
     }
 }
