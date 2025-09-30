@@ -88,6 +88,10 @@ namespace Application.Mappers.IDN
                     opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.FullName,
                     opt => opt.MapFrom(src => src.FullName))
+                .ForMember(dest => dest.PhoneNumber,
+                    opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.AvatarUrl,
+                    opt => opt.MapFrom(src => src.AvatarUrl))
                 .ForMember(dest => dest.IsVerified,
                     opt => opt.MapFrom(src => src.IsVerified))
                 .ForMember(dest => dest.VerifiedCode,
