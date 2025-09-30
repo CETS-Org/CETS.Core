@@ -28,6 +28,7 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.CoursePackage.Name))
                 .ForMember(dest => dest.PackageImageUrl, opt => opt.MapFrom(src => src.CoursePackage.PackageImageUrl))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.CoursePackage.TotalPrice))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.CoursePackage.Description))
                 .ForMember(dest => dest.ReservationStatus, opt => opt.MapFrom(src => src.ReservationStatus.Name));
             
             
