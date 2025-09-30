@@ -24,8 +24,12 @@ namespace Application.Mappers.ACAD
 
             // Entity -> Response
             CreateMap<ACAD_ClassReservation, ClassReservationResponse>()
+                .ForMember(dest => dest.PackageCode, opt => opt.MapFrom(src => src.CoursePackage.PackageCode))
+                .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.CoursePackage.Name))
+                .ForMember(dest => dest.PackageImageUrl, opt => opt.MapFrom(src => src.CoursePackage.PackageImageUrl))
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.CoursePackage.TotalPrice))
                 .ForMember(dest => dest.ReservationStatus, opt => opt.MapFrom(src => src.ReservationStatus.Name));
-            CreateMap<ACAD_ReservationItem, ReservationItemResponse>();
+            
             
         }
     }

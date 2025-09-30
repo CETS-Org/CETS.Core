@@ -13,7 +13,14 @@ namespace DTOs.ACAD.ACAD_ReservationItem.Responses
     {
         public Guid Id { get; set; }
         public int? PaymentSequence { get; set; }
-        public CourseResponse? Course { get; set; }
+        //Course info
+        public string CourseCode { get; set; } = null!;
+        public string CourseName { get; set; } = null!;
+        public string? CourseImageUrl { get; set; }
+        public string? Description { get; set; }
+        public decimal StandardPrice { get; set; }
+        public string? CategoryName { get; set; } 
+        //---------//
         public string? InvoiceStatus { get; set; }
         public string? PlanType { get; set; }
     }
