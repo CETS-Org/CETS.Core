@@ -6,7 +6,8 @@ namespace Application.Interfaces.FIN
 {
 	public interface IFIN_InvoiceService : IBaseService<FIN_Invoice, InvoiceResponse, UpdateInvoiceRequest, CreateInvoiceRequest>
 	{
-		Task<FIN_Invoice?> CreateInvolcesToMonthlyPay(Guid reservationId,Guid studentId);
+		Task<InvoiceResponse?> CreateInvolcesToMonthlyPay(Guid reservationId,Guid studentId);
+		Task<InvoiceResponse?> CreateInvoiceForFullPayment(Guid reservationId, Guid studentId);
 		Task<FIN_Invoice> updateInvoiceStatus(Guid invoiceId, Guid statusId);
     }
 }

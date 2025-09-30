@@ -23,5 +23,6 @@ namespace Application.Interfaces.ACAD
 
         Task<bool> DeleteReservationItemAsync(Guid id);
         Task<ReservationItemResponse?> UpdateReservationItemAsync(UpdateReservationItemRequest request);
+        Task<ReservationItemResponse?> UpdateReservationItemInvoiceIdAsync(Guid id, Guid invoiceId);
     }
 }

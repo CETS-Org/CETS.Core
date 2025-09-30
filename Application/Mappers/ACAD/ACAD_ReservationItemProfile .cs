@@ -22,6 +22,7 @@ namespace Application.Mappers.ACAD
 
           
             CreateMap<ACAD_ReservationItem, ReservationItemResponse>()
+                .ForMember(dest => dest.CourseId, opt => opt.MapFrom(src => src.CourseID))
                 .ForMember(dest => dest.CourseCode, opt => opt.MapFrom(src => src.Course.CourseCode))
                 .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.CourseName))
                 .ForMember(dest => dest.CourseImageUrl, opt => opt.MapFrom(src => src.Course.CourseImageUrl))
@@ -29,6 +30,7 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.StandardPrice, opt => opt.MapFrom(src => src.Course.StandardPrice))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Course.Category.Name))
                 .ForMember(dest => dest.InvoiceStatus, opt => opt.MapFrom(src => src.Invoice.InvoiceStatus.Name))
+                .ForMember(dest => dest.ClassReservationId, opt => opt.MapFrom(src => src.ClassReservationID))
                 .ForMember(dest => dest.PlanType, opt => opt.MapFrom(src => src.PlanType.Name));
         }
     }

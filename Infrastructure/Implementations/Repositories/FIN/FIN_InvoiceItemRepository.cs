@@ -2,6 +2,7 @@ using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.FIN;
 using Infrastructure.Implementations.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Implementations.Repositories.FIN
 {
@@ -9,6 +10,14 @@ namespace Infrastructure.Implementations.Repositories.FIN
     {
         public FIN_InvoiceItemRepository(AppDbContext context) : base(context)
         {
+        }
+        
+        public async Task<IEnumerable<FIN_InvoiceItem>> GetByInvoiceIdAsync(Guid invoiceId)
+        {
+            return await _context.FIN_InvoiceItems
+                .Where(ii => ii.InvoiceID == invoiceId)
+                .OrderBy(ii => ii.Id)
+                .ToListAsync();
         }
     }
 }

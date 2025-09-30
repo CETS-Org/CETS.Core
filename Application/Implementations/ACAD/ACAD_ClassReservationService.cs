@@ -87,5 +87,18 @@ namespace Application.Implementations.ACAD
             
             return query.ProjectTo<ClassReservationResponse>(_mapper.ConfigurationProvider);
         }
+
+        public async Task<ClassReservationResponse> UpdateReservationStatusAsync(Guid id, Guid lookupId)
+        {
+            var reservation = await _reservationRepo.GetByIdAsync(id);
+            if (reservation == null)
+            {
+                throw new Exception("Invoice not found");
+            }
+            reservation.ReservationStatusID = lookupId;
+            _reservationRepo.Update(reservation);
+            await _uow.SaveChangesAsync();
+            return _mapper.Map<ClassReservationResponse>(reservation);
+        }
     }
 }

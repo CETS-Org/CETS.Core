@@ -101,5 +101,15 @@ namespace Application.Implementations.ACAD
             });
         }
 
+        public async Task<ReservationItemResponse?> UpdateReservationItemInvoiceIdAsync(Guid id, Guid invoiceId)
+        {
+            var reservationItem = await _reservationItemRepo.GetByIdAsync(id);
+            if (reservationItem == null)
+                throw new KeyNotFoundException("Reservation Item not found");
+            reservationItem.InvoiceID = invoiceId;
+            _reservationItemRepo.Update(reservationItem);
+            await _uow.SaveChangesAsync();
+            return _mapper.Map<ReservationItemResponse>(reservationItem);
+        }
     }
 }

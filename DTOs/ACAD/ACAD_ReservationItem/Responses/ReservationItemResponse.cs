@@ -14,6 +14,7 @@ namespace DTOs.ACAD.ACAD_ReservationItem.Responses
         public Guid Id { get; set; }
         public int? PaymentSequence { get; set; }
         //Course info
+        public Guid CourseId { get; set; }
         public string CourseCode { get; set; } = null!;
         public string CourseName { get; set; } = null!;
         public string? CourseImageUrl { get; set; }
@@ -21,7 +22,9 @@ namespace DTOs.ACAD.ACAD_ReservationItem.Responses
         public decimal StandardPrice { get; set; }
         public string? CategoryName { get; set; } 
         //---------//
+        public Guid? InvoiceId { get; set; }
         public string? InvoiceStatus { get; set; }
         public string? PlanType { get; set; }
+        public Guid ClassReservationId { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using DTOs.ACAD.ACAD_ClassReservation.Requests;
 using DTOs.ACAD.ACAD_ClassReservation.Responses;
 using DTOs.ACAD.ACAD_Course.Requests;
+using DTOs.ACAD.ACAD_ReservationItem.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,7 @@ namespace Application.Interfaces.ACAD
 
         Task<ClassReservationResponse?> UpdateReservationAsync(UpdateClassReservationRequest request);
 
+        Task<ClassReservationResponse> UpdateReservationStatusAsync(Guid id, Guid lookupId);
 
     }
 }

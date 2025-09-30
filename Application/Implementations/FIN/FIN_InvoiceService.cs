@@ -1,6 +1,7 @@
 using Application.Interfaces.CORE;
 using Application.Interfaces.FIN;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
@@ -24,15 +25,16 @@ namespace Application.Implementations.FIN
 			_InvoiceRepository = invoiceRepository;
 			_invoiceItemRepository = invoiceItemRepository;
         }
-		public async Task<FIN_Invoice?> CreateInvolcesToMonthlyPay(Guid reservationItemId,Guid studentId)
+		public async Task<InvoiceResponse?> CreateInvolcesToMonthlyPay(Guid reservationItemId,Guid studentId)
 		{
 			var reservationItems = await _reservationItemRepository.GetByReservationIdAsync(reservationItemId);
 			if (reservationItems == null)
 			{
 				return null;
             }
-			var invoiceStatus = await _lookUpService.GetByIdAsync(Guid.Parse("E64A6CD6-0144-4868-8AA3-8895E2EC92E1"));
-			var nextSequence = await _InvoiceRepository.GetNextSequenceInvoiceIdAsync();
+			var invoiceStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.InvoiceStatus);
+			var invoiceStatus = invoiceStatusLookup?.Where(x => x.Code == "Pending").FirstOrDefault();
+            var nextSequence = await _InvoiceRepository.GetNextSequenceInvoiceIdAsync();
 
             // Format InvoiceNumber: YYYY + padded sequence (6 digit)
             string invoiceNumber = $"{DateTime.Now.Year}{nextSequence.ToString("D6")}";
@@ -77,9 +79,68 @@ namespace Application.Implementations.FIN
                     Total = amount,
                 };
 				_invoiceItemRepository.Add(invoiceItemSecond);
+                
+                // Update reservation item with invoice ID
+                reservationItems.InvoiceID = invoice.Id;
+                _reservationItemRepository.Update(reservationItems);
+                
                 await _unitOfWork.SaveChangesAsync();
-                return invoice;
+                return _mapper.Map<InvoiceResponse>(invoice);
         }
+		
+		public async Task<InvoiceResponse?> CreateInvoiceForFullPayment(Guid reservationItemId, Guid studentId)
+		{
+			var reservationItems = await _reservationItemRepository.GetByReservationIdAsync(reservationItemId);
+			if (reservationItems == null)
+			{
+				return null;
+			}
+			var invoiceStatus = await _lookUpService.GetByIdAsync(Guid.Parse("E64A6CD6-0144-4868-8AA3-8895E2EC92E1"));
+			var nextSequence = await _InvoiceRepository.GetNextSequenceInvoiceIdAsync();
+
+            // Format InvoiceNumber: YYYY + padded sequence (6 digit)
+            string invoiceNumber = $"{DateTime.Now.Year}{nextSequence.ToString("D6")}";
+
+            var amount = reservationItems.Course.StandardPrice; // Full amount, not divided by 2
+            var invoice = new FIN_Invoice
+            {
+                Id = Guid.NewGuid(),
+                StudentID = studentId,
+                InvoiceStatusID = invoiceStatus.LookUpId,
+                CreateDate = DateOnly.FromDateTime(DateTime.Now),
+				Subtotal = amount,
+				TaxAmount = 0,
+                TotalAmount = amount,
+				CreatedAt = DateTime.Now,
+				InvoiceSequence = nextSequence,
+				InvoiceNumber = invoiceNumber,
+				IsInstallment = false, // Full payment, not installment
+            };
+            _repository.Add(invoice);
+            await _unitOfWork.SaveChangesAsync();
+            
+            // Create only one invoice item for full payment
+			var invoiceItem = new FIN_InvoiceItem
+			{
+				Id = Guid.NewGuid(),
+				InvoiceID = invoice.Id,
+				CourseID = reservationItems.CourseID,
+				Quantity = 1,
+				UnitPrice = amount,
+				Subtotal = amount,
+				Total = amount,
+				DueDate = DateOnly.FromDateTime(DateTime.Now.AddDays(1)),
+            };
+			_invoiceItemRepository.Add(invoiceItem);
+            
+            // Update reservation item with invoice ID
+            reservationItems.InvoiceID = invoice.Id;
+            _reservationItemRepository.Update(reservationItems);
+            
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<InvoiceResponse>(invoice);
+        }
+		
 		public async Task<FIN_Invoice> updateInvoiceStatus(Guid invoiceId, Guid statusId)
 		{
 			var invoice = await _repository.GetByIdAsync(invoiceId);
