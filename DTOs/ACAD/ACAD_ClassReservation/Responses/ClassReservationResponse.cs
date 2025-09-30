@@ -18,6 +18,8 @@ namespace DTOs.ACAD.ACAD_ClassReservation.Responses
         public string PackageName { get; set; } = string.Empty;
         public string? PackageImageUrl { get; set; }
         public decimal TotalPrice { get; set; }
+
+        public string? Description { get; set; }
         public string? ReservationStatus { get; set; }
         public DateTime ExpiresAt { get; set; }
         public DateTime CreatedAt { get; set; }
