@@ -13,10 +13,11 @@ namespace DTOs.ACAD.ACAD_ClassReservation.Responses
     {
         public Guid Id { get; set; }
         public Guid StudentID { get; set; }
-        public StudentProfileResponse? Student { get; set; } 
         public Guid? CoursePackageID { get; set; }
-        public CoursePackageResponse? CoursePackage { get; set; }
-
+        public string PackageCode { get; set; } = string.Empty;
+        public string PackageName { get; set; } = string.Empty;
+        public string? PackageImageUrl { get; set; }
+        public decimal TotalPrice { get; set; }
         public string? ReservationStatus { get; set; }
         public DateTime ExpiresAt { get; set; }
         public DateTime CreatedAt { get; set; }
