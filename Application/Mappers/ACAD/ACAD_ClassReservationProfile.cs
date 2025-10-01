@@ -25,11 +25,21 @@ namespace Application.Mappers.ACAD
 
             // Entity -> Response
             CreateMap<ACAD_ClassReservation, ClassReservationResponse>()
-                .ForMember(dest => dest.PackageCode, opt => opt.MapFrom(src => src.CoursePackage.PackageCode))
-                .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.CoursePackage.Name))
-                .ForMember(dest => dest.PackageImageUrl, opt => opt.MapFrom(src => src.CoursePackage.PackageImageUrl))
-                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.CoursePackage.TotalPrice))
-                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.CoursePackage.Description))
+                .ForMember(dest => dest.PackageCode, opt => opt.MapFrom(src => 
+                    src.CoursePackage != null ? src.CoursePackage.PackageCode : 
+                    src.ACAD_ReservationItems.FirstOrDefault() != null ? src.ACAD_ReservationItems.FirstOrDefault().Course.CourseCode : null))
+                .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => 
+                    src.CoursePackage != null ? src.CoursePackage.Name : 
+                    src.ACAD_ReservationItems.FirstOrDefault() != null ? src.ACAD_ReservationItems.FirstOrDefault().Course.CourseName : "Individual Course"))
+                .ForMember(dest => dest.PackageImageUrl, opt => opt.MapFrom(src => 
+                    src.CoursePackage != null ? src.CoursePackage.PackageImageUrl : 
+                    src.ACAD_ReservationItems.FirstOrDefault() != null ? src.ACAD_ReservationItems.FirstOrDefault().Course.CourseImageUrl : null))
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => 
+                    src.CoursePackage != null ? src.CoursePackage.TotalPrice : 
+                    src.ACAD_ReservationItems.FirstOrDefault() != null ? src.ACAD_ReservationItems.FirstOrDefault().Course.StandardPrice : 0))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => 
+                    src.CoursePackage != null ? src.CoursePackage.Description : 
+                    src.ACAD_ReservationItems.FirstOrDefault() != null ? src.ACAD_ReservationItems.FirstOrDefault().Course.Description : null))
                 .ForMember(dest => dest.ReservationStatus, opt => opt.MapFrom(src => src.ReservationStatus.Name));
             
             

@@ -58,15 +58,15 @@ namespace Application.Implementations.FIN
                 var invoiceStatus = await _lookUpService.GetByIdAsync(invoice.InvoiceStatusID);
                 var reservationItem = await _reservationItemService.GetReservationItemByIdAsync(reservationItemId);
                 //add invoiceId to reservation item
-                await _reservationItemService.UpdateReservationItemInvoiceIdAsync(reservationItemId, invoiceId);
+                //await _reservationItemService.UpdateReservationItemInvoiceIdAsync(reservationItemId, invoiceId);
                 //update invoice status if pending and installment
-                if (invoiceStatus.Code == "Pending" && reservationItem.PlanType == "Instalment")
+                if (invoiceStatus.Code == "Pending")
                 {
                     //update instalment pay status
                     var firstStatus = paymentStatus?.Where(x => x.Code == "1stPaid").FirstOrDefault();
                     await _invoiceService.updateInvoiceStatus(invoice.Id, firstStatus.LookUpId);
                     var ReservationStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.ReservationStatus);
-                    var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Complete").FirstOrDefault();
+                    var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Completed").FirstOrDefault();
                     await _ClassReservationService.UpdateReservationStatusAsync(reservationItem.ClassReservationId, reservationStatus.LookUpId);
                     
                     //Create enrollment record only when first payment is made
@@ -83,18 +83,18 @@ namespace Application.Implementations.FIN
                     };
                     _enrollmentRepository.Add(enrollment);
                 }
-                if (invoiceStatus.Code == "1stPaid" && reservationItem.PlanType == "Instalment")
+                if (invoiceStatus.Code == "1stPaid" )
                 {
                     //update 2nd second instalment pay status
                     var firstStatus = paymentStatus?.Where(x => x.Code == "2ndPaid").FirstOrDefault();
                     await _invoiceService.updateInvoiceStatus(invoice.Id, firstStatus.LookUpId);
                     var ReservationStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.ReservationStatus);
-                    var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Complete").FirstOrDefault();
+                    var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Completed").FirstOrDefault();
                     await _ClassReservationService.UpdateReservationStatusAsync(reservationItem.ClassReservationId, reservationStatus.LookUpId);
                 }
 
                 //update invoice status if pending and full payment
-                if (invoiceStatus.Code == "Pending" && reservationItem.PlanType == "Full")
+                if (invoiceStatus.Code == "Pending" && reservationItem.PlanType == "OneTime")
                 {
                     //update payment complete status
                     var paymentComplete = paymentStatus?.Where(x => x.Code == "PaymentComplete").FirstOrDefault();
