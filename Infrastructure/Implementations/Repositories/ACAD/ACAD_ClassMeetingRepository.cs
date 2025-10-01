@@ -2,6 +2,7 @@
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_ClassMeetings.Responses;
+using DTOs.ACAD.ACAD_SyllabusItem.Responses;
 using Infrastructure.Implementations.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -10,6 +11,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 {
     public class ACAD_ClassMeetingRepository : BaseRepository<ACAD_ClassMeeting>, IACAD_ClassMeetingRepository
     {
+
         public ACAD_ClassMeetingRepository(AppDbContext context) : base(context)
         {
         }
@@ -31,6 +33,18 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.Room)
                 .Include(c => c.CoveredTopic)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<ACAD_SyllabusItem> GetCoveredTopicByClassMeetingId(Guid classMeetingId)
+        {
+            var meeting = await _context.ACAD_ClassMeetings
+            .Include(cm => cm.CoveredTopic)
+            .Where(cm => cm.Id == classMeetingId && !cm.IsDeleted)
+            .Select(cm => cm.CoveredTopic)
+            .FirstOrDefaultAsync();
+            return meeting;
+            
+           
         }
 
         public async Task<IEnumerable<StudentWeeklyScheduleResponse>> WeeklyScheduleGetByStudentAsync(Guid studentId, CancellationToken ct)

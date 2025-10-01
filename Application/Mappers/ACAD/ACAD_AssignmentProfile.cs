@@ -18,14 +18,29 @@ namespace Application.Mappers.ACAD
             CreateMap<CreateAssignmentRequest, ACAD_Assignment>();
             CreateMap<UpdateAssignmentRequest, ACAD_Assignment>();
             // CreateMap<ACAD_Assignment, AssignmentResponse>();
-            CreateMap<ACAD_Assignment, AssignmentResponse>()
+            /*CreateMap<ACAD_Assignment, AssignmentResponse>()
              .ForMember(dest => dest.ClassMeetingId, opt => opt.MapFrom(src => src.ClassMeetingID ?? Guid.Empty))
              .ForMember(dest => dest.TeacherId, opt => opt.MapFrom(src => src.CreatedBy))
              .ForMember(dest => dest.DueDate, opt => opt.MapFrom(src => src.DueAt ?? DateTime.MinValue));
 
             CreateMap<ACAD_Submission, SubmissionResponse>()
                 .ForMember(dest => dest.Assignment, opt => opt.MapFrom(src => src.Assignment))
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));*/
+            // map Submission
+            CreateMap<ACAD_Submission, SubmissionResponse>()
+                .ForMember(dest => dest.Id,
+                           opt => opt.MapFrom(src => src.StudentID))
+                .ForMember(dest => dest.StoreUrl,
+                           opt => opt.MapFrom(src => src.StoreUrl))
+                .ForMember(dest => dest.CreatedAt,
+                           opt => opt.MapFrom(src => src.CreatedAt));
+
+            // map Assignment
+            CreateMap<ACAD_Assignment, AssignmentResponse>()
+                .ForMember(dest => dest.ClassMeetingId,
+                           opt => opt.MapFrom(src => src.ClassMeetingID ?? Guid.Empty))
+                .ForMember(dest => dest.Submissions,
+                           opt => opt.MapFrom(src => src.ACAD_Submissions));
 
         }
     }

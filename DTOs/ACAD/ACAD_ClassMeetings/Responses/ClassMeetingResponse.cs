@@ -12,6 +12,7 @@ namespace DTOs.ACAD.ACAD_ClassMeetings.Responses
 {
     public class ClassMeetingResponse
     {
+        public Guid Id { get; set; }    
         public Guid ClassID { get; set; }
 
         public DateOnly Date { get; set; }

@@ -15,52 +15,58 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
         public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
         {
-            var result = await (
+            var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+
+            var items = await (
                 from enroll in _context.ACAD_Enrollments
-                join course in _context.ACAD_Courses on enroll.CourseID equals course.Id
+                where enroll.StudentID == studentId && !enroll.IsDeleted
                 join cls in _context.ACAD_Classes on enroll.ClassID equals cls.Id
-                join meeting in _context.ACAD_ClassMeetings on cls.Id equals meeting.ClassID
-                join room in _context.FAC_Rooms on meeting.RoomID equals room.Id
-                join assign in _context.ACAD_CourseTeacherAssignments on cls.TeacherAssignmentID equals assign.Id
-                join teacherAcc in _context.IDN_Accounts on assign.TeacherID equals teacherAcc.Id
+                where !cls.IsDeleted
+                join course in _context.ACAD_Courses on enroll.CourseID equals course.Id
                 join statusLookup in _context.CORE_LookUps on cls.ClassStatusID equals statusLookup.Id
-                join slotLookup in _context.CORE_LookUps on meeting.SlotID equals slotLookup.Id
-                where enroll.StudentID == studentId
+                join assignOpt in _context.ACAD_CourseTeacherAssignments on cls.TeacherAssignmentID equals assignOpt.Id into assignLeft
+                from assign in assignLeft.DefaultIfEmpty()
                 select new
                 {
-                    Enrollment = enroll,
                     Class = cls,
                     Course = course,
-                    Meeting = meeting,
-                    Room = room,
-                    TeacherAccount = teacherAcc,
                     StatusLookup = statusLookup,
-                    SlotLookup = slotLookup
+                    TeacherName = assign != null ? assign.Teacher.Account.FullName : null,
+                    NextMeeting = _context.ACAD_ClassMeetings
+                        .Where(m => m.ClassID == cls.Id && !m.IsDeleted && m.IsActive && m.Date >= today)
+                        .OrderBy(m => m.Date)
+                        .FirstOrDefault(),
                 }
             ).ToListAsync();
 
-            List<LearningClassResponse> response = new List<LearningClassResponse>();
+            var responses = new List<LearningClassResponse>();
 
-            foreach (var e in result)
+            foreach (var e in items)
             {
-                var classes = new LearningClassResponse()
+                var timeSlotName = e.NextMeeting != null
+                    ? _context.CORE_LookUps.Where(l => l.Id == e.NextMeeting.SlotID).Select(l => l.Name).FirstOrDefault()
+                    : null;
+
+                var roomCode = e.NextMeeting != null && e.NextMeeting.RoomID != null
+                    ? _context.FAC_Rooms.Where(r => r.Id == e.NextMeeting.RoomID).Select(r => r.RoomCode).FirstOrDefault()
+                    : null;
+
+                responses.Add(new LearningClassResponse
                 {
                     Id = e.Class.Id,
-                    StatusName = e.StatusLookup.Name,      // trạng thái lớp
+                    StatusName = e.StatusLookup.Name,
                     CourseName = e.Course.CourseName,
                     ClassName = e.Class.ClassName,
-                    TeacherName = e.TeacherAccount.FullName, // tên giáo viên từ Account
+                    TeacherName = e.TeacherName,
                     StartDate = e.Class.StartDate,
                     EndDate = e.Class.EndDate,
-                    TimeSlot = e.SlotLookup.Name,          // Slot từ lookup
-                    RoomCode = e.Room.RoomCode,
+                    TimeSlot = timeSlotName,
+                    RoomCode = roomCode,
                     IsActive = e.Class.IsActive
-                };
-
-                response.Add(classes);
+                });
             }
 
-            return response;
+            return responses;
         }
 
         /*private async Task<string?> GetRoomByClassIdAsync(Guid? classId)

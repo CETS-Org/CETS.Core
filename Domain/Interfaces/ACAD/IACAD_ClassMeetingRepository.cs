@@ -1,5 +1,6 @@
 using Domain.Entities;
 using DTOs.ACAD.ACAD_ClassMeetings.Responses;
+using DTOs.ACAD.ACAD_SyllabusItem.Responses;
 
 namespace Domain.Interfaces.ACAD
 {
@@ -8,6 +9,7 @@ namespace Domain.Interfaces.ACAD
         Task<ACAD_ClassMeeting?> GetClassMeetingTodayByClassId(Guid classId);
         Task<IEnumerable<StudentWeeklyScheduleResponse>> WeeklyScheduleGetByStudentAsync(Guid studentId, CancellationToken ct);
         Task<IEnumerable<ACAD_ClassMeeting>> GetAllClassMeetingByClassId(Guid classId);
+        Task<ACAD_SyllabusItem> GetCoveredTopicByClassMeetingId(Guid classMeetingId);
     }
 }
 

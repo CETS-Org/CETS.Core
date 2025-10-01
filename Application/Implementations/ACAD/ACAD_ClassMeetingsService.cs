@@ -4,6 +4,7 @@ using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Assignment.Responses;
 using DTOs.ACAD.ACAD_ClassMeetings.Responses;
+using DTOs.ACAD.ACAD_SyllabusItem.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,12 @@ namespace Application.Implementations.ACAD
         public async Task<ACAD_ClassMeeting?> GetClassMeetingTodayByClassId(Guid classId)
         {
             return await _classMeetingRepository.GetClassMeetingTodayByClassId(classId);
+        }
+
+        public async Task<SyllabusItemResponse?> GetCoveredTopicAsync(Guid classMeetingId)
+        {
+            var result = await _classMeetingRepository.GetCoveredTopicByClassMeetingId(classMeetingId);
+            return _mapper.Map<SyllabusItemResponse>(result);
         }
 
         public async Task<IEnumerable<StudentWeeklyScheduleResponse>> WeeklyScheduleGetByStudentAsync(Guid studentId, CancellationToken ct)

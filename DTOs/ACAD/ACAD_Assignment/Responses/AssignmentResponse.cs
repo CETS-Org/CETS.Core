@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DTOs.ACAD.ACAD_Submission.Responses;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,5 +16,6 @@ namespace DTOs.ACAD.ACAD_Assignment.Responses
         public string? Description { get; set; }
         public DateTime DueDate { get; set; }
         public DateTime CreatedAt { get; set; }
+        public IEnumerable<SubmissionResponse>? Submissions { get; set; }
     }
 }

@@ -13,6 +13,6 @@ namespace DTOs.ACAD.ACAD_Submission.Responses
         public string? Feedback { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        public AssignmentResponse? Assignment { get; set; }
+       // public AssignmentResponse? Assignment { get; set; }
     }
 }

@@ -78,21 +78,11 @@ namespace Application.Implementations.ACAD
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<AssignmentAndSubmissionResponse>> GetAssignmentsAndSubmissions(Guid classMeetingId, Guid studentId)
+        public async Task<IEnumerable<AssignmentResponse>> GetAssignmentsWithSubmissions(Guid classMeetingId, Guid studentId)
         {
             var assignments = await _assignmentRepository.GetAssignmentsWithSubmissions(classMeetingId, studentId);
-
-            var result = assignments.Select(a => new AssignmentAndSubmissionResponse
-            {
-                AssignmentResponse = _mapper.Map<AssignmentResponse>(a),
-                SubmissionResponse = a.ACAD_Submissions.FirstOrDefault() != null
-                    ? _mapper.Map<SubmissionResponse>(a.ACAD_Submissions.FirstOrDefault())
-                    : null
-            });
-
-            return result;
+            return _mapper.Map<IEnumerable<AssignmentResponse>>(assignments);
         }
-
 
     }
 }
