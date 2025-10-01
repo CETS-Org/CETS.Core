@@ -19,6 +19,7 @@ namespace Application.Mappers.ACAD
         {
             // Request -> Entity
             CreateMap<CreateClassReservationRequest, ACAD_ClassReservation>();
+            CreateMap<CreateClassReservationWithItemsRequest, ACAD_ClassReservation>();
             CreateMap<UpdateClassReservationRequest, ACAD_ClassReservation>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 

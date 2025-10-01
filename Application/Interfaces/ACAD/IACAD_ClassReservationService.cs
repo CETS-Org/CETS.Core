@@ -14,13 +14,14 @@ namespace Application.Interfaces.ACAD
     public interface IACAD_ClassReservationService
     {
         IQueryable<ClassReservationResponse> GetAllAsQueryable();
-        IQueryable<ClassReservationResponse> GetAllReservationAsync();
+        IEnumerable<ClassReservationResponse> GetAllReservationAsync();
 
         IQueryable<ClassReservationResponse?> GetReservationByStudentId(Guid id);
 
         Task<ClassReservationResponse?> GetReservationById(Guid id);
 
         Task<Guid> CreateReservationAsync(CreateClassReservationRequest request);
+        Task<Guid> CreateReservationWithItemsAsync(CreateClassReservationWithItemsRequest request);
 
         Task<ClassReservationResponse?> UpdateReservationAsync(UpdateClassReservationRequest request);
 

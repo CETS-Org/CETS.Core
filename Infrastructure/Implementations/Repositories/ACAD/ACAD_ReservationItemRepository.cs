@@ -56,5 +56,22 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .OrderBy(ri => ri.Id);
                
         }
+
+        public async Task<bool> ExistsByReservationAndCourseAsync(Guid reservationId, Guid courseId)
+        {
+            return await _context.ACAD_ReservationItems.AnyAsync(ri =>
+                ri.ClassReservationID == reservationId &&
+                ri.CourseID == courseId);
+        }
+
+        public async Task<List<Guid>> GetActiveReservationCoursesForStudentAsync(Guid studentId, DateTime currentTime)
+        {
+            return await _context.ACAD_ReservationItems
+                .Where(ri => ri.ClassReservation.StudentID == studentId &&
+                           ri.ClassReservation.ExpiresAt > currentTime)
+                .Select(ri => ri.CourseID)
+                .Distinct()
+                .ToListAsync();
+        }
     }
 }

@@ -17,6 +17,7 @@ namespace Application.Mappers.ACAD
             // --- Mapping từ Request DTO sang Entity ---
 
             CreateMap<CreateReservationItemRequests, ACAD_ReservationItem>();
+            CreateMap<CreateReservationItemsRequest, ACAD_ReservationItem>();
             CreateMap<UpdateReservationItemRequest, ACAD_ReservationItem>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 

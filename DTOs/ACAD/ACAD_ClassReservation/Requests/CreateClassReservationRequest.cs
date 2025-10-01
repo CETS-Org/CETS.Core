@@ -9,9 +9,7 @@ namespace DTOs.ACAD.ACAD_ClassReservation.Requests
         public Guid StudentID { get; set; }
 
         public Guid? CoursePackageID { get; set; }
-        public Guid? ReservationStatusID { get; set; }
 
-        [Required]
-        public DateTime ExpiresAt { get; set; }
+       
     }
 }

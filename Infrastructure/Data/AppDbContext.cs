@@ -258,9 +258,9 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ACAD_ClassReservation>(entity =>
         {
-            
 
-            
+            entity.Property(e => e.Id).HasColumnName("ClassReservationID").ValueGeneratedNever();
+
             entity.HasOne(d => d.CoursePackage)
                   .WithMany(p => p.ACAD_ClassReservations)
                   .HasForeignKey(d => d.CoursePackageID)

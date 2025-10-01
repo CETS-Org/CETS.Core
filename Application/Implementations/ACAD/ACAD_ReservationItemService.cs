@@ -19,11 +19,13 @@ namespace Application.Implementations.ACAD
     public class ACAD_ReservationItemService : IACAD_ReservationItemService
     {
         private readonly IACAD_ReservationItemRepository _reservationItemRepo;
+        private readonly IACAD_ClassReservationRepository _classReservationRepo;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
         public ACAD_ReservationItemService(
             IACAD_ReservationItemRepository reservationItemRepo,
+            IACAD_ClassReservationRepository classReservationRepo,
             IUnitOfWork uow,
             IMapper mapper)
         {
@@ -56,8 +58,16 @@ namespace Application.Implementations.ACAD
 
             await _uow.ExecuteInTransactionAsync(async () =>
             {
+                if (!await _classReservationRepo.ExistsByIdAsync(request.ClassReservationID))
+                {
+                    throw new KeyNotFoundException($"Class Reservation with ID {request.ClassReservationID} not found.");
+                }
+                if (await _reservationItemRepo.ExistsByReservationAndCourseAsync(request.ClassReservationID, request.CourseID))
+                {
+                    throw new InvalidOperationException("This course has already been added to the reservation.");
+                }
+
                 _reservationItemRepo.Add(entity);
-                await _uow.SaveChangesAsync();
             });
 
             return _mapper.Map<ReservationItemResponse>(entity);
