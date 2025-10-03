@@ -95,8 +95,18 @@ namespace Application.Implementations.FIN
 			{
 				return null;
 			}
-			var invoiceStatus = await _lookUpService.GetByIdAsync(Guid.Parse("E64A6CD6-0144-4868-8AA3-8895E2EC92E1"));
-			var nextSequence = await _InvoiceRepository.GetNextSequenceInvoiceIdAsync();
+
+            //Change plan type to one time payment
+			if(reservationItems.PlanType.Code == "TwoTime")
+			{
+				var oneTimePlan = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.PlanType);
+				var oneTime = oneTimePlan?.Where(x => x.Code == "OneTime").FirstOrDefault();
+				reservationItems.PlanTypeID = oneTime.LookUpId;
+				_reservationItemRepository.Update(reservationItems);
+            }
+            var invoiceStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.InvoiceStatus);
+			var invoiceStatus = invoiceStatusLookup?.Where(x => x.Code == "Pending").FirstOrDefault();
+            var nextSequence = await _InvoiceRepository.GetNextSequenceInvoiceIdAsync();
 
             // Format InvoiceNumber: YYYY + padded sequence (6 digit)
             string invoiceNumber = $"{DateTime.Now.Year}{nextSequence.ToString("D6")}";
@@ -117,7 +127,6 @@ namespace Application.Implementations.FIN
 				IsInstallment = false, // Full payment, not installment
             };
             _repository.Add(invoice);
-            await _unitOfWork.SaveChangesAsync();
             
             // Create only one invoice item for full payment
 			var invoiceItem = new FIN_InvoiceItem
@@ -136,7 +145,8 @@ namespace Application.Implementations.FIN
             // Update reservation item with invoice ID
             reservationItems.InvoiceID = invoice.Id;
             _reservationItemRepository.Update(reservationItems);
-            
+
+            // Save all changes in a single transaction
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<InvoiceResponse>(invoice);
         }
