@@ -1,3 +1,4 @@
+using DTOs.ACAD.ACAD_CourseSchedule.Responses;
 using DTOs.ACAD.ACAD_CourseSkill.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;
 using System;
@@ -22,6 +23,7 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public string CategoryName { get; set; } = null!;
         public List<TeacherAcademicDetailResponse> TeacherDetails { get; set; } = new List<TeacherAcademicDetailResponse>();
         public List<CourseSkillResponse> CourseSkills { get; set; } = new List<CourseSkillResponse>();
+        public List<CourseScheduleResponse> Schedules { get; set; } = new List<CourseScheduleResponse>();
 
     }
 }

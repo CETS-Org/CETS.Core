@@ -17,7 +17,18 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
             _mapper = mapper;
         }
-            public async Task<IEnumerable<ACAD_CoursePackage>> GetActivePackagesAsync()
+
+        private enum FacetDimension
+        {
+            Level,
+            Category,
+            Skill,
+            DayOfWeek,
+            TimeSlot
+        }
+
+
+        public async Task<IEnumerable<ACAD_CoursePackage>> GetActivePackagesAsync()
         {
             return await _context.ACAD_CoursePackages
                 .Where(p => p.IsActive)
@@ -58,85 +69,11 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
         public async Task<CoursePackageSearchResult> SearchBasicAsync(CoursePackageSearchQuery q, CancellationToken ct)
         {
-            var baseQ = _context.Set<ACAD_CoursePackage>()
-                .Where(p => !p.IsDeleted)
-                .Include(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted))
-                    .ThenInclude(i => i.Course)
-                        .ThenInclude(c => c.Category)
-                .Include(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted))
-                    .ThenInclude(i => i.Course)
-                        .ThenInclude(c => c.CourseLevel)
-                .Include(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted))
-                    .ThenInclude(i => i.Course)
-                        .ThenInclude(c => c.ACAD_CourseSkills)
-                            .ThenInclude(cs => cs.Skill)
-                .Include(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted))
-                    .ThenInclude(i => i.Course)
-                        .ThenInclude(c => c.ACAD_CourseSchedules)
-                .AsQueryable();
+            var baseQ = BuildBaseQuery();
+            baseQ = ApplySearchKeyword(baseQ, q);
+            baseQ = ApplyFilters(baseQ, q);
+            baseQ = ApplySorting(baseQ, q);
 
-            // Search keyword
-            if (!string.IsNullOrWhiteSpace(q.Q))
-            {
-                var keyword = q.Q.Trim();
-                baseQ = baseQ.Where(p =>
-                    EF.Functions.Like(p.Name, $"%{keyword}%") ||
-                    EF.Functions.Like(p.Description!, $"%{keyword}%") ||
-                    p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && 
-                        (EF.Functions.Like(i.Course.CourseName, $"%{keyword}%") ||
-                         i.Course.ACAD_CourseSkills.Any(cs => EF.Functions.Like(cs.Skill.Name, $"%{keyword}%"))))
-                );
-            }
-
-            // Filters
-            if (q.IsActive.HasValue) 
-                baseQ = baseQ.Where(p => p.IsActive == q.IsActive.Value);
-
-            if (q.LevelIds.Count > 0) 
-                baseQ = baseQ.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && q.LevelIds.Contains(i.Course.CourseLevelID)));
-
-            if (q.CategoryIds.Count > 0) 
-                baseQ = baseQ.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && q.CategoryIds.Contains(i.Course.CategoryID)));
-
-            if (q.SkillIds.Count > 0) 
-                baseQ = baseQ.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && 
-                    i.Course.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))));
-
-            // Schedule filters
-            if (q.DaysOfWeek.Count > 0)
-                baseQ = baseQ.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
-                    i.Course.ACAD_CourseSchedules.Any(s => q.DaysOfWeek.Contains(s.DayOfWeek))));
-
-            if (q.TimeSlotIds.Count > 0)
-                baseQ = baseQ.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
-                    i.Course.ACAD_CourseSchedules.Any(s => q.TimeSlotIds.Contains(s.TimeSlotID))));
-            if (q.TimeSlotNames.Count > 0)
-                baseQ = baseQ.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
-                    i.Course.ACAD_CourseSchedules.Any(s => q.TimeSlotNames.Contains(s.TimeSlot.Name))));
-
-            if (q.PriceMin.HasValue) 
-                baseQ = baseQ.Where(p => p.TotalPrice >= q.PriceMin.Value);
-
-            if (q.PriceMax.HasValue) 
-                baseQ = baseQ.Where(p => p.TotalPrice <= q.PriceMax.Value);
-
-            if (q.MinCourseCount.HasValue)
-                baseQ = baseQ.Where(p => p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) >= q.MinCourseCount.Value);
-
-            if (q.MaxCourseCount.HasValue)
-                baseQ = baseQ.Where(p => p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) <= q.MaxCourseCount.Value);
-
-            // Sorting
-            baseQ = q.Sort switch
-            {
-                "Created.desc" => baseQ.OrderByDescending(p => p.CreatedAt),
-                "Price.asc" => baseQ.OrderBy(p => p.TotalPrice),
-                "Price.desc" => baseQ.OrderByDescending(p => p.TotalPrice),
-                _ => baseQ.OrderByDescending(p => p.IsActive)
-                          .ThenByDescending(p => p.CreatedAt)
-            };
-
-            // Paging
             var total = await baseQ.CountAsync(ct);
             var entities = await baseQ
                 .Skip((q.Page - 1) * q.PageSize)
@@ -153,26 +90,157 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 Facets = new Dictionary<string, List<CoursePackageSearchResult.CoursePackageFacetItem>>()
             };
 
-            // ========= Facet Levels =========
-            var levelCounts = await _context.Set<ACAD_CoursePackage>()
+            // Facets
+            result.Facets["levels"] = await BuildLevelFacetsAsync(q, ct);
+            result.Facets["categories"] = await BuildCategoryFacetsAsync(q, ct);
+            result.Facets["skills"] = await BuildSkillFacetsAsync(q, ct);
+            result.Facets["daysOfWeek"] = await BuildDayOfWeekFacetsAsync(q, ct);
+            result.Facets["timeSlots"] = await BuildTimeSlotFacetsAsync(q, ct);
+
+            return result;
+        }
+
+  
+        private IQueryable<ACAD_CoursePackage> GetFacetBaseQuery(CoursePackageSearchQuery q, FacetDimension facet)
+        {
+            var query = _context.Set<ACAD_CoursePackage>()
+                .Where(p => !p.IsDeleted);
+
+            // Text search
+            if (!string.IsNullOrWhiteSpace(q.Q))
+            {
+                var keyword = q.Q.Trim();
+                query = query.Where(p =>
+                    EF.Functions.Like(p.Name, $"%{keyword}%") ||
+                    EF.Functions.Like(p.Description!, $"%{keyword}%") ||
+                    p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
+                        (EF.Functions.Like(i.Course.CourseName, $"%{keyword}%") ||
+                         i.Course.ACAD_CourseSkills.Any(cs => EF.Functions.Like(cs.Skill.Name, $"%{keyword}%"))))
+                );
+            }
+
+            // IsActive
+            if (q.IsActive.HasValue)
+                query = query.Where(p => p.IsActive == q.IsActive.Value);
+
+            if (facet != FacetDimension.Level && q.LevelIds.Count > 0)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && q.LevelIds.Contains(i.Course.CourseLevelID)));
+
+            if (facet != FacetDimension.Category && q.CategoryIds.Count > 0)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && q.CategoryIds.Contains(i.Course.CategoryID)));
+
+            if (facet != FacetDimension.Skill && q.SkillIds.Count > 0)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
+                    i.Course.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))));
+
+
+            // Price and package-size filters always apply
+            if (q.PriceMin.HasValue)
+                query = query.Where(p => p.TotalPrice >= q.PriceMin.Value);
+            if (q.PriceMax.HasValue)
+                query = query.Where(p => p.TotalPrice <= q.PriceMax.Value);
+            if (q.MinCourseCount.HasValue)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) >= q.MinCourseCount.Value);
+            if (q.MaxCourseCount.HasValue)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) <= q.MaxCourseCount.Value);
+
+            return query;
+        }
+
+        private IQueryable<ACAD_CoursePackage> BuildBaseQuery()
+        {
+            return _context.Set<ACAD_CoursePackage>()
                 .Where(p => !p.IsDeleted)
-                .Where(p =>
-                    (string.IsNullOrWhiteSpace(q.Q) ||
-                        EF.Functions.Like(p.Name, $"%{q.Q}%") ||
-                        EF.Functions.Like(p.Description!, $"%{q.Q}%") ||
-                        p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && 
-                            (EF.Functions.Like(i.Course.CourseName, $"%{q.Q}%") ||
-                             i.Course.ACAD_CourseSkills.Any(cs => EF.Functions.Like(cs.Skill.Name, $"%{q.Q}%"))))) &&
-                    (!q.IsActive.HasValue || p.IsActive == q.IsActive.Value) &&
-                    (q.CategoryIds.Count == 0 || p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && q.CategoryIds.Contains(i.Course.CategoryID))) &&
-                    (q.SkillIds.Count == 0 || p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && 
-                        i.Course.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID)))) &&
-                    (!q.PriceMin.HasValue || p.TotalPrice >= q.PriceMin.Value) &&
-                    (!q.PriceMax.HasValue || p.TotalPrice <= q.PriceMax.Value) &&
-                    (!q.MinCourseCount.HasValue || p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) >= q.MinCourseCount.Value) &&
-                    (!q.MaxCourseCount.HasValue || p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) <= q.MaxCourseCount.Value)
-                )
-                .SelectMany(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted && 
+                .AsSplitQuery()
+                .Include(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted))
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.Category)
+                .Include(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted))
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.CourseLevel)
+                .Include(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted))
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.ACAD_CourseSkills)
+                            .ThenInclude(cs => cs.Skill)
+                .Include(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted))
+                    .ThenInclude(i => i.Course)
+                        .ThenInclude(c => c.ACAD_CourseSchedules)
+                .AsQueryable();
+        }
+
+        private static IQueryable<ACAD_CoursePackage> ApplySearchKeyword(IQueryable<ACAD_CoursePackage> query, CoursePackageSearchQuery q)
+        {
+            if (string.IsNullOrWhiteSpace(q.Q)) return query;
+
+            var keyword = q.Q.Trim();
+            return query.Where(p =>
+                EF.Functions.Like(p.Name, $"%{keyword}%") ||
+                EF.Functions.Like(p.Description!, $"%{keyword}%") ||
+                p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
+                    (EF.Functions.Like(i.Course.CourseName, $"%{keyword}%") ||
+                     i.Course.ACAD_CourseSkills.Any(cs => EF.Functions.Like(cs.Skill.Name, $"%{keyword}%"))))
+            );
+        }
+
+        private static IQueryable<ACAD_CoursePackage> ApplyFilters(IQueryable<ACAD_CoursePackage> query, CoursePackageSearchQuery q)
+        {
+            if (q.IsActive.HasValue)
+                query = query.Where(p => p.IsActive == q.IsActive.Value);
+
+            if (q.LevelIds.Count > 0)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && q.LevelIds.Contains(i.Course.CourseLevelID)));
+
+            if (q.CategoryIds.Count > 0)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && q.CategoryIds.Contains(i.Course.CategoryID)));
+
+            if (q.SkillIds.Count > 0)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
+                    i.Course.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID))));
+
+            if (q.DaysOfWeek.Count > 0)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
+                    i.Course.ACAD_CourseSchedules.Any(s => q.DaysOfWeek.Contains(s.DayOfWeek))));
+
+            if (q.TimeSlotIds.Count > 0)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
+                    i.Course.ACAD_CourseSchedules.Any(s => q.TimeSlotIds.Contains(s.TimeSlotID))));
+
+            if (q.TimeSlotNames.Count > 0)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
+                    i.Course.ACAD_CourseSchedules.Any(s => q.TimeSlotNames.Contains(s.TimeSlot.Name))));
+
+            if (q.PriceMin.HasValue)
+                query = query.Where(p => p.TotalPrice >= q.PriceMin.Value);
+
+            if (q.PriceMax.HasValue)
+                query = query.Where(p => p.TotalPrice <= q.PriceMax.Value);
+
+            if (q.MinCourseCount.HasValue)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) >= q.MinCourseCount.Value);
+
+            if (q.MaxCourseCount.HasValue)
+                query = query.Where(p => p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) <= q.MaxCourseCount.Value);
+
+            return query;
+        }
+
+        private static IQueryable<ACAD_CoursePackage> ApplySorting(IQueryable<ACAD_CoursePackage> query, CoursePackageSearchQuery q)
+        {
+            return q.Sort switch
+            {
+                "Created.desc" => query.OrderByDescending(p => p.CreatedAt),
+                "Price.asc" => query.OrderBy(p => p.TotalPrice),
+                "Price.desc" => query.OrderByDescending(p => p.TotalPrice),
+                _ => query.OrderByDescending(p => p.IsActive)
+                          .ThenByDescending(p => p.CreatedAt)
+            };
+        }
+
+        private async Task<List<CoursePackageSearchResult.CoursePackageFacetItem>> BuildLevelFacetsAsync(CoursePackageSearchQuery q, CancellationToken ct)
+        {
+            var facetBase = GetFacetBaseQuery(q, FacetDimension.Level);
+            var levelCounts = await facetBase
+                .SelectMany(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted &&
                     (q.CategoryIds.Count == 0 || q.CategoryIds.Contains(i.Course.CategoryID)))
                     .Select(i => i.Course.CourseLevelID))
                 .GroupBy(levelId => levelId)
@@ -185,7 +253,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Select(l => new { l.Id, l.Name })
                 .ToListAsync(ct);
 
-            result.Facets["levels"] = levelCounts
+            return levelCounts
                 .Select(x => new CoursePackageSearchResult.CoursePackageFacetItem
                 {
                     Key = x.Id.ToString(),
@@ -195,27 +263,12 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 })
                 .OrderByDescending(f => f.Count)
                 .ToList();
+        }
 
-            // ========= Facet Categories =========
-            var categoryCounts = await _context.Set<ACAD_CoursePackage>()
-                .Where(p => !p.IsDeleted)
-                .Where(p =>
-                    (string.IsNullOrWhiteSpace(q.Q) ||
-                        EF.Functions.Like(p.Name, $"%{q.Q}%") ||
-                        EF.Functions.Like(p.Description!, $"%{q.Q}%") ||
-                        p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && 
-                            (EF.Functions.Like(i.Course.CourseName, $"%{q.Q}%") ||
-                             i.Course.ACAD_CourseSkills.Any(cs => EF.Functions.Like(cs.Skill.Name, $"%{q.Q}%"))))) &&
-                    (!q.IsActive.HasValue || p.IsActive == q.IsActive.Value) &&
-                    (q.LevelIds.Count == 0 || p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && q.LevelIds.Contains(i.Course.CourseLevelID))) &&
-                    (q.SkillIds.Count == 0 || p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && 
-                        i.Course.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID)))) &&
-                    (!q.PriceMin.HasValue || p.TotalPrice >= q.PriceMin.Value) &&
-                    (!q.PriceMax.HasValue || p.TotalPrice <= q.PriceMax.Value) &&
-                    (!q.MinCourseCount.HasValue || p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) >= q.MinCourseCount.Value) &&
-                    (!q.MaxCourseCount.HasValue || p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) <= q.MaxCourseCount.Value)
-                    // NOTE: Intentionally excluding CategoryIds filter from category facets
-                )
+        private async Task<List<CoursePackageSearchResult.CoursePackageFacetItem>> BuildCategoryFacetsAsync(CoursePackageSearchQuery q, CancellationToken ct)
+        {
+            var facetBase = GetFacetBaseQuery(q, FacetDimension.Category);
+            var categoryCounts = await facetBase
                 .SelectMany(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted)
                     .Select(i => i.Course.CategoryID))
                 .GroupBy(categoryId => categoryId)
@@ -228,7 +281,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Select(l => new { l.Id, l.Name })
                 .ToListAsync(ct);
 
-            result.Facets["categories"] = categoryCounts
+            return categoryCounts
                 .Select(x => new CoursePackageSearchResult.CoursePackageFacetItem
                 {
                     Key = x.Id.ToString(),
@@ -238,25 +291,12 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 })
                 .OrderByDescending(f => f.Count)
                 .ToList();
+        }
 
-            // ========= Facet Skills =========
-            var skillCounts = await _context.Set<ACAD_CoursePackage>()
-                .Where(p => !p.IsDeleted)
-                .Where(p =>
-                    (string.IsNullOrWhiteSpace(q.Q) ||
-                        EF.Functions.Like(p.Name, $"%{q.Q}%") ||
-                        EF.Functions.Like(p.Description!, $"%{q.Q}%") ||
-                        p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted &&
-                            (EF.Functions.Like(i.Course.CourseName, $"%{q.Q}%") ||
-                             i.Course.ACAD_CourseSkills.Any(cs => EF.Functions.Like(cs.Skill.Name, $"%{q.Q}%"))))) &&
-                    (!q.IsActive.HasValue || p.IsActive == q.IsActive.Value) &&
-                    (q.LevelIds.Count == 0 || p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && q.LevelIds.Contains(i.Course.CourseLevelID))) &&
-                    (q.CategoryIds.Count == 0 || p.ACAD_CoursePackageItems.Any(i => !i.IsDeleted && q.CategoryIds.Contains(i.Course.CategoryID))) &&
-                    (!q.PriceMin.HasValue || p.TotalPrice >= q.PriceMin.Value) &&
-                    (!q.PriceMax.HasValue || p.TotalPrice <= q.PriceMax.Value) &&
-                    (!q.MinCourseCount.HasValue || p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) >= q.MinCourseCount.Value) &&
-                    (!q.MaxCourseCount.HasValue || p.ACAD_CoursePackageItems.Count(i => !i.IsDeleted) <= q.MaxCourseCount.Value)
-                )
+        private async Task<List<CoursePackageSearchResult.CoursePackageFacetItem>> BuildSkillFacetsAsync(CoursePackageSearchQuery q, CancellationToken ct)
+        {
+            var facetBase = GetFacetBaseQuery(q, FacetDimension.Skill);
+            var skillCounts = await facetBase
                 .SelectMany(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted)
                     .SelectMany(i => i.Course.ACAD_CourseSkills.Select(cs => cs.SkillID)))
                 .GroupBy(skillId => skillId)
@@ -269,7 +309,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Select(s => new { s.Id, s.Name })
                 .ToListAsync(ct);
 
-            result.Facets["skills"] = skillCounts
+            return skillCounts
                 .Select(x => new CoursePackageSearchResult.CoursePackageFacetItem
                 {
                     Key = x.Id.ToString(),
@@ -279,8 +319,53 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 })
                 .OrderByDescending(f => f.Count)
                 .ToList();
+        }
 
-            return result;
+        private async Task<List<CoursePackageSearchResult.CoursePackageFacetItem>> BuildDayOfWeekFacetsAsync(CoursePackageSearchQuery q, CancellationToken ct)
+        {
+            var facetBase = GetFacetBaseQuery(q, FacetDimension.DayOfWeek);
+            var dayCounts = await facetBase
+                .SelectMany(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted)
+                    .SelectMany(i => i.Course.ACAD_CourseSchedules.Select(s => s.DayOfWeek)))
+                .Where(day => !string.IsNullOrEmpty(day))
+                .GroupBy(day => day)
+                .Select(g => new { Day = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+
+            return dayCounts
+                .Select(x => new CoursePackageSearchResult.CoursePackageFacetItem
+                {
+                    Key = x.Day,
+                    Label = x.Day,
+                    Count = x.Count,
+                    Selected = q.DaysOfWeek.Contains(x.Day)
+                })
+                .OrderBy(f => Array.IndexOf(new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" }, f.Key))
+                .ToList();
+        }
+
+        private async Task<List<CoursePackageSearchResult.CoursePackageFacetItem>> BuildTimeSlotFacetsAsync(CoursePackageSearchQuery q, CancellationToken ct)
+        {
+            var facetBase = GetFacetBaseQuery(q, FacetDimension.TimeSlot);
+            var timeSlotCounts = await facetBase
+                .SelectMany(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted)
+                    .SelectMany(i => i.Course.ACAD_CourseSchedules
+                        .Where(s => s.TimeSlot != null)
+                        .Select(s => new { s.TimeSlot.Id, s.TimeSlot.Name })))
+                .GroupBy(ts => new { ts.Id, ts.Name })
+                .Select(g => new { g.Key.Id, g.Key.Name, Count = g.Count() })
+                .ToListAsync(ct);
+
+            return timeSlotCounts
+                .Select(x => new CoursePackageSearchResult.CoursePackageFacetItem
+                {
+                    Key = x.Name,
+                    Label = x.Name,
+                    Count = x.Count,
+                    Selected = q.TimeSlotNames.Contains(x.Name)
+                })
+                .OrderByDescending(f => f.Count)
+                .ToList();
         }
     }
 }

@@ -64,7 +64,8 @@ namespace Application.Mappers.ACAD
                     (double)(src.AverageRating ?? 0)))
                 .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src => 
                     src.ACAD_Enrollments.Count(e => !e.IsDeleted)))
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
+                .ForMember(dest => dest.Schedules, opt => opt.MapFrom(src => src.ACAD_CourseSchedules));
 
 
             // Nested object mappings
