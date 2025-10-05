@@ -81,9 +81,9 @@ namespace Application.Implementations.IDN
         }
 
         public async Task<StudentProfileResponse?> UpdateStudentProfileAsync(
-        Guid accountId,
-        UpdateStudentProfileRequest dto,
-        ClaimsPrincipal user)
+    Guid accountId,
+    UpdateStudentProfileRequest dto,
+    ClaimsPrincipal user)
         {
             var student = await _studentRepository.GetStudentWithAccountAsync(accountId);
             if (student == null) return null;
@@ -92,19 +92,23 @@ namespace Application.Implementations.IDN
 
             bool isPrivileged = user.IsInRole("AcademicStaff") || user.IsInRole("Admin");
 
+            // Kiểm tra quyền trước khi update CID
+            if (!isPrivileged && !string.IsNullOrEmpty(dto.CID) && dto.CID != account.CID)
+                throw new UnauthorizedAccessException("Student is not allowed to update CID");
+
+            // Map DTO vào student + account
             _mapper.Map(dto, account);
             _mapper.Map(dto, student);
 
-            if (!isPrivileged)
-            {
-                if (!string.IsNullOrEmpty(dto.CID) && dto.CID != account.CID)
-                    throw new UnauthorizedAccessException("Student is not allowed to update CID");
-            }
+            // Cập nhật thời gian sửa đổi
+            account.UpdatedAt = DateTime.UtcNow;
+            student.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<StudentProfileResponse>(student);
         }
+
 
         public async Task<StudentResponse> RestoreStudentAsync(Guid id)
         {

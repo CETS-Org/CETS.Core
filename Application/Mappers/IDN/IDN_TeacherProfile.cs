@@ -89,7 +89,7 @@ namespace Application.Mappers.IDN
                 .ForMember(dest => dest.TeacherCode, opt => opt.Condition(src => src.TeacherCode != null))
                 .ForMember(dest => dest.YearsExperience, opt => opt.Condition(src => src.YearsExperience.HasValue))
                 .ForMember(dest => dest.Bio, opt => opt.Condition(src => src.Bio != null))
-                .ForMember(dest => dest.IDN_TeacherCredentials, opt => opt.Ignore()); 
+                .ForMember(dest => dest.IDN_TeacherCredentials, opt => opt.Ignore());
 
 
             // UpdateTeacherProfileRequest -> IDN_Account
@@ -98,7 +98,9 @@ namespace Application.Mappers.IDN
                 .ForMember(dest => dest.DateOfBirth, opt => opt.Condition(src => src.DateOfBirth.HasValue))
                 .ForMember(dest => dest.CID, opt => opt.Condition(src => src.CID != null))
                 .ForMember(dest => dest.Address, opt => opt.Condition(src => src.Address != null))
-                .ForMember(dest => dest.AvatarUrl, opt => opt.Condition(src => src.AvatarUrl != null));
+                .ForMember(dest => dest.PhoneNumber, opt => opt.Condition(src => src.PhoneNumber != null))
+                .ForMember(dest => dest.Email, opt => opt.Condition(src => src.Email != null))
+                .ForMember(dest => dest.AvatarUrl, opt => opt.Condition(src => true));
 
         }
     }

@@ -10,6 +10,8 @@ namespace DTOs.IDN.IDN_Student.Requests
     public class UpdateStudentProfileRequest
     {
         public string? StudentCode { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Email { get; set; }
         public string? GuardianName { get; set; }
         public string? GuardianPhone { get; set; }
         public string? School { get; set; }

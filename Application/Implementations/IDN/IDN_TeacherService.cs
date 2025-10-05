@@ -197,6 +197,21 @@ namespace Application.Implementations.IDN
             teacher.Account.UpdatedAt = DateTime.UtcNow;
 
             Debug.WriteLine($"✅ Updating Teacher {teacher.Id}, Code={teacher.TeacherCode}, Name={teacher.Account.FullName}");
+     
+            // --- Handle credentials (Remove / Update / Add) ---
+            var existingCreds = teacher.IDN_TeacherCredentials.ToList();
+            var incomingIds = dto.Credentials?
+                .Where(c => c.CredentialId.HasValue && c.CredentialId.Value != Guid.Empty)
+                .Select(c => c.CredentialId!.Value)
+                .ToHashSet() ?? new HashSet<Guid>();
+
+            // 1️⃣ Remove các credential không còn trong DTO
+            var toRemove = existingCreds.Where(c => !incomingIds.Contains(c.Id)).ToList();
+            foreach (var removeCred in toRemove)
+            {
+                Debug.WriteLine($"🗑️ Removing credential {removeCred.Id} ({removeCred.Name})");
+                teacher.IDN_TeacherCredentials.Remove(removeCred);
+            }
 
             // --- Update / Add credentials ---
             if (dto.Credentials?.Any() == true)
@@ -207,7 +222,7 @@ namespace Application.Implementations.IDN
 
                     if (credDto.CredentialId.HasValue && credDto.CredentialId.Value != Guid.Empty)
                     {
-                        var existing = teacher.IDN_TeacherCredentials
+                        var existing = existingCreds
                             .FirstOrDefault(c => c.Id == credDto.CredentialId.Value);
 
                         if (existing != null)

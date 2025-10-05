@@ -10,6 +10,8 @@ namespace DTOs.IDN.IDN_Teacher.Requests
     public class UpdateTeacherProfileRequest
     {
         public string? TeacherCode { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Email { get; set; }
         public int? YearsExperience { get; set; }
         public string? Bio { get; set; }
         public string? FullName { get; set; }
