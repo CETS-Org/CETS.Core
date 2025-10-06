@@ -704,6 +704,7 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Teacher).WithMany(p => p.HR_TeacherAvailabilities)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_HR_TeacherAvailability_Teacher");
+            
         });
 
         modelBuilder.Entity<IDN_AccountRole>(entity =>
@@ -837,6 +838,7 @@ public partial class AppDbContext : DbContext
         {
             entity.Property(e => e.Id).HasColumnName("CourseScheduleID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+       
 
             entity.HasOne(d => d.Course)
                 .WithMany(p => p.ACAD_CourseSchedules)
