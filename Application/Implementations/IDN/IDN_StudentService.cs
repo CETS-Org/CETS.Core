@@ -93,8 +93,8 @@ namespace Application.Implementations.IDN
             bool isPrivileged = user.IsInRole("AcademicStaff") || user.IsInRole("Admin");
 
             // Kiểm tra quyền trước khi update CID
-            if (!isPrivileged && !string.IsNullOrEmpty(dto.CID) && dto.CID != account.CID)
-                throw new UnauthorizedAccessException("Student is not allowed to update CID");
+           // if (!isPrivileged && !string.IsNullOrEmpty(dto.CID) && dto.CID != account.CID)
+           //     throw new UnauthorizedAccessException("Student is not allowed to update CID");
 
             // Map DTO vào student + account
             _mapper.Map(dto, account);
