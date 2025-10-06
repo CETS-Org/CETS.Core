@@ -3,7 +3,7 @@ using Domain.Entities;
 using DTOs.FAC.FAC_Room.Requests;
 using DTOs.FAC.FAC_Room.Responses;
 
-namespace Application.Mappers
+namespace Application.Mappers.FAC
 {
 	public class FAC_RoomProfile : Profile
 	{

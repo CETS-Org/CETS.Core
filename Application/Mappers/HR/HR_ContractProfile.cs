@@ -3,7 +3,7 @@ using Domain.Entities;
 using DTOs.HR.HR_Contract.Requests;
 using DTOs.HR.HR_Contract.Responses;
 
-namespace Application.Mappers
+namespace Application.Mappers.HR
 {
 	public class HR_ContractProfile : Profile
 	{

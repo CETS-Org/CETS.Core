@@ -3,7 +3,7 @@ using Domain.Entities;
 using DTOs.EVT.EVT_EventFeedback.Requests;
 using DTOs.EVT.EVT_EventFeedback.Responses;
 
-namespace Application.Mappers
+namespace Application.Mappers.EVT
 {
 	public class EVT_EventFeedbackProfile : Profile
 	{
