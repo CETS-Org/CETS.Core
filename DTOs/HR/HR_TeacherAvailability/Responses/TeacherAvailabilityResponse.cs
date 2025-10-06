@@ -6,9 +6,9 @@ namespace DTOs.HR.HR_TeacherAvailability.Responses
 	{
 		public Guid Id { get; set; }
 		public Guid TeacherID { get; set; }
-		public DateTime TeachDate { get; set; }
-		public int? Slot { get; set; }
-	}
+		public string TeachDay{ get; set; } = string.Empty;
+        public Guid? TimeSlotID { get; set; }
+    }
 }
 
 

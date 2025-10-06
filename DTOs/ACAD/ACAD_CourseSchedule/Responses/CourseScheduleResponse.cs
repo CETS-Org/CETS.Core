@@ -11,7 +11,7 @@ namespace DTOs.ACAD.ACAD_CourseSchedule.Responses
         public Guid Id { get; set; }
         public Guid CourseID { get; set; }
         public Guid TimeSlotID { get; set; }
-        public string DayOfWeek { get; set; } = null!;
+        public string DayOfWeek { get; set; } = string.Empty;
         public string? CourseName { get; set; }
         public string? TimeSlotName { get; set; }
         public DateTime CreatedAt { get; set; }

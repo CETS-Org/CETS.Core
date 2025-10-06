@@ -86,7 +86,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 return new StudentWeeklyScheduleResponse
                 {
                     Date = m.Date.ToDateTime(TimeOnly.MinValue),
-                    DayOfWeek = m.Date.DayOfWeek.ToString(),
+                    DayOfWeek = m.Date.DayOfWeek,
                     Slot = m.Slot.Code,                
                     StartTime = startStr,              
                     EndTime = endStr,               

@@ -18,7 +18,7 @@ namespace DTOs.ACAD.ACAD_CoursePackage.Search
         public List<Guid> CategoryIds { get; set; } = new();
         public List<Guid> SkillIds { get; set; } = new();
         // Schedule filters (by course schedules within packages)
-        public List<string> DaysOfWeek { get; set; } = new(); // e.g., "Monday", "Tuesday"
+        public List<DayOfWeek> DaysOfWeek { get; set; } = new(); // e.g., "Monday", "Tuesday"
         public List<Guid> TimeSlotIds { get; set; } = new();   // CORE_LookUp IDs for time slots
         public List<string> TimeSlotNames { get; set; } = new(); // fallback by name
         public decimal? PriceMin { get; set; }

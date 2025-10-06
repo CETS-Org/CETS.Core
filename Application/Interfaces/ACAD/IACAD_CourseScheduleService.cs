@@ -12,9 +12,9 @@ namespace Application.Interfaces.ACAD
     public interface IACAD_CourseScheduleService : IBaseService<ACAD_CourseSchedule, CourseScheduleResponse, UpdateCourseScheduleRequest, CreateCourseScheduleRequest>
     {
         Task<IEnumerable<CourseScheduleResponse>> GetSchedulesByCourseIdAsync(Guid courseId);
-        Task<IEnumerable<CourseScheduleResponse>> GetSchedulesByDayOfWeekAsync(string dayOfWeek);
+        Task<IEnumerable<CourseScheduleResponse>> GetSchedulesByDayOfWeekAsync(DayOfWeek dayOfWeek);
         Task<IEnumerable<CourseScheduleResponse>> GetSchedulesByTimeSlotIdAsync(Guid timeSlotId);
-        Task<bool> IsTimeSlotAvailableAsync(Guid courseId, Guid timeSlotId, string dayOfWeek);
+        Task<bool> IsTimeSlotAvailableAsync(Guid courseId, Guid timeSlotId, DayOfWeek dayOfWeek);
         Task<CourseScheduleResponse?> GetDetailByIdAsync(Guid id);
     }
 }

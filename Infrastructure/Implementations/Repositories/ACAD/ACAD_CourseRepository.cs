@@ -224,20 +224,21 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
             var dayCounts = await GetFacetBaseQuery(q, FacetDimension.DayOfWeek)
                 .SelectMany(c => c.ACAD_CourseSchedules)
-                .Where(s => !string.IsNullOrEmpty(s.DayOfWeek))
                 .GroupBy(s => s.DayOfWeek)
                 .Select(g => new { Day = g.Key, Count = g.Select(s => s.CourseID).Distinct().Count() })
                 .ToListAsync(ct);
 
+            var dayOrder = new[] { System.DayOfWeek.Monday, System.DayOfWeek.Tuesday, System.DayOfWeek.Wednesday, System.DayOfWeek.Thursday, System.DayOfWeek.Friday, System.DayOfWeek.Saturday, System.DayOfWeek.Sunday };
+
             result.Facets["daysOfWeek"] = dayCounts
+                .OrderBy(x => Array.IndexOf(dayOrder, x.Day))
                 .Select(x => new CourseSearchResult.FacetItem
                 {
-                    Key = x.Day,
-                    Label = x.Day,
+                    Key = x.Day.ToString(),
+                    Label = x.Day.ToString(),
                     Count = x.Count,
                     Selected = q.DaysOfWeek.Contains(x.Day)
                 })
-                .OrderBy(f => Array.IndexOf(new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" }, f.Key))
                 .ToList();
 
             var timeSlotCounts = await GetFacetBaseQuery(q, FacetDimension.TimeSlot)

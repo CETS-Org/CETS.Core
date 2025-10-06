@@ -21,9 +21,9 @@ namespace Application.Implementations.HR
 			return _mapper.Map<IReadOnlyList<TeacherAvailabilityResponse>>(items);
 		}
 
-		public async Task<IReadOnlyList<TeacherAvailabilityResponse>> GetByTeacherAndDateAsync(Guid teacherId, DateTime teachDate)
+		public async Task<IReadOnlyList<TeacherAvailabilityResponse>> GetByTeacherAndDateAsync(Guid teacherId, DayOfWeek teachDay)
 		{
-			var items = await _repository.FindAsync(a => a.TeacherID == teacherId && a.TeachDate.Date == teachDate.Date);
+			var items = await _repository.FindAsync(a => a.TeacherID == teacherId && a.TeachDay == teachDay);
 			return _mapper.Map<IReadOnlyList<TeacherAvailabilityResponse>>(items);
 		}
 	}

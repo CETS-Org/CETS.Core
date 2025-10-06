@@ -20,7 +20,7 @@ namespace DTOs.ACAD.ACAD_Course.Search
         public List<Guid> RequirementIds { get; set; } = new();
         public List<Guid> BenefitIds { get; set; } = new();
         // Schedule filters
-        public List<string> DaysOfWeek { get; set; } = new(); // e.g., "Monday", "Tuesday"
+        public List<DayOfWeek> DaysOfWeek { get; set; } = new(); // e.g., Monday, Tuesday
         public List<Guid> TimeSlotIds { get; set; } = new();   // CORE_LookUp IDs for time slots
         public List<string> TimeSlotNames { get; set; } = new(); // fallback by name
         public decimal? PriceMin { get; set; }
