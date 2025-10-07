@@ -20,7 +20,15 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.StaffID))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
-            CreateMap<ACAD_AcademicRequest, AcademicRequestResponse>();
+            CreateMap<ACAD_AcademicRequest, AcademicRequestResponse>()
+                .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Account.FullName))
+                .ForMember(dest => dest.StudentEmail, opt => opt.MapFrom(src => src.Student.Account.Email))
+                .ForMember(dest => dest.RequestTypeName, opt => opt.MapFrom(src => src.RequestType.Name))
+                .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.AcademicRequestStatus.Name))
+                .ForMember(dest => dest.FromClassName, opt => opt.MapFrom(src => src.FromClass.ClassName))
+                .ForMember(dest => dest.ToClassName, opt => opt.MapFrom(src => src.ToClass.ClassName))
+                .ForMember(dest => dest.ProcessedByName, opt => opt.MapFrom(src => src.ProcessedByNavigation.FullName));
+
             CreateMap<ACAD_AcademicRequestHistory, AcademicRequestHistoryResponse>();
         }
     }

@@ -75,5 +75,10 @@ namespace Application.Implementations.ACAD
             var history = await _historyRepo.GetByRequestAsync(requestId);
             return _mapper.Map<IEnumerable<AcademicRequestHistoryResponse>>(history);
         }
+        public async Task<AcademicRequestResponse?> GetDetailsAsync(Guid requestId)
+        {
+            var r = await _requestRepo.GetDetailsAsync(requestId);
+            return _mapper.Map<AcademicRequestResponse?>(r);
+        }
     }
 }

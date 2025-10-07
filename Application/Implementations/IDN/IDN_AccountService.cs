@@ -208,6 +208,12 @@ namespace Application.Implementations.IDN
             if (!string.IsNullOrWhiteSpace(dto.FullName))
                 account.FullName = dto.FullName;
 
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+                account.Email = dto.Email;
+
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+                account.PhoneNumber = dto.PhoneNumber;
+
             if (dto.DateOfBirth.HasValue)
                 account.DateOfBirth = dto.DateOfBirth;
 
@@ -217,7 +223,7 @@ namespace Application.Implementations.IDN
             if (!string.IsNullOrWhiteSpace(dto.Address))
                 account.Address = dto.Address;
 
-            if (!string.IsNullOrWhiteSpace(dto.AvatarUrl))
+          
                 account.AvatarUrl = dto.AvatarUrl;
 
             account.UpdatedAt = DateTime.Now;
