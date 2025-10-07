@@ -11,10 +11,13 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         public ACAD_SubmissionRepository(AppDbContext context) : base(context)
         {
         }
+
         public async Task<IEnumerable<ACAD_Submission>> GetByAssignmentAsync(Guid assignmentId)
         {
             return await _context.ACAD_Submissions
                 .Where(s => s.AssignmentID == assignmentId && !s.IsDeleted)
+                .Include(x => x.Student).ThenInclude(s => s.Account)
+                .Include(x => x.Assignment)
                 .ToListAsync();
         }
 
