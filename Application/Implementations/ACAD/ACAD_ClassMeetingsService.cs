@@ -45,6 +45,11 @@ namespace Application.Implementations.ACAD
             return await _classMeetingRepository.WeeklyScheduleGetByStudentAsync(studentId, ct);
         }
 
+        public async Task<IEnumerable<TeacherWeeklyScheduleResponse>> WeeklyScheduleGetByTeacherAsync(Guid teacherId, CancellationToken ct)
+        {
+            return await _classMeetingRepository.WeeklyScheduleGetByTeacherAsync(teacherId, ct);
+        }
+
         
     }
 }
