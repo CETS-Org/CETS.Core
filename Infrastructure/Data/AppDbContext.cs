@@ -111,14 +111,14 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<RPT_Report> RPT_Reports { get; set; }
 
     #endregion
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        var builder = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", true, true);
-        var configuration = builder.Build();
-        optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
-    }
+    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //{
+    //    var builder = new ConfigurationBuilder()
+    //        .SetBasePath(Directory.GetCurrentDirectory())
+    //        .AddJsonFile("appsettings.json", true, true);
+    //    var configuration = builder.Build();
+    //    optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
+    //}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -1174,7 +1174,7 @@ public partial class AppDbContext : DbContext
 
         //TODO: Replace with actual system user ID or a dedicated service account ID.
         //Temporary hardcoded admin ID for system processes when no user is logged in.
-        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2282A267-AD55-4059-9D0D-EED123AED820");
+        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");
         var now = DateTime.Now;
 
         foreach (var entry in entries)

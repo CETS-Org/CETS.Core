@@ -15,6 +15,7 @@ namespace Infrastructure.Implementations.Repositories.FIN
         public async Task<IEnumerable<FIN_InvoiceItem>> GetByInvoiceIdAsync(Guid invoiceId)
         {
             return await _context.FIN_InvoiceItems
+                .Include(i => i.Course)
                 .Where(ii => ii.InvoiceID == invoiceId)
                 .OrderBy(ii => ii.Id)
                 .ToListAsync();

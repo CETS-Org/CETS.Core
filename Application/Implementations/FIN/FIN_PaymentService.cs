@@ -1,15 +1,19 @@
 ﻿using Application.Interfaces.ACAD;
 using Application.Interfaces.CORE;
+using Application.Interfaces.ExternalServices.Email;
 using Application.Interfaces.FIN;
+using Application.Interfaces.IDN;
 using AutoMapper;
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
 using Domain.Interfaces.FIN;
+using Domain.Interfaces.IDN;
 using DTOs.FIN.FIN_Invoice.Requests;
 using DTOs.FIN.FIN_Payment.Requests;
 using DTOs.FIN.FIN_Payment.Responses;
+using System.Linq;
 
 namespace Application.Implementations.FIN
 {
@@ -19,9 +23,15 @@ namespace Application.Implementations.FIN
 		private readonly IFIN_PaymentWebhookService _paymentWebhookService;
 		private readonly IFIN_InvoiceService _invoiceService;
         private readonly IACAD_ReservationItemService _reservationItemService;
-        private readonly IACAD_ClassReservationService _ClassReservationService;
+        private readonly IACAD_ClassReservationService _classReservationService;
         private readonly IACAD_EnrollmentRepository _enrollmentRepository;
-        public FIN_PaymentService(IFIN_PaymentRepository repository, IUnitOfWork unitOfWork, IMapper mapper, ICORE_LookUpService lookUpService, IFIN_PaymentWebhookService paymentWebhookService, IFIN_InvoiceService invoiceService, IACAD_ReservationItemService reservationItemService, IACAD_EnrollmentRepository enrollmentRepository, IACAD_ClassReservationService classReservationService)
+        private readonly IMailService _mailService;
+        private readonly IIDN_AccountService _accountService;
+        private readonly IFIN_InvoiceItemService _invoiceItemService;
+        public FIN_PaymentService(IFIN_PaymentRepository repository, IUnitOfWork unitOfWork, IMapper mapper, ICORE_LookUpService lookUpService, 
+            IFIN_PaymentWebhookService paymentWebhookService, IFIN_InvoiceService invoiceService, IACAD_ReservationItemService reservationItemService, 
+            IACAD_EnrollmentRepository enrollmentRepository, IACAD_ClassReservationService classReservationService, IMailService mailService, IIDN_AccountService accountService,
+            IFIN_InvoiceItemService invoiceItemService)
 			: base(repository, unitOfWork, mapper)
 		{
 			_lookUpService = lookUpService;
@@ -29,7 +39,10 @@ namespace Application.Implementations.FIN
 			_invoiceService = invoiceService;
             _reservationItemService = reservationItemService;
             _enrollmentRepository = enrollmentRepository;
-            _ClassReservationService = classReservationService;
+            _classReservationService = classReservationService;
+            _mailService = mailService;
+            _accountService = accountService;
+            _invoiceItemService = invoiceItemService;
         }
 
 		public async Task<FIN_Payment?> CreateMonthlyPayment(Guid invoiceId,Guid studentId, Guid reservationItemId)
@@ -53,12 +66,58 @@ namespace Application.Implementations.FIN
                     CreatedAt = DateTime.Now
                 };
                 _repository.Add(payment);
-                var paymentStatus = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.PaymentStatus);
+
+                //Send billing mail to user
+                var account = await _accountService.GetAccountByIdAsync(studentId);
+                var invoiceItemList = await _invoiceItemService.GetByInvoiceIdAsync(invoice.Id);
+                var invoiceItem = invoiceItemList.FirstOrDefault();
+                if (account != null)
+                {
+                    string subject = $"Course Payment Confirmation - {invoice.InvoiceNumber}";
+                    string body = $@"
+                        <div style='font-family:Arial, sans-serif; font-size:16px; color:#333; padding:20px; max-width:600px; margin:0 auto;'>
+                            <div style='text-align:center; margin-bottom:30px;'>
+                                <h1 style='color:#007bff; margin:0;'>Course Payment Confirmation</h1>
+                                <p style='color:#666; margin:5px 0;'>Thank you for your payment!</p>
+                            </div>
+                    
+                            <div style='background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:20px;'>
+                                <h3 style='color:#007bff; margin-top:0;'>Payment Details</h3>
+                                <p><strong>Invoice Number:</strong> {invoice.InvoiceNumber}</p>
+                                <p><strong>Payment Date:</strong> {DateTime.Now:MM/dd/yyyy}</p>
+                                <p><strong>Status:</strong> <span style='color:#28a745; font-weight:bold;'>Paid Successfully</span></p>
+                            </div>
+
+                            <div style='background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:20px;'>
+                                <h3 style='color:#007bff; margin-top:0;'>Course Information</h3>
+                                <div style='border-bottom:1px solid #eee; padding:10px 0;'>
+                                    <p style='margin:5px 0; font-weight:bold;'>{invoiceItem?.Course?.CourseName ?? "Course"}</p>
+                                    <p style='margin:5px 0; color:#666;'>Quantity: {invoiceItem?.Quantity ?? 1}</p>
+                                    <p style='margin:5px 0; color:#666;'>Price: ${invoiceItem?.UnitPrice}</p>
+                                </div>
+                            </div>
+
+                            <div style='background:#e8f5e8; padding:20px; border-radius:8px; margin-bottom:20px; text-align:center;'>
+                                <h2 style='color:#28a745; margin:0 0 10px 0;'>Total Paid: ${invoice.TotalAmount}</h2>
+                                <p style='color:#155724; margin:0;'>Your course enrollment is now confirmed!</p>
+                            </div>
+
+                            <div style='text-align:center; margin-top:30px; padding-top:20px; border-top:1px solid #eee;'>
+                                <p style='color:#666; margin:5px 0;'>If you have any questions, please contact us.</p>
+                                <p style='color:#666; margin:5px 0;'>Email: support@cets.com | Phone: 1900-xxxx</p>
+                                <p style='color:#666; margin:5px 0;'>Best regards,<br/><strong>CETS Team</strong></p>
+                            </div>
+                        </div>";
+
+                    if (account != null && account.Email != null)
+                        await _mailService.SendEmailAsync(account.Email, subject, body);
+                }
                 
+
+                var paymentStatus = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.PaymentStatus);               
                 var invoiceStatus = await _lookUpService.GetByIdAsync(invoice.InvoiceStatusID);
                 var reservationItem = await _reservationItemService.GetReservationItemByIdAsync(reservationItemId);
-                //add invoiceId to reservation item
-                //await _reservationItemService.UpdateReservationItemInvoiceIdAsync(reservationItemId, invoiceId);
+
                 //update invoice status if pending and installment
                 if (invoiceStatus.Code == "Pending")
                 {
@@ -67,7 +126,7 @@ namespace Application.Implementations.FIN
                     await _invoiceService.updateInvoiceStatus(invoice.Id, firstStatus.LookUpId);
                     var ReservationStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.ReservationStatus);
                     var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Completed").FirstOrDefault();
-                    await _ClassReservationService.UpdateReservationStatusAsync(reservationItem.ClassReservationId, reservationStatus.LookUpId);
+                    await _classReservationService.UpdateReservationStatusAsync(reservationItem.ClassReservationId, reservationStatus.LookUpId);
                     
                     //Create enrollment record only when first payment is made
                     var enrollmentStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.EnrollmentStatus);
@@ -90,7 +149,7 @@ namespace Application.Implementations.FIN
                     await _invoiceService.updateInvoiceStatus(invoice.Id, firstStatus.LookUpId);
                     var ReservationStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.ReservationStatus);
                     var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Completed").FirstOrDefault();
-                    await _ClassReservationService.UpdateReservationStatusAsync(reservationItem.ClassReservationId, reservationStatus.LookUpId);
+                    await _classReservationService.UpdateReservationStatusAsync(reservationItem.ClassReservationId, reservationStatus.LookUpId);
                 }
 
                 //update invoice status if pending and full payment
@@ -101,7 +160,7 @@ namespace Application.Implementations.FIN
                     await _invoiceService.updateInvoiceStatus(invoice.Id, paymentComplete.LookUpId);
                     var ReservationStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.ReservationStatus);
                     var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Complete").FirstOrDefault();
-                    await _ClassReservationService.UpdateReservationStatusAsync(reservationItem.ClassReservationId, reservationStatus.LookUpId);
+                    await _classReservationService.UpdateReservationStatusAsync(reservationItem.ClassReservationId, reservationStatus.LookUpId);
                     
                     //Create enrollment record only when first payment is made
                     var enrollmentStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.EnrollmentStatus);
