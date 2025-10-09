@@ -1,4 +1,6 @@
 using Domain.Entities;
+using DTOs.ACAD.ACAD_Attendance.Requests;
+using DTOs.ACAD.ACAD_Attendance.Responses;
 
 namespace Domain.Interfaces.ACAD
 {
@@ -9,6 +11,8 @@ namespace Domain.Interfaces.ACAD
         Task<ACAD_Attendance?> GetByMeetingAndStudentAsync(Guid meetingId, Guid studentId);
         Task<int> CountTotalMeetingsByCourseAsync(Guid courseId);
         Task<List<ACAD_Attendance>> GetByStudentAndCourseAsync(Guid studentId, Guid courseId);
+        Task<IEnumerable<StudentAttendanceListResponse>> GetStudentsByClassForAttendanceAsync(Guid classId, Guid? classMeetingId = null);
+        Task<BulkAttendanceResponse> BulkMarkAttendanceAsync(BulkAttendanceRequest request);
     }
 }
 

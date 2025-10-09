@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using DTOs.ACAD.ACAD_Assignment.Responses;
+using DTOs.ACAD.ACAD_Attendance.Requests;
 using DTOs.ACAD.ACAD_Attendance.Responses;
 using System;
 using System.Collections.Generic;
@@ -16,5 +17,7 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<AttendanceResponse>> GetAttendanceByStudentAsync(Guid studentId);
         Task<StudentAttendanceSummaryResponse?> GetStudentAttendanceSummaryAsync(Guid studentId, Guid courseId);
         Task<List<StudentAttendanceSummaryResponse>> GetStudentAttendanceReportAsync(Guid studentId);
+        Task<IEnumerable<StudentAttendanceListResponse>> GetStudentsByClassForAttendanceAsync(Guid classId, Guid? classMeetingId = null);
+        Task<BulkAttendanceResponse> BulkMarkAttendanceAsync(BulkAttendanceRequest request);
     }
 }

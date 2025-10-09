@@ -3,6 +3,7 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using DTOs.ACAD.ACAD_Attendance.Requests;
 using DTOs.ACAD.ACAD_Attendance.Responses;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -194,6 +195,15 @@ namespace Application.Implementations.ACAD
             return result;
         }
 
+        public async Task<IEnumerable<StudentAttendanceListResponse>> GetStudentsByClassForAttendanceAsync(Guid classId, Guid? classMeetingId = null)
+        {
+            return await _attendanceRepository.GetStudentsByClassForAttendanceAsync(classId, classMeetingId);
+        }
+
+        public async Task<BulkAttendanceResponse> BulkMarkAttendanceAsync(BulkAttendanceRequest request)
+        {
+            return await _attendanceRepository.BulkMarkAttendanceAsync(request);
+        }
 
     }
 
