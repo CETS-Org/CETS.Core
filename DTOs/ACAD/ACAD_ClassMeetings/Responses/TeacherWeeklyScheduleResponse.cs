@@ -21,3 +21,4 @@ namespace DTOs.ACAD.ACAD_ClassMeetings.Responses
         public string? OnlineMeetingUrl { get; set; }
     }
 }
+
