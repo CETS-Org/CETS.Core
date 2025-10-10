@@ -26,7 +26,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<ACAD_CourseSchedule>> GetSchedulesByDayOfWeekAsync(string dayOfWeek)
+        public async Task<IEnumerable<ACAD_CourseSchedule>> GetSchedulesByDayOfWeekAsync(DayOfWeek dayOfWeek)
         {
             return await _context.Set<ACAD_CourseSchedule>()
                 .Where(cs => cs.DayOfWeek == dayOfWeek)
@@ -46,7 +46,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .ToListAsync();
         }
 
-        public async Task<bool> IsTimeSlotAvailableAsync(Guid courseId, Guid timeSlotId, string dayOfWeek)
+        public async Task<bool> IsTimeSlotAvailableAsync(Guid courseId, Guid timeSlotId, DayOfWeek dayOfWeek)
         {
             return !await _context.Set<ACAD_CourseSchedule>()
                 .AnyAsync(cs => cs.CourseID == courseId && 

@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251006113558_EditTeachDateType")]
+    partial class EditTeachDateType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -711,8 +714,10 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("int");
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<Guid>("TimeSlotID")
                         .HasColumnType("uniqueidentifier");
@@ -868,7 +873,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("MaterialID");
 
-                    b.Property<Guid?>("ClassMeetingID")
+                    b.Property<Guid?>("ClassID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -902,7 +907,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClassMeetingID");
+                    b.HasIndex("ClassID");
 
                     b.HasIndex("CreatedBy");
 
@@ -1993,9 +1998,11 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("AvailabilityID");
 
-                    b.Property<int>("TeachDay")
+                    b.Property<string>("TeachDay")
+                        .IsRequired()
+                        .HasMaxLength(20)
                         .HasPrecision(0)
-                        .HasColumnType("int");
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<Guid>("TeacherID")
                         .HasColumnType("uniqueidentifier");
@@ -2888,10 +2895,10 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.ACAD_LearningMaterial", b =>
                 {
-                    b.HasOne("Domain.Entities.ACAD_ClassMeeting", "ClassMeeting")
-                        .WithMany()
-                        .HasForeignKey("ClassMeetingID")
-                        .HasConstraintName("FK_ACAD_LearningMaterials_ClassMeeting");
+                    b.HasOne("Domain.Entities.ACAD_Class", "Class")
+                        .WithMany("ACAD_LearningMaterials")
+                        .HasForeignKey("ClassID")
+                        .HasConstraintName("FK_ACAD_LearningMaterials_Class");
 
                     b.HasOne("Domain.Entities.IDN_Account", "CreatedByNavigation")
                         .WithMany("ACAD_LearningMaterialCreatedByNavigations")
@@ -2904,7 +2911,7 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("UpdatedBy")
                         .HasConstraintName("FK_ACAD_LearningMaterials_Updated");
 
-                    b.Navigation("ClassMeeting");
+                    b.Navigation("Class");
 
                     b.Navigation("CreatedByNavigation");
 
@@ -3554,6 +3561,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("ACAD_ClassMeetings");
 
                     b.Navigation("ACAD_Enrollments");
+
+                    b.Navigation("ACAD_LearningMaterials");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_ClassMeeting", b =>

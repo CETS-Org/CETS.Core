@@ -11,7 +11,7 @@ namespace Domain.Entities
     {
         public Guid CourseID { get; set; }
         public Guid TimeSlotID { get; set; } // e.g., Time Slot ID
-        public string DayOfWeek { get; set; } // Sunday, Monday, ...,Saturday
+        public DayOfWeek DayOfWeek { get; set; } // Sunday, Monday, ...,Saturday
 
         // Navigation properties
         public virtual ACAD_Course Course { get; set; } = null!;

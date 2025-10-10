@@ -11,7 +11,11 @@ namespace Application.Mappers.ACAD
         {
             CreateMap<ACAD_CourseSchedule, CourseScheduleResponse>()
                 .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course != null ? src.Course.CourseName : null))
-                .ForMember(dest => dest.TimeSlotName, opt => opt.MapFrom(src => src.TimeSlot != null ? src.TimeSlot.Name : null));
+                .ForMember(dest => dest.TimeSlotName, opt => opt.MapFrom(src => src.TimeSlot != null ? src.TimeSlot.Name : null))
+                .ForMember(dest => dest.DayOfWeek, opt => opt.MapFrom(src => src.DayOfWeek.ToString()))
+                .ReverseMap()
+                .ForMember(dest => dest.DayOfWeek, opt => opt.Ignore());
+
 
             CreateMap<CreateCourseScheduleRequest, ACAD_CourseSchedule>();
 

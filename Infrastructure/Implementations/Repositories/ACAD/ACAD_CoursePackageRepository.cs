@@ -327,20 +327,21 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             var dayCounts = await facetBase
                 .SelectMany(p => p.ACAD_CoursePackageItems.Where(i => !i.IsDeleted)
                     .SelectMany(i => i.Course.ACAD_CourseSchedules.Select(s => s.DayOfWeek)))
-                .Where(day => !string.IsNullOrEmpty(day))
                 .GroupBy(day => day)
                 .Select(g => new { Day = g.Key, Count = g.Count() })
                 .ToListAsync(ct);
 
+            var dayOrder = new[] { System.DayOfWeek.Monday, System.DayOfWeek.Tuesday, System.DayOfWeek.Wednesday, System.DayOfWeek.Thursday, System.DayOfWeek.Friday, System.DayOfWeek.Saturday, System.DayOfWeek.Sunday };
+
             return dayCounts
+                .OrderBy(x => Array.IndexOf(dayOrder, x.Day))
                 .Select(x => new CoursePackageSearchResult.CoursePackageFacetItem
                 {
-                    Key = x.Day,
-                    Label = x.Day,
+                    Key = x.Day.ToString(),
+                    Label = x.Day.ToString(),
                     Count = x.Count,
                     Selected = q.DaysOfWeek.Contains(x.Day)
                 })
-                .OrderBy(f => Array.IndexOf(new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" }, f.Key))
                 .ToList();
         }
 

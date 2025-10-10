@@ -10,9 +10,9 @@ namespace Domain.Interfaces.ACAD
     public interface IACAD_CourseScheduleRepository : IBaseRepository<ACAD_CourseSchedule>
     {
         Task<IEnumerable<ACAD_CourseSchedule>> GetSchedulesByCourseIdAsync(Guid courseId);
-        Task<IEnumerable<ACAD_CourseSchedule>> GetSchedulesByDayOfWeekAsync(string dayOfWeek);
+        Task<IEnumerable<ACAD_CourseSchedule>> GetSchedulesByDayOfWeekAsync(DayOfWeek dayOfWeek);
         Task<IEnumerable<ACAD_CourseSchedule>> GetSchedulesByTimeSlotIdAsync(Guid timeSlotId);
-        Task<bool> IsTimeSlotAvailableAsync(Guid courseId, Guid timeSlotId, string dayOfWeek);
+        Task<bool> IsTimeSlotAvailableAsync(Guid courseId, Guid timeSlotId, DayOfWeek dayOfWeek);
         Task<ACAD_CourseSchedule?> GetDetailByIdAsync(Guid id);
         Task<IEnumerable<ACAD_CourseSchedule>> GetAllWithNavigationPropertiesAsync();
     }

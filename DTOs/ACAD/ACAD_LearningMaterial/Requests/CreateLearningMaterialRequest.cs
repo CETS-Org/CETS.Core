@@ -4,7 +4,8 @@ namespace DTOs.ACAD.ACAD_LearningMaterial.Requests
 {
     public class CreateLearningMaterialRequest
     {
-        public Guid? ClassID { get; set; }
+        [Required]
+        public Guid ClassMeetingID { get; set; }
 
         [Required]
         [StringLength(255)]

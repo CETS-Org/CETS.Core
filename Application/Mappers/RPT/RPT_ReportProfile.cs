@@ -3,7 +3,7 @@ using Domain.Entities;
 using DTOs.RPT.RPT_Report.Requests;
 using DTOs.RPT.RPT_Report.Responses;
 
-namespace Application.Mappers
+namespace Application.Mappers.RPT
 {
 	public class RPT_ReportProfile : Profile
 	{

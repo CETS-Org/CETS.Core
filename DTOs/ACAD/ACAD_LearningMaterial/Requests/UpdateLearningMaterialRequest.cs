@@ -6,7 +6,7 @@ namespace DTOs.ACAD.ACAD_LearningMaterial.Requests
     {
         public Guid Id { get; set; }
 
-        public Guid? ClassID { get; set; }
+        public Guid? ClassMeetingID { get; set; }
 
         [Required]
         [StringLength(255)]

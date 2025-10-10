@@ -42,7 +42,7 @@ public partial class ACAD_Class : AuditedEntity
 
     public virtual ICollection<ACAD_Enrollment> ACAD_Enrollments { get; set; } = new List<ACAD_Enrollment>();
 
-    public virtual ICollection<ACAD_LearningMaterial> ACAD_LearningMaterials { get; set; } = new List<ACAD_LearningMaterial>();
+    
 
     [ForeignKey(nameof(ClassStatusID))]
     public virtual CORE_LookUp ClassStatus { get; set; } = null!;

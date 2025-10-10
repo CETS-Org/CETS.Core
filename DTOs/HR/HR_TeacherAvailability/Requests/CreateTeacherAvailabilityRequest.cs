@@ -9,9 +9,9 @@ namespace DTOs.HR.HR_TeacherAvailability.Requests
 		public Guid TeacherID { get; set; }
 
 		[Required]
-		public DateTime TeachDate { get; set; }
+		public DayOfWeek TeachDay { get; set; }
 
-		public int? Slot { get; set; }
+		public Guid? TimeSlotID { get; set; }
 	}
 }
 

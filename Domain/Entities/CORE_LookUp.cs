@@ -73,6 +73,7 @@ public partial class CORE_LookUp : AuditedEntity
     public virtual ICollection<ACAD_CourseSkill> ACAD_CourseSkills { get; set; } = new List<ACAD_CourseSkill>();
     public virtual ICollection<ACAD_ClassMeeting> ACAD_ClassMeetings { get; set; } = new List<ACAD_ClassMeeting>();
     public virtual ICollection<ACAD_CourseSchedule> ACAD_CourseSchedules { get; set; } = new List<ACAD_CourseSchedule>();
+    public virtual ICollection<HR_TeacherAvailability> HR_TeacherAvailabilities { get; set; } = new List<HR_TeacherAvailability>();
 
     [ForeignKey(nameof(LookUpTypeID))]
     public virtual CORE_LookUpType LookUpType { get; set; } = null!;

@@ -140,10 +140,10 @@ namespace Application.Implementations.ACAD
                 await _uow.SaveChangesAsync();
 
                 // Delete file from storage
-                if (!string.IsNullOrEmpty(entity.StoreUrl))
-                {
-                    await _fileStorageService.DeleteFileAsync(entity.StoreUrl);
-                }
+                //if (!string.IsNullOrEmpty(entity.StoreUrl))
+                //{
+                //    await _fileStorageService.DeleteFileAsync(entity.StoreUrl);
+                //}
             });
         }
 
@@ -156,9 +156,10 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<LearningMaterialResponse>(entity);
         }
 
-        public async Task<IEnumerable<LearningMaterialResponse>> GetLearningMaterialsByClassAsync(Guid classId)
+      
+        public async Task<IEnumerable<LearningMaterialResponse>> GetLearningMaterialsByClassMeetingAsync(Guid classMeetingId)
         {
-            var entities = await _learningMaterialRepo.FindAsync(lm => lm.ClassID == classId && !lm.IsDeleted);
+            var entities = await _learningMaterialRepo.FindAsync(lm => lm.ClassMeetingID == classMeetingId && !lm.IsDeleted);
             return _mapper.Map<IEnumerable<LearningMaterialResponse>>(entities).OrderByDescending(x => x.CreatedAt);
         }
 

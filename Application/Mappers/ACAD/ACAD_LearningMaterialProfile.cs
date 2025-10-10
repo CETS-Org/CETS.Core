@@ -28,7 +28,8 @@ namespace Application.Mappers.ACAD
             // Entity -> Response
             CreateMap<ACAD_LearningMaterial, LearningMaterialResponse>()
                 .ForMember(dest => dest.UploaderName, opt => opt.MapFrom(src => src.CreatedByNavigation  != null ? src.CreatedByNavigation.FullName : null))
-                .ForMember(dest => dest.ClassName, opt => opt.MapFrom(src => src.Class != null ? src.Class.ClassName : null));
+                .ForMember(dest => dest.ClassMeetingDate, opt => opt.MapFrom(src => src.ClassMeeting != null ? src.ClassMeeting.Date : (DateOnly?)null))
+                .ForMember(dest => dest.ClassMeetingSlot, opt => opt.MapFrom(src => src.ClassMeeting != null ? src.ClassMeeting.Slot.Name : null));
         }
     }
 }

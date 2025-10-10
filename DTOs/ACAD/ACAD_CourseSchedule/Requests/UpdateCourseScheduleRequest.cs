@@ -10,6 +10,6 @@ namespace DTOs.ACAD.ACAD_CourseSchedule.Requests
     {
         public Guid CourseID { get; set; }
         public Guid TimeSlotID { get; set; } // Time Slot ID
-        public string DayOfWeek { get; set; } = null!;
+        public DayOfWeek DayOfWeek { get; set; }
     }
 }

@@ -9,7 +9,7 @@ namespace Domain.Entities;
 
 public partial class ACAD_LearningMaterial : EntityBase, IHasCreationTime, IHasModificationTime, IHasCreator, IHasModifier
 {
-    public Guid? ClassID { get; set; }
+    public Guid? ClassMeetingID { get; set; }
 
     [StringLength(255)]
     public string Title { get; set; } = null!;
@@ -28,8 +28,8 @@ public partial class ACAD_LearningMaterial : EntityBase, IHasCreationTime, IHasM
 
     public Guid? UpdatedBy { get; set; }
 
-    [ForeignKey(nameof(ClassID))]
-    public virtual ACAD_Class? Class { get; set; }
+    [ForeignKey(nameof(ClassMeetingID))]
+    public virtual ACAD_ClassMeeting? ClassMeeting { get; set; }
 
     [ForeignKey(nameof(CreatedBy))]
     public virtual IDN_Account? CreatedByNavigation { get; set; }

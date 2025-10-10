@@ -31,7 +31,7 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<IEnumerable<CourseScheduleResponse>>(schedules);
         }
 
-        public async Task<IEnumerable<CourseScheduleResponse>> GetSchedulesByDayOfWeekAsync(string dayOfWeek)
+        public async Task<IEnumerable<CourseScheduleResponse>> GetSchedulesByDayOfWeekAsync(DayOfWeek dayOfWeek)
         {
             var schedules = await _courseScheduleRepository.GetSchedulesByDayOfWeekAsync(dayOfWeek);
             return _mapper.Map<IEnumerable<CourseScheduleResponse>>(schedules);
@@ -43,7 +43,7 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<IEnumerable<CourseScheduleResponse>>(schedules);
         }
 
-        public async Task<bool> IsTimeSlotAvailableAsync(Guid courseId, Guid timeSlotId, string dayOfWeek)
+        public async Task<bool> IsTimeSlotAvailableAsync(Guid courseId, Guid timeSlotId, DayOfWeek dayOfWeek)
         {
             return await _courseScheduleRepository.IsTimeSlotAvailableAsync(courseId, timeSlotId, dayOfWeek);
         }

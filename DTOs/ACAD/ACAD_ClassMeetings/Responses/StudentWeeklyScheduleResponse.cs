@@ -9,7 +9,7 @@ namespace DTOs.ACAD.ACAD_ClassMeetings.Responses
     public class StudentWeeklyScheduleResponse
     {
         public DateTime Date { get; set; }
-        public string DayOfWeek { get; set; } = string.Empty;
+        public DayOfWeek DayOfWeek { get; set; }
         public string Slot { get; set; } = string.Empty;
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
