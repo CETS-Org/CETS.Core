@@ -16,7 +16,10 @@ namespace Application.Mappers.ACAD
         {
             CreateMap<SubmitAssignmentRequest, ACAD_Submission>();
 
-            CreateMap<ACAD_Submission, SubmissionResponse>();
+            CreateMap<ACAD_Submission, SubmissionResponse>()
+                .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Account.FullName))
+                .ForMember(dest => dest.StudentCode, opt => opt.MapFrom(src => src.Student.StudentCode));
+            
             CreateMap<ACAD_Submission, SubmissionDetailResponse>()
                 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Account.FullName))
                 .ForMember(dest => dest.AssignmentTitle, opt => opt.MapFrom(src => src.Assignment.Title));

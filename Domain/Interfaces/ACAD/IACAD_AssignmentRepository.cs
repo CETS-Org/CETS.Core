@@ -1,4 +1,5 @@
 using Domain.Entities;
+using DTOs.ACAD.ACAD_Assignment.Responses;
 
 namespace Domain.Interfaces.ACAD
 {
@@ -7,6 +8,7 @@ namespace Domain.Interfaces.ACAD
         Task<IEnumerable<ACAD_Assignment>> GetByClassMeetingAsync(Guid classMeetingId);
         Task<IEnumerable<ACAD_Assignment>> GetByTeacherAsync(Guid teacherId);
         Task<IEnumerable<ACAD_Assignment>> GetAssignmentsWithSubmissions(Guid classMeetingId, Guid studentId);
+        Task<IEnumerable<AssignmentWithSubmissionCountResponse>> GetAssignmentsWithSubmissionCountAsync(Guid classMeetingId);
     }
 
 }

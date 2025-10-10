@@ -84,5 +84,10 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<IEnumerable<AssignmentResponse>>(assignments);
         }
 
+        public async Task<IEnumerable<AssignmentWithSubmissionCountResponse>> GetAssignmentsWithSubmissionCountAsync(Guid classMeetingId)
+        {
+            return await _assignmentRepository.GetAssignmentsWithSubmissionCountAsync(classMeetingId);
+        }
+
     }
 }

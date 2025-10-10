@@ -71,5 +71,33 @@ namespace Application.Implementations.ACAD
             return await _submissionRepository.GetSubmissionSummaryAsync(studentId, courseId);
         }
 
+        public async Task<SubmissionResponse> UpdateScoreAsync(UpdateSubmissionScoreRequest request)
+        {
+            var submission = await _submissionRepository.GetByIdAsync(request.SubmissionId)
+                         ?? throw new KeyNotFoundException($"Submission with ID {request.SubmissionId} not found");
+
+            submission.Score = request.Score;
+            submission.UpdatedAt = DateTime.UtcNow;
+
+            _submissionRepository.Update(submission);
+            await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<SubmissionResponse>(submission);
+        }
+
+        public async Task<SubmissionResponse> UpdateFeedbackAsync(UpdateSubmissionFeedbackRequest request)
+        {
+            var submission = await _submissionRepository.GetByIdAsync(request.SubmissionId)
+                         ?? throw new KeyNotFoundException($"Submission with ID {request.SubmissionId} not found");
+
+            submission.Feedback = request.Feedback;
+            submission.UpdatedAt = DateTime.UtcNow;
+
+            _submissionRepository.Update(submission);
+            await _unitOfWork.SaveChangesAsync();
+
+            return _mapper.Map<SubmissionResponse>(submission);
+        }
+
     }
 }

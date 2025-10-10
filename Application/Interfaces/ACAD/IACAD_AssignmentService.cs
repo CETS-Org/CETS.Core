@@ -23,5 +23,6 @@ namespace Application.Interfaces.ACAD
 
         Task DeleteAssignmentAsync(Guid id);
         Task<IEnumerable<AssignmentResponse>> GetAssignmentsWithSubmissions(Guid classMeetingId, Guid studentId);
+        Task<IEnumerable<AssignmentWithSubmissionCountResponse>> GetAssignmentsWithSubmissionCountAsync(Guid classMeetingId);
     }
 }
