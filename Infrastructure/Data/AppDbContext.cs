@@ -111,14 +111,14 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<RPT_Report> RPT_Reports { get; set; }
 
     #endregion
-    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //{
-    //    var builder = new ConfigurationBuilder()
-    //        .SetBasePath(Directory.GetCurrentDirectory())
-    //        .AddJsonFile("appsettings.json", true, true);
-    //    var configuration = builder.Build();
-    //    optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
-    //}
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", true, true);
+        var configuration = builder.Build();
+        optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -387,7 +387,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("MaterialID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
-            entity.HasOne(d => d.Class).WithMany(p => p.ACAD_LearningMaterials).HasConstraintName("FK_ACAD_LearningMaterials_Class");
+            entity.HasOne(d => d.ClassMeeting)
+                .WithMany()
+                .HasForeignKey(d => d.ClassMeetingID)
+                .HasConstraintName("FK_ACAD_LearningMaterials_ClassMeeting");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ACAD_LearningMaterialCreatedByNavigations)
                 .OnDelete(DeleteBehavior.ClientSetNull)
