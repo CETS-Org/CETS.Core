@@ -111,14 +111,14 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<RPT_Report> RPT_Reports { get; set; }
 
     #endregion
-    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //{
-    //    var builder = new ConfigurationBuilder()
-    //        .SetBasePath(Directory.GetCurrentDirectory())
-    //        .AddJsonFile("appsettings.json", true, true);
-    //    var configuration = builder.Build();
-    //    optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
-    //}
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", true, true);
+        var configuration = builder.Build();
+        optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -707,6 +707,10 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Teacher).WithMany(p => p.HR_TeacherAvailabilities)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_HR_TeacherAvailability_Teacher");
+
+            entity.HasIndex(e => new { e.TeacherID, e.TeachDay, e.TimeSlotID })
+                .IsUnique()
+                .HasDatabaseName("UQ_HR_TeacherAvailabilities_Teacher_Day_Slot");
             
         });
 

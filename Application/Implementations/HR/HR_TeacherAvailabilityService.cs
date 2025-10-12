@@ -15,6 +15,47 @@ namespace Application.Implementations.HR
 		{
 		}
 
+		public override async Task<TeacherAvailabilityResponse> CreateAsync(CreateTeacherAvailabilityRequest createDto)
+		{
+			if (!createDto.TimeSlotID.HasValue)
+			{
+				throw new InvalidOperationException("TimeSlotID is required for teacher availability.");
+			}
+
+			var exists = await _repository.ExistsAsync(a =>
+				a.TeacherID == createDto.TeacherID &&
+				a.TeachDay == createDto.TeachDay &&
+				a.TimeSlotID == createDto.TimeSlotID.Value);
+
+			if (exists)
+			{
+				throw new InvalidOperationException("Teacher availability already exists for this teacher, day and time slot.");
+			}
+
+			return await base.CreateAsync(createDto);
+		}
+
+		public override async Task<TeacherAvailabilityResponse> UpdateAsync(Guid id, UpdateTeacherAvailabilityRequest dto)
+		{
+			if (!dto.TimeSlotID.HasValue)
+			{
+				throw new InvalidOperationException("TimeSlotID is required for teacher availability.");
+			}
+
+			var duplicateExists = await _repository.ExistsAsync(a =>
+				a.Id != id &&
+				a.TeacherID == dto.TeacherID &&
+				a.TeachDay == dto.TeachDay &&
+				a.TimeSlotID == dto.TimeSlotID.Value);
+
+			if (duplicateExists)
+			{
+				throw new InvalidOperationException("Another availability already exists for this teacher, day and time slot.");
+			}
+
+			return await base.UpdateAsync(id, dto);
+		}
+
 		public async Task<IReadOnlyList<TeacherAvailabilityResponse>> GetByTeacherIdAsync(Guid teacherId)
 		{
 			var items = await _repository.FindAsync(a => a.TeacherID == teacherId);
