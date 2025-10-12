@@ -19,6 +19,7 @@ namespace Application.Mappers.ACAD
 
             CreateMap<UpdateLearningMaterialRequest, ACAD_LearningMaterial>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.ClassMeetingID, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.StoreUrl, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
@@ -29,7 +30,8 @@ namespace Application.Mappers.ACAD
             CreateMap<ACAD_LearningMaterial, LearningMaterialResponse>()
                 .ForMember(dest => dest.UploaderName, opt => opt.MapFrom(src => src.CreatedByNavigation  != null ? src.CreatedByNavigation.FullName : null))
                 .ForMember(dest => dest.ClassMeetingDate, opt => opt.MapFrom(src => src.ClassMeeting != null ? src.ClassMeeting.Date : (DateOnly?)null))
-                .ForMember(dest => dest.ClassMeetingSlot, opt => opt.MapFrom(src => src.ClassMeeting != null ? src.ClassMeeting.Slot.Name : null));
+                .ForMember(dest => dest.ClassMeetingSlot, opt => opt.MapFrom(src => src.ClassMeeting != null ? src.ClassMeeting.Slot.Name : null))
+                .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.StoreUrl) ? null : System.IO.Path.GetFileName(src.StoreUrl)));
         }
     }
 }

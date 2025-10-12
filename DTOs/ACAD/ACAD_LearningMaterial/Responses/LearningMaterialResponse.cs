@@ -7,6 +7,7 @@ namespace DTOs.ACAD.ACAD_LearningMaterial.Responses
         public Guid? ClassMeetingID { get; set; }
         public string Title { get; set; } = null!;
         public string? StoreUrl { get; set; }
+        public string? FileName { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public string? UploaderName { get; set; }
