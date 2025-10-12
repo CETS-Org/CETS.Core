@@ -15,7 +15,26 @@ namespace Application.Mappers.ACAD
     {
         public AssignmentProfile()
         {
-            CreateMap<CreateAssignmentRequest, ACAD_Assignment>();
+            CreateMap<CreateAssignmentRequest, ACAD_Assignment>()
+                .ForMember(dest => dest.ClassMeetingID, opt => opt.MapFrom(src => src.ClassMeetingId))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.TeacherId))
+                .ForMember(dest => dest.DueAt, opt => opt.MapFrom(src => src.DueDate))
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.StoreUrl, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+            CreateMap<CreateAssignmentWithFileRequest, ACAD_Assignment>()
+                .ForMember(dest => dest.ClassMeetingID, opt => opt.MapFrom(src => src.ClassMeetingId))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.TeacherId))
+                .ForMember(dest => dest.DueAt, opt => opt.MapFrom(src => src.DueDate))
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.StoreUrl, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
             CreateMap<UpdateAssignmentRequest, ACAD_Assignment>();
             // CreateMap<ACAD_Assignment, AssignmentResponse>();
             /*CreateMap<ACAD_Assignment, AssignmentResponse>()

@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.ACAD;
+using Application.Interfaces.Common.Storage;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
@@ -16,17 +17,20 @@ namespace Application.Implementations.ACAD
     public class ACAD_SubmissionService : IACAD_SubmissionService
     {
         private readonly IACAD_SubmissionRepository _submissionRepository;
+        private readonly IFileStorageService _fileStorageService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
         public ACAD_SubmissionService(
             IACAD_SubmissionRepository submissionRepository,
             IUnitOfWork unitOfWork,
-            IMapper mapper)
+            IMapper mapper,
+            IFileStorageService fileStorageService)
         {
             _submissionRepository = submissionRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _fileStorageService = fileStorageService;
         }
 
         public async Task<SubmissionResponse> SubmitAssignmentAsync(SubmitAssignmentRequest request)
@@ -97,6 +101,87 @@ namespace Application.Implementations.ACAD
             await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<SubmissionResponse>(submission);
+        }
+
+        public async Task<string> GetDownloadUrlAsync(Guid id)
+        {
+            var entity = await _submissionRepository.FindFirstAsync(a => a.Id == id && !a.IsDeleted);
+            if (entity == null)
+                throw new KeyNotFoundException("Assignment not found");
+
+            if (string.IsNullOrEmpty(entity.StoreUrl))
+                throw new InvalidOperationException("Assignment has no associated file");
+
+            var fileExists = await _fileStorageService.FileExistsAsync(entity.StoreUrl);
+            if (!fileExists)
+                throw new InvalidOperationException($"File not found in storage: {entity.StoreUrl}");
+
+            return await _fileStorageService.GetPresignedGetUrlAsync(entity.StoreUrl);
+        }
+
+        public async Task<SubmissionResponse> GetSubmissionByIdAsync(Guid id)
+        {
+            var submission = await _submissionRepository.GetByIdAsync(id);
+            if (submission == null)
+                throw new KeyNotFoundException("Submission not found");
+            return _mapper.Map<SubmissionResponse>(submission);
+        }
+
+        public async Task<AssignmentSubmissionsResponse> GetSubmissionsWithDownloadUrlsAsync(Guid assignmentId)
+        {
+            var submissions = await _submissionRepository.GetByAssignmentAsync(assignmentId);
+            
+            if (!submissions.Any())
+                throw new KeyNotFoundException("No submissions found for this assignment");
+
+            var firstSubmission = submissions.First();
+            var assignment = firstSubmission.Assignment;
+            if (assignment == null)
+                throw new KeyNotFoundException("Assignment not found");
+
+            var downloadUrls = new List<SubmissionDownloadInfo>();
+
+            foreach (var submission in submissions)
+            {
+                try
+                {
+                    var downloadUrl = await _fileStorageService.GetPresignedGetUrlAsync(submission.StoreUrl!);
+                    var fileName = Path.GetFileName(submission.StoreUrl!) ?? "submission.pdf";
+
+                    downloadUrls.Add(new SubmissionDownloadInfo
+                    {
+                        SubmissionId = submission.Id,
+                        StudentCode = submission.Student?.StudentCode ?? "N/A",
+                        StudentName = submission.Student?.Account?.FullName ?? "N/A",
+                        DownloadUrl = downloadUrl,
+                        FileName = fileName
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // Log error but continue with other submissions
+                    Console.WriteLine($"Error getting download URL for submission {submission.Id}: {ex.Message}");
+                    
+                    downloadUrls.Add(new SubmissionDownloadInfo
+                    {
+                        SubmissionId = submission.Id,
+                        StudentCode = submission.Student?.StudentCode ?? "N/A",
+                        StudentName = submission.Student?.Account?.FullName ?? "N/A",
+                        DownloadUrl = "Error: File not available",
+                        FileName = "N/A"
+                    });
+                }
+            }
+
+            return new AssignmentSubmissionsResponse
+            {
+                AssignmentInfo = new AssignmentInfo
+                {
+                    Id = assignment.Id,
+                    Title = assignment.Title ?? "Assignment"
+                },
+                DownloadUrls = downloadUrls
+            };
         }
 
     }

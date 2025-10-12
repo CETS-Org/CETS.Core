@@ -13,6 +13,8 @@ namespace Application.Interfaces.ACAD
     {
         Task<AssignmentResponse> CreateAssignmentAsync(CreateAssignmentRequest request);
 
+        Task<AssignmentUploadResponse> CreateAssignmentWithFileAsync(CreateAssignmentWithFileRequest request);
+
         Task<IEnumerable<AssignmentResponse>> GetAssignmentsByClassMeetingAsync(Guid classMeetingId);
 
         Task<IEnumerable<AssignmentResponse>> GetAssignmentsByTeacherAsync(Guid teacherId);
@@ -24,5 +26,6 @@ namespace Application.Interfaces.ACAD
         Task DeleteAssignmentAsync(Guid id);
         Task<IEnumerable<AssignmentResponse>> GetAssignmentsWithSubmissions(Guid classMeetingId, Guid studentId);
         Task<IEnumerable<AssignmentWithSubmissionCountResponse>> GetAssignmentsWithSubmissionCountAsync(Guid classMeetingId);
+        Task<string> GetDownloadUrlAsync(Guid id);
     }
 }
