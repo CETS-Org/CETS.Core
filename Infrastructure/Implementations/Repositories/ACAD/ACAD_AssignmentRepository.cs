@@ -1,6 +1,7 @@
 using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
+using DTOs.ACAD.ACAD_Assignment.Responses;
 using Infrastructure.Implementations.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,27 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(a => a.ACAD_Submissions.Where(s => s.StudentID == studentId && !s.IsDeleted))
                 .Where(a => a.ClassMeetingID == classMeetingId && !a.IsDeleted)
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<AssignmentWithSubmissionCountResponse>> GetAssignmentsWithSubmissionCountAsync(Guid classMeetingId)
+        {
+            var assignments = await _context.ACAD_Assignments
+                .Where(a => a.ClassMeetingID == classMeetingId && !a.IsDeleted)
+                .Select(a => new AssignmentWithSubmissionCountResponse
+                {
+                    Id = a.Id,
+                    ClassMeetingId = a.ClassMeetingID.HasValue ? a.ClassMeetingID.Value : Guid.Empty,
+                    Title = a.Title ?? string.Empty,
+                    Description = a.Description,
+                    StoreUrl = a.StoreUrl,
+                    DueAt = a.DueAt,
+                    CreatedAt = a.CreatedAt,
+                    SubmissionCount = a.ACAD_Submissions.Count(s => !s.IsDeleted)
+                })
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            return assignments;
         }
 
     }

@@ -16,6 +16,11 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<SubmissionResponse>> GetSubmissionsByStudentAsync(Guid studentId);
         Task<SubmissionResponse> GradeSubmissionAsync(GradeSubmissionRequest request);
         Task<(int submitted, int total)> GetAssignmentsSubmittedSummaryAsync(Guid studentId, Guid courseId);
+        Task<SubmissionResponse> UpdateScoreAsync(UpdateSubmissionScoreRequest request);
+        Task<SubmissionResponse> UpdateFeedbackAsync(UpdateSubmissionFeedbackRequest request);
+        Task<string> GetDownloadUrlAsync(Guid id);
+        Task<SubmissionResponse>GetSubmissionByIdAsync(Guid id);
+        Task<AssignmentSubmissionsResponse> GetSubmissionsWithDownloadUrlsAsync(Guid assignmentId);
     }
 
 }

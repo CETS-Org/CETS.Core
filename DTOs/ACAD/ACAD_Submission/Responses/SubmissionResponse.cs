@@ -7,6 +7,8 @@ namespace DTOs.ACAD.ACAD_Submission.Responses
         public Guid Id { get; set; }
         public Guid AssignmentID { get; set; }
         public Guid StudentID { get; set; }
+        public string? StudentName { get; set; }
+        public string? StudentCode { get; set; }
         public string? StoreUrl { get; set; }
         public string? Content { get; set; }
         public decimal? Score { get; set; }
