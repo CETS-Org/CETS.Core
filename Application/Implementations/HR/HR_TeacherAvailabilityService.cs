@@ -5,19 +5,48 @@ using Domain.Interfaces;
 using Domain.Interfaces.HR;
 using DTOs.HR.HR_TeacherAvailability.Requests;
 using DTOs.HR.HR_TeacherAvailability.Responses;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Application.Implementations.HR
 {
 	public class HR_TeacherAvailabilityService : BaseService<HR_TeacherAvailability, TeacherAvailabilityResponse, UpdateTeacherAvailabilityRequest, CreateTeacherAvailabilityRequest>, IHR_TeacherAvailabilityService
 	{
-		public HR_TeacherAvailabilityService(IHR_TeacherAvailabilityRepository repository, IUnitOfWork unitOfWork, IMapper mapper)
+		private readonly IHttpContextAccessor _httpContextAccessor;
+
+		public HR_TeacherAvailabilityService(IHR_TeacherAvailabilityRepository repository, IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor)
 			: base(repository, unitOfWork, mapper)
 		{
+			_httpContextAccessor = httpContextAccessor;
 		}
 
-		public override async Task<TeacherAvailabilityResponse> CreateAsync(CreateTeacherAvailabilityRequest createDto)
+		private bool IsTeacherValidRole()
 		{
-			if (!createDto.TimeSlotID.HasValue)
+			var user = _httpContextAccessor.HttpContext?.User;
+			if (user == null) return false;
+			bool isTeacher = user.IsInRole("Teacher");
+			bool isPrivileged = user.IsInRole("Admin") || user.IsInRole("AcademicStaff");
+			return isTeacher && !isPrivileged;
+		}
+
+		private bool IsInsideModificationPeriod()
+		{
+            if (!IsTeacherValidRole() && DateTime.Now.Day > 10)
+            {
+				return false;
+            }
+
+			return true;
+        }
+
+        public override async Task<TeacherAvailabilityResponse> CreateAsync(CreateTeacherAvailabilityRequest createDto)
+		{
+			if (!IsInsideModificationPeriod())	
+			{
+				throw new InvalidOperationException("Teachers can modify availability only until the 10th day of the month.");
+            }
+
+            if (!createDto.TimeSlotID.HasValue)
 			{
 				throw new InvalidOperationException("TimeSlotID is required for teacher availability.");
 			}
@@ -37,7 +66,11 @@ namespace Application.Implementations.HR
 
 		public override async Task<TeacherAvailabilityResponse> UpdateAsync(Guid id, UpdateTeacherAvailabilityRequest dto)
 		{
-			if (!dto.TimeSlotID.HasValue)
+            if (!IsInsideModificationPeriod())
+            {
+                throw new InvalidOperationException("Teachers can modify availability only until the 10th day of the month.");
+            }
+            if (!dto.TimeSlotID.HasValue)
 			{
 				throw new InvalidOperationException("TimeSlotID is required for teacher availability.");
 			}
@@ -54,6 +87,15 @@ namespace Application.Implementations.HR
 			}
 
 			return await base.UpdateAsync(id, dto);
+		}
+
+		public override async Task DeleteAsync(Guid id)
+		{
+            if (!IsInsideModificationPeriod())
+            {
+                throw new InvalidOperationException("Teachers can modify availability only until the 10th day of the month.");
+            }
+            await base.DeleteAsync(id);
 		}
 
 		public async Task<IReadOnlyList<TeacherAvailabilityResponse>> GetByTeacherIdAsync(Guid teacherId)
