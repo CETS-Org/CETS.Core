@@ -3,6 +3,8 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using DTOs.ACAD.ACAD_Assignment.Responses;
+using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_Enrollment.Requests;
 using DTOs.ACAD.ACAD_Enrollment.Responses;
 using System;
@@ -66,6 +68,83 @@ namespace Application.Implementations.ACAD
 
             return _mapper.Map<IEnumerable<CourseEnrollmentListResponse>>(enrollments);
         }
+        public async Task<AcademicResultResponse> GetStudentAcademicResultsAsync(Guid studentId)
+        {
+            var enrollments = await _enrollmentRepo.GetStudentAcademicResultsAsync(studentId);
 
+            var items = _mapper.Map<List<CourseItemResponse>>(enrollments);
+
+            int passed = items.Count(i => i.StatusCode == "Passed");
+            int failed = items.Count(i => i.StatusCode == "Failed");
+            int inProgress = items.Count(i => i.StatusCode == "InProgress");
+
+            return new AcademicResultResponse
+            {
+                TotalCourses = items.Count,
+                PassedCourses = passed,
+                FailedCourses = failed,
+                InProgressCourses = inProgress,
+                Items = items
+            };
+        }
+        public async Task<StudentCourseDetailResponse?> GetStudentCourseDetailAsync(Guid studentId, Guid courseId)
+        {
+            var enrollment = await _enrollmentRepo.GetEnrollmentDetailByStudentAndCourseAsync(studentId, courseId);
+            if (enrollment == null)
+                return null;
+
+            var result = _mapper.Map<StudentCourseDetailResponse>(enrollment);
+
+            result.Assignments = BuildAssignmentList(enrollment, studentId);
+
+            return result;
+        }
+
+        private static List<StudentAssignmentResponse> BuildAssignmentList(ACAD_Enrollment enrollment, Guid studentId)
+        {
+            var assignments = new List<StudentAssignmentResponse>();
+
+            if (enrollment.Class?.ACAD_ClassMeetings == null)
+                return assignments;
+
+            foreach (var meeting in enrollment.Class.ACAD_ClassMeetings)
+            {
+                if (meeting.ACAD_Assignments == null) continue;
+
+                foreach (var a in meeting.ACAD_Assignments.Where(x => !x.IsDeleted))
+                {
+                    var sub = a.ACAD_Submissions
+                        .Where(s => s.StudentID == studentId && !s.IsDeleted)
+                        .OrderByDescending(s => s.UpdatedAt ?? s.CreatedAt)
+                        .FirstOrDefault();
+
+                    string status;
+                    if (sub == null)
+                        status = "NOT_SUBMITTED";
+                    else if (a.DueAt.HasValue && sub.CreatedAt > a.DueAt)
+                        status = "LATE_SUBMITTED";
+                    else if (sub.Score.HasValue)
+                        status = "GRADED";
+                    else
+                        status = "SUBMITTED";
+
+                    assignments.Add(new StudentAssignmentResponse
+                    {
+                        AssignmentId = a.Id,
+                        Title = a.Title,
+                        Description = a.Description,
+                        DueAt = a.DueAt,
+                        SubmittedAt = sub?.UpdatedAt ?? sub?.CreatedAt,
+                        Score = sub?.Score,
+                        Feedback = sub?.Feedback,
+                        SubmissionStatus = status
+                    });
+                }
+            }
+
+            return assignments.OrderBy(x => x.DueAt).ToList();
+        }
     }
+
 }
+

@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_Enrollment.Requests;
 using DTOs.ACAD.ACAD_Enrollment.Responses;
 using System;
@@ -16,5 +17,7 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<EnrollmentResponse>> GetClassEnrollmentsAsync(Guid classId);
         Task<EnrollmentDetailResponse?> GetEnrollmentDetailAsync(Guid enrollmentId);
         Task<IEnumerable<CourseEnrollmentListResponse>> GetStudentCoursesEnrollmentAsync(Guid studentId);
+        Task<AcademicResultResponse> GetStudentAcademicResultsAsync(Guid studentId);
+        Task<StudentCourseDetailResponse?> GetStudentCourseDetailAsync(Guid studentId, Guid courseId);
     }
 }
