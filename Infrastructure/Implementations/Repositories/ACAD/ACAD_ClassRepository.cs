@@ -69,6 +69,27 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             return responses;
         }
 
+        public async Task<ClassDetailResponse?> GetClassDetailAsync(Guid classId)
+        {
+            var query = from cls in _context.ACAD_Classes
+                        where cls.Id == classId && !cls.IsDeleted
+                        join assignOpt in _context.ACAD_CourseTeacherAssignments on cls.TeacherAssignmentID equals assignOpt.Id into assignLeft
+                        from assign in assignLeft.DefaultIfEmpty()
+                        join courseOpt in _context.ACAD_Courses on assign.CourseID equals courseOpt.Id into courseLeft
+                        from course in courseLeft.DefaultIfEmpty()
+                        select new ClassDetailResponse
+                        {
+                            Id = cls.Id,
+                            ClassName = cls.ClassName.ToString(),
+                            CourseName = course != null ? course.CourseName : string.Empty,
+                            CourseId = course != null ? course.Id : Guid.Empty,
+                            Capacity = cls.Capacity,
+                            EnrolledCount = cls.EnrolledCount
+                        };
+
+            return await query.FirstOrDefaultAsync();
+        }
+
         /*private async Task<string?> GetRoomByClassIdAsync(Guid? classId)
         {
             if (classId == null)

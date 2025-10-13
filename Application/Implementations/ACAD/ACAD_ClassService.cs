@@ -87,5 +87,10 @@ namespace Application.Implementations.ACAD
         {
             return await _classRepo.GetLearningClassByStudentId(studentId);
         }
+
+        public async Task<ClassDetailResponse?> GetClassDetailAsync(Guid classId)
+        {
+            return await _classRepo.GetClassDetailAsync(classId);
+        }
     }
 }

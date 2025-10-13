@@ -6,6 +6,7 @@ namespace Domain.Interfaces.ACAD
     public interface IACAD_ClassRepository : IBaseRepository<ACAD_Class>
     {
         Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId);
+        Task<ClassDetailResponse?> GetClassDetailAsync(Guid classId);
     }
 
 }

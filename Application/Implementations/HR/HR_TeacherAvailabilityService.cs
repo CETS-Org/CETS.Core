@@ -1,5 +1,6 @@
 using Application.Interfaces.HR;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.HR;
@@ -24,8 +25,8 @@ namespace Application.Implementations.HR
 		{
 			var user = _httpContextAccessor.HttpContext?.User;
 			if (user == null) return false;
-			bool isTeacher = user.IsInRole("Teacher");
-			bool isPrivileged = user.IsInRole("Admin") || user.IsInRole("AcademicStaff");
+			bool isTeacher = user.IsInRole(Roles.Teacher.ToString());
+			bool isPrivileged = user.IsInRole(Roles.Admin.ToString()) || user.IsInRole(Roles.AcademicStaff.ToString());
 			return isTeacher && !isPrivileged;
 		}
 
