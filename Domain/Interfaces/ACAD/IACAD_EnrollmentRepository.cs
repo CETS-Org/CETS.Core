@@ -7,6 +7,9 @@ namespace Domain.Interfaces.ACAD
         Task<IEnumerable<ACAD_Enrollment>> GetByStudentAsync(Guid studentId);
         Task<IEnumerable<ACAD_Enrollment>> GetByClassAsync(Guid classId);
         Task<ACAD_Enrollment?> GetDetailAsync(Guid enrollmentId);
+        Task<IEnumerable<ACAD_Enrollment>> GetStudentAcademicResultsAsync(Guid studentId);
+        Task<ACAD_Enrollment?> GetEnrollmentDetailByStudentAndCourseAsync(Guid studentId, Guid courseId);
+
     }
 }
 

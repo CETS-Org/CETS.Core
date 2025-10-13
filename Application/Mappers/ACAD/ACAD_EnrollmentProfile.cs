@@ -40,6 +40,34 @@ namespace Application.Mappers.ACAD
                         .ToList()
                     : new List<string>()))
             .ForMember(dest => dest.EnrollmentStatus, opt => opt.MapFrom(src => src.EnrollmentStatus.Name != null ? src.EnrollmentStatus.Name.ToString() : string.Empty));
+
+            CreateMap<ACAD_Enrollment, CourseItemResponse>()
+            .ForMember(d => d.CourseId, o => o.MapFrom(s => s.CourseID))
+            .ForMember(d => d.CourseCode, o => o.MapFrom(s => s.Course.CourseCode))
+            .ForMember(d => d.CourseName, o => o.MapFrom(s => s.Course.CourseName))
+            .ForMember(d => d.TeacherNames, o => o.MapFrom(s =>
+                s.Course != null && s.Course.ACAD_CourseTeacherAssignments != null
+                    ? s.Course.ACAD_CourseTeacherAssignments
+                        .Where(ta => ta.Teacher != null && ta.Teacher.Account != null)
+                        .Select(ta => ta.Teacher.Account.FullName)
+                        .ToList()                    
+                    : new List<string>()))
+            .ForMember(d => d.StatusCode, o => o.MapFrom(s => s.EnrollmentStatus.Code))
+            .ForMember(d => d.StatusName, o => o.MapFrom(s => s.EnrollmentStatus.Name));
+
+            CreateMap<ACAD_Enrollment, StudentCourseDetailResponse>()
+                .ForMember(d => d.CourseId, o => o.MapFrom(s => s.CourseID))
+                .ForMember(d => d.CourseCode, o => o.MapFrom(s => s.Course.CourseCode))
+                .ForMember(d => d.CourseName, o => o.MapFrom(s => s.Course.CourseName))
+                .ForMember(d => d.Description, o => o.MapFrom(s => s.Course.Description))
+                .ForMember(d => d.TeacherNames, o => o.MapFrom(s =>
+                    s.Course.ACAD_CourseTeacherAssignments
+                        .Where(ta => ta.Teacher != null && ta.Teacher.Account != null)
+                        .Select(ta => ta.Teacher.Account.FullName)
+                        .ToList()))
+                .ForMember(d => d.StatusCode, o => o.MapFrom(s => s.EnrollmentStatus.Code))
+                .ForMember(d => d.StatusName, o => o.MapFrom(s => s.EnrollmentStatus.Name))
+                .ForMember(d => d.Assignments, o => o.Ignore());
         }
     }
 }
