@@ -19,6 +19,7 @@ namespace Application.Interfaces.ACAD
         Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId);
 
         Task<ClassDetailResponse?> GetClassDetailAsync(Guid classId);
+        Task<List<ClassRowResponse>> GetAllClassRowsAsync();
 
     }
 }

@@ -100,6 +100,89 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Select(c => c.Room.RoomCode)  
                 .FirstOrDefaultAsync();
         }*/
+
+        public async Task<List<ClassRowResponse>> GetAllClassRowsAsync()
+        {
+            var query = from cls in _context.ACAD_Classes
+                        where !cls.IsDeleted
+                        join assignOpt in _context.ACAD_CourseTeacherAssignments on cls.TeacherAssignmentID equals assignOpt.Id into assignLeft
+                        from assign in assignLeft.DefaultIfEmpty()
+                        join courseOpt in _context.ACAD_Courses on assign.CourseID equals courseOpt.Id into courseLeft
+                        from course in courseLeft.DefaultIfEmpty()
+                        join teacherOpt in _context.IDN_Teachers on assign.TeacherID equals teacherOpt.Id into teacherLeft
+                        from teacher in teacherLeft.DefaultIfEmpty()
+                        join accountOpt in _context.IDN_Accounts on teacher.Id equals accountOpt.Id into accountLeft
+                        from account in accountLeft.DefaultIfEmpty()
+                        join statusLookup in _context.CORE_LookUps on cls.ClassStatusID equals statusLookup.Id
+                        select new
+                        {
+                            Class = cls,
+                            Course = course,
+                            TeacherName = account != null ? account.FullName : string.Empty,
+                            StatusCode = statusLookup.Code,
+                            StatusName = statusLookup.Name,
+                            Meetings = _context.ACAD_ClassMeetings
+                                .Where(m => m.ClassID == cls.Id && !m.IsDeleted && m.IsActive)
+                                .OrderBy(m => m.Date)
+                                .Select(m => new
+                                {
+                                    Date = m.Date,
+                                    SlotCode = m.Slot.Code,
+                                    RoomCode = m.Room != null ? m.Room.RoomCode : string.Empty
+                                })
+                                .ToList()
+                        };
+
+            var items = await query.ToListAsync();
+
+            var responses = new List<ClassRowResponse>();
+
+            foreach (var item in items)
+            {
+                // Determine status: if enrolled >= capacity then "full", else check IsActive
+                string status;
+                if (item.Class.EnrolledCount >= item.Class.Capacity)
+                {
+                    status = "full";
+                }
+                else if (item.Class.IsActive)
+                {
+                    status = "active";
+                }
+                else
+                {
+                    status = "inactive";
+                }
+
+                // Get room from the first meeting or most common room
+                var room = item.Meetings.FirstOrDefault()?.RoomCode ?? string.Empty;
+
+                // Build schedule
+                var schedule = item.Meetings.Select(m => new ClassScheduleItem
+                {
+                    Date = m.Date.ToString("yyyy-MM-dd"),
+                    Slot = m.SlotCode
+                }).ToList();
+
+                responses.Add(new ClassRowResponse
+                {
+                    Id = item.Class.Id.ToString(),
+                    Name = item.Class.ClassName ?? string.Empty,
+                    CourseId = item.Course?.Id.ToString() ?? string.Empty,
+                    CourseName = item.Course?.CourseName ?? string.Empty,
+                    Teacher = item.TeacherName,
+                    Room = room,
+                    CurrentStudents = item.Class.EnrolledCount,
+                    MaxStudents = item.Class.Capacity,
+                    Status = status,
+                    Schedule = schedule.Any() ? schedule : null,
+                    StartDate = item.Class.StartDate.ToString("yyyy-MM-dd"),
+                    EndDate = item.Class.EndDate.ToString("yyyy-MM-dd")
+                });
+            }
+
+            return responses;
+        }
     }
 }
 
