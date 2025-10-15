@@ -33,10 +33,11 @@ namespace Application.Implementations.ACAD
         {
             return await _uow.ExecuteInTransactionAsync(async () =>
             {
-                // Generate unique file path
-                var fileExtension = Path.GetExtension(request.FileName);
-                var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-                var filePath = $"learning-materials/{DateTime.Now:yyyy/MM/dd}/{uniqueFileName}";
+                // Get presigned upload URL and generated file path
+                var (uploadUrl, filePath) = await _fileStorageService.GetPresignedPutUrlAsync(
+                    "learning-materials", 
+                    request.FileName, 
+                    request.ContentType);
 
                 // Create entity using AutoMapper
                 var entity = _mapper.Map<ACAD_LearningMaterial>(request);
@@ -45,9 +46,6 @@ namespace Application.Implementations.ACAD
 
                 _learningMaterialRepo.Add(entity);
                 await _uow.SaveChangesAsync();
-
-                // Get presigned upload URL
-                var uploadUrl = await _fileStorageService.GetPresignedPutUrlAsync(filePath, request.ContentType);
 
                 return new LearningMaterialUploadResponse
                 {
@@ -80,16 +78,15 @@ namespace Application.Implementations.ACAD
                     // Store old file path for cleanup
                     oldFilePath = entity.StoreUrl;
 
-                    // Generate new unique file path
-                    var fileExtension = Path.GetExtension(request.FileName);
-                    var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-                    var newFilePath = $"learning-materials/{DateTime.Now:yyyy/MM/dd}/{uniqueFileName}";
+                    // Get presigned upload URL and generated file path
+                    var (presignedUrl, newFilePath) = await _fileStorageService.GetPresignedPutUrlAsync(
+                        "learning-materials",
+                        request.FileName!,
+                        request.ContentType!);
 
-                    // Update file path
+                    // Update file path and upload URL
                     entity.StoreUrl = newFilePath;
-
-                    // Get presigned upload URL for new file
-                    uploadUrl = await _fileStorageService.GetPresignedPutUrlAsync(newFilePath, request.ContentType!);
+                    uploadUrl = presignedUrl;
                 }
 
                 _mapper.Map(request, entity);

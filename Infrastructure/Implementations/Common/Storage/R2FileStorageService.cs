@@ -30,8 +30,13 @@ namespace Infrastructure.Implementations.Common.Storage
         }
 
 
-        public Task<string> GetPresignedPutUrlAsync(string filePath, string contentType)
+        public Task<(string PresignedUrl, string FilePath)> GetPresignedPutUrlAsync(string directory, string fileName, string contentType)
         {
+            // Generate unique file path
+            var fileExtension = Path.GetExtension(fileName);
+            var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+            var filePath = $"{directory.TrimEnd('/')}/{DateTime.Now:yyyy/MM/dd}/{uniqueFileName}";
+
             var request = new GetPreSignedUrlRequest
             {
                 BucketName = _settings.BucketName,
@@ -43,7 +48,7 @@ namespace Infrastructure.Implementations.Common.Storage
 
             string presignedUrl = _s3Client.GetPreSignedURL(request);
 
-            return Task.FromResult(presignedUrl);
+            return Task.FromResult((presignedUrl, filePath));
         }
 
         public Task<string> GetPresignedGetUrlAsync(string filePath)
@@ -129,8 +134,9 @@ namespace Infrastructure.Implementations.Common.Storage
 
         public async Task<string> GetTestPresignedUrlAsync()
         {
-            var testPath = $"test/connection-test-{DateTime.Now:yyyyMMdd-HHmmss}.txt";
-            return await GetPresignedPutUrlAsync(testPath, "text/plain");
+            var testFileName = $"connection-test-{DateTime.Now:yyyyMMdd-HHmmss}.txt";
+            var (presignedUrl, _) = await GetPresignedPutUrlAsync("test", testFileName, "text/plain");
+            return presignedUrl;
         }
     }
 }
