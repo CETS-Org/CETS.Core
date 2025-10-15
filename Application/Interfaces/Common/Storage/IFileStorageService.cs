@@ -12,7 +12,7 @@ namespace Application.Interfaces.Common.Storage
         Task DeleteFileAsync(string filePath);
         Task<bool> FileExistsAsync(string filePath);
 
-        Task<string> GetPresignedPutUrlAsync(string filePath, string contentType);
+        Task<(string PresignedUrl, string FilePath)> GetPresignedPutUrlAsync(string directory, string fileName, string contentType);
         Task<string> GetPresignedGetUrlAsync(string filePath);
         string GetPublicUrl(string filePath);
         Task<string> GetTestPresignedUrlAsync();

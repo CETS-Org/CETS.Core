@@ -48,10 +48,8 @@ namespace Application.Implementations.ACAD
         {
             return await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
-                // Generate unique file path
-                var fileExtension = Path.GetExtension(request.FileName);
-                var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-                var filePath = $"assignments/{DateTime.Now:yyyy/MM/dd}/{uniqueFileName}";
+                // Get presigned upload URL and generated file path
+                var (uploadUrl, filePath) = await _fileStorageService.GetPresignedPutUrlAsync("assignments", request.FileName, request.ContentType);
 
                 // Create entity using AutoMapper
                 var entity = _mapper.Map<ACAD_Assignment>(request);
@@ -63,9 +61,6 @@ namespace Application.Implementations.ACAD
 
                 _assignmentRepository.Add(entity);
                 await _unitOfWork.SaveChangesAsync();
-
-                // Get presigned upload URL
-                var uploadUrl = await _fileStorageService.GetPresignedPutUrlAsync(filePath, request.ContentType);
 
                 return new AssignmentUploadResponse
                 {
