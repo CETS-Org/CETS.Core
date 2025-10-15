@@ -36,31 +36,24 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
             CreateMap<UpdateAssignmentRequest, ACAD_Assignment>();
-            // CreateMap<ACAD_Assignment, AssignmentResponse>();
-            /*CreateMap<ACAD_Assignment, AssignmentResponse>()
-             .ForMember(dest => dest.ClassMeetingId, opt => opt.MapFrom(src => src.ClassMeetingID ?? Guid.Empty))
-             .ForMember(dest => dest.TeacherId, opt => opt.MapFrom(src => src.CreatedBy))
-             .ForMember(dest => dest.DueDate, opt => opt.MapFrom(src => src.DueAt ?? DateTime.MinValue));
 
-            CreateMap<ACAD_Submission, SubmissionResponse>()
-                .ForMember(dest => dest.Assignment, opt => opt.MapFrom(src => src.Assignment))
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));*/
             // map Submission
             CreateMap<ACAD_Submission, SubmissionResponse>()
-                .ForMember(dest => dest.Id,
-                           opt => opt.MapFrom(src => src.StudentID))
-                .ForMember(dest => dest.StoreUrl,
-                           opt => opt.MapFrom(src => src.StoreUrl))
-                .ForMember(dest => dest.CreatedAt,
-                           opt => opt.MapFrom(src => src.CreatedAt));
+             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+             .ForMember(dest => dest.StudentID, opt => opt.MapFrom(src => src.StudentID))
+             .ForMember(dest => dest.StoreUrl, opt => opt.MapFrom(src => src.StoreUrl))
+             .ForMember(dest => dest.Feedback, opt => opt.MapFrom(src => src.Feedback))
+             .ForMember(dest => dest.Score, opt => opt.MapFrom(src => src.Score))
+             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
 
             // map Assignment
             CreateMap<ACAD_Assignment, AssignmentResponse>()
-                .ForMember(dest => dest.ClassMeetingId,
-                           opt => opt.MapFrom(src => src.ClassMeetingID ?? Guid.Empty))
-                .ForMember(dest => dest.Submissions,
-                           opt => opt.MapFrom(src => src.ACAD_Submissions));
-
+             .ForMember(dest => dest.ClassMeetingId, opt => opt.MapFrom(src => src.ClassMeetingID ?? Guid.Empty))
+             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+             .ForMember(dest => dest.FileUrl, opt => opt.MapFrom(src => src.StoreUrl))
+             .ForMember(dest => dest.DueDate, opt => opt.MapFrom(src => src.DueAt))
+             .ForMember(dest => dest.Submissions, opt => opt.MapFrom(src => src.ACAD_Submissions));
         }
     }
 }

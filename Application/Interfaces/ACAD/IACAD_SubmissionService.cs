@@ -11,7 +11,7 @@ namespace Application.Interfaces.ACAD
 {
     public interface IACAD_SubmissionService
     {
-        Task<SubmissionResponse> SubmitAssignmentAsync(SubmitAssignmentRequest request);
+        Task<SubmitAssignmentRequest> SubmitAssignmentAsync(SubmitAssignmentRequest request);
         Task<IEnumerable<SubmissionResponse>> GetSubmissionsByAssignmentAsync(Guid assignmentId);
         Task<IEnumerable<SubmissionResponse>> GetSubmissionsByStudentAsync(Guid studentId);
         Task<SubmissionResponse> GradeSubmissionAsync(GradeSubmissionRequest request);
