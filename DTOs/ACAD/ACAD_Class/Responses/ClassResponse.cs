@@ -9,7 +9,7 @@ namespace DTOs.ACAD.ACAD_Class.Responses
     public class ClassResponse
     {
         public Guid Id { get; set; }
-
+        public string ClassName { get; set; } = string.Empty;
         public string StatusName { get; set; } = string.Empty;
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }

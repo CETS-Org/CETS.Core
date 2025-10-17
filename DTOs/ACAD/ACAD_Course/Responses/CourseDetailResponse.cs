@@ -22,6 +22,8 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public int StudentsCount { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
         
         // Additional detail fields
         public List<TeacherAcademicDetailResponse> TeacherDetails { get; set; } = new List<TeacherAcademicDetailResponse>();

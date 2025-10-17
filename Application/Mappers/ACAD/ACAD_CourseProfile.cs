@@ -45,6 +45,12 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src => 
                     src.ACAD_Enrollments.Count(e => !e.IsDeleted)))
                 
+                // Audit information
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => 
+                    src.CreatedByNavigation != null ? src.CreatedByNavigation.Email : null))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => 
+                    src.UpdatedByNavigation != null ? src.UpdatedByNavigation.Email : null))
+                
                 // Detailed course content
                 .ForMember(dest => dest.SyllabusItems, opt => opt.MapFrom(src => 
                     src.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).OrderBy(i => i.SessionNumber)))

@@ -90,6 +90,30 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             return await query.FirstOrDefaultAsync();
         }
 
+        public async Task<List<ClassResponse>> GetClassesByCourseIdAsync(Guid courseId)
+        {
+            var query = from cls in _context.ACAD_Classes
+                        where !cls.IsDeleted
+                        join assignOpt in _context.ACAD_CourseTeacherAssignments on cls.TeacherAssignmentID equals assignOpt.Id into assignLeft
+                        from assign in assignLeft.DefaultIfEmpty()
+                        where assign != null && assign.CourseID == courseId
+                        join statusOpt in _context.CORE_LookUps on cls.ClassStatusID equals statusOpt.Id into statusLeft
+                        from status in statusLeft.DefaultIfEmpty()
+                        select new ClassResponse
+                        {
+                            Id = cls.Id,
+                            ClassName = cls.ClassName ?? string.Empty,
+                            StatusName = status != null ? status.Name : string.Empty,
+                            StartDate = cls.StartDate,
+                            EndDate = cls.EndDate,
+                            Capacity = cls.Capacity,
+                            EnrolledCount = cls.EnrolledCount,
+                            IsActive = cls.IsActive
+                        };
+
+            return await query.ToListAsync();
+        }
+
         /*private async Task<string?> GetRoomByClassIdAsync(Guid? classId)
         {
             if (classId == null)

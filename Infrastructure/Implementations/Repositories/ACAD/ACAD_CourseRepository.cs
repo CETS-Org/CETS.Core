@@ -68,6 +68,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.ACAD_Enrollments)
                 .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
                 .Include(c => c.ACAD_CourseRequirements).ThenInclude(r => r.Requirement)
+                .Include(c => c.CreatedByNavigation)
+                .Include(c => c.UpdatedByNavigation)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
         }
 
