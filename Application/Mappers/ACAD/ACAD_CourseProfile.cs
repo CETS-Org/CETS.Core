@@ -4,6 +4,7 @@ using DTOs.ACAD.ACAD_Course.Requests;
 using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_CourseBenefit.Responses;
 using DTOs.ACAD.ACAD_CourseRequirement.Responses;
+using DTOs.ACAD.ACAD_CourseSkill.Responses;
 using DTOs.ACAD.ACAD_SyllabusItem.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;
 using System;
@@ -55,7 +56,8 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.SyllabusItems, opt => opt.MapFrom(src => 
                     src.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).OrderBy(i => i.SessionNumber)))
                 .ForMember(dest => dest.Benefits, opt => opt.MapFrom(src => src.ACAD_CourseBenefits))
-                .ForMember(dest => dest.Requirements, opt => opt.MapFrom(src => src.ACAD_CourseRequirements));
+                .ForMember(dest => dest.Requirements, opt => opt.MapFrom(src => src.ACAD_CourseRequirements))
+                .ForMember(dest => dest.CourseSkills, opt => opt.MapFrom(src => src.ACAD_CourseSkills));
 
             CreateMap<ACAD_Course, CourseListItemResponse>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
@@ -90,6 +92,9 @@ namespace Application.Mappers.ACAD
 
             CreateMap<ACAD_CourseRequirement, CourseRequirementResponse>()
                 .ForMember(dest => dest.RequirementName, opt => opt.MapFrom(src => src.Requirement.Name));
+
+            CreateMap<ACAD_CourseSkill, CourseSkillResponse>()
+                .ForMember(dest => dest.SkillName, opt => opt.MapFrom(src => src.Skill.Name));
             CreateMap<ACAD_Course, TeachingCourseResponse>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.CourseLevel, opt => opt.MapFrom(src => src.CourseLevel.Name))

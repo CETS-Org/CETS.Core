@@ -1,5 +1,6 @@
 ﻿using DTOs.ACAD.ACAD_CourseBenefit.Responses;
 using DTOs.ACAD.ACAD_CourseRequirement.Responses;
+using DTOs.ACAD.ACAD_CourseSkill.Responses;
 using DTOs.ACAD.ACAD_SyllabusItem.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;
 using System;
@@ -30,6 +31,7 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public List<SyllabusItemResponse> SyllabusItems { get; set; } = new List<SyllabusItemResponse>();
         public List<CourseBenefitResponse> Benefits { get; set; } = new List<CourseBenefitResponse>();
         public List<CourseRequirementResponse> Requirements { get; set; } = new List<CourseRequirementResponse>();
+        public List<CourseSkillResponse> CourseSkills { get; set; } = new List<CourseSkillResponse>();
     }
     
    
