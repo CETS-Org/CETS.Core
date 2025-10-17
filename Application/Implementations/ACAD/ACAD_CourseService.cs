@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces.ACAD;
 using Application.Interfaces.IDN;
 using Application.Interfaces.COM;
+using Application.Interfaces.Common.Storage;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
@@ -11,6 +12,7 @@ using DTOs.IDN.IDN_Teacher.Responses;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,17 +23,32 @@ namespace Application.Implementations.ACAD
     public class ACAD_CourseService : IACAD_CourseService
     {
         private readonly IACAD_CourseRepository _courseRepo;
+        private readonly IACAD_CourseBenefitRepository _courseBenefitRepo;
+        private readonly IACAD_CourseRequirementRepository _courseRequirementRepo;
+        private readonly IACAD_CourseSkillRepository _courseSkillRepo;
+        private readonly IACAD_CourseScheduleRepository _courseScheduleRepo;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
+        private readonly IFileStorageService _fileStorageService;
 
         public ACAD_CourseService(
-            IACAD_CourseRepository courseRepo, 
+            IACAD_CourseRepository courseRepo,
+            IACAD_CourseBenefitRepository courseBenefitRepo,
+            IACAD_CourseRequirementRepository courseRequirementRepo,
+            IACAD_CourseSkillRepository courseSkillRepo,
+            IACAD_CourseScheduleRepository courseScheduleRepo,
             IUnitOfWork uow, 
-            IMapper mapper)
+            IMapper mapper,
+            IFileStorageService fileStorageService)
         {
             _courseRepo = courseRepo;
+            _courseBenefitRepo = courseBenefitRepo;
+            _courseRequirementRepo = courseRequirementRepo;
+            _courseSkillRepo = courseSkillRepo;
+            _courseScheduleRepo = courseScheduleRepo;
             _uow = uow;
             _mapper = mapper;
+            _fileStorageService = fileStorageService;
          
         }
 
@@ -43,13 +60,81 @@ namespace Application.Implementations.ACAD
 
         public async Task<Guid> CreateCourseAsync(CreateCourseRequest request)
         {
-            return await _uow.ExecuteInTransactionAsync(() =>
+            return await _uow.ExecuteInTransactionAsync(async () =>
             {
+                // Set default image if not provided
+                if (string.IsNullOrEmpty(request.CourseImageUrl))
+                {
+                    request.CourseImageUrl = "https://pub-59cfd11e5f0d4b00af54839edc83842d.r2.dev/images/course-tmp-image.jpg";
+                }
+
+                // Create the main course entity
                 var entity = _mapper.Map<ACAD_Course>(request);
                 entity.IsActive = false; 
 
                 _courseRepo.Add(entity);
-                return Task.FromResult(entity.Id);
+                await _uow.SaveChangesAsync(); // Save to generate the course ID
+
+                // Create course benefits
+                if (request.BenefitIDs != null && request.BenefitIDs.Any())
+                {
+                    foreach (var benefitId in request.BenefitIDs)
+                    {
+                        var courseBenefit = new ACAD_CourseBenefit
+                        {
+                            CourseID = entity.Id,
+                            BenefitID = benefitId
+                        };
+                        _courseBenefitRepo.Add(courseBenefit);
+                    }
+                }
+
+                // Create course requirements
+                if (request.RequirementIDs != null && request.RequirementIDs.Any())
+                {
+                    foreach (var requirementId in request.RequirementIDs)
+                    {
+                        var courseRequirement = new ACAD_CourseRequirement
+                        {
+                            CourseID = entity.Id,
+                            RequirementID = requirementId
+                        };
+                        _courseRequirementRepo.Add(courseRequirement);
+                    }
+                }
+
+                // Create course skills
+                if (request.SkillIDs != null && request.SkillIDs.Any())
+                {
+                    foreach (var skillId in request.SkillIDs)
+                    {
+                        var courseSkill = new ACAD_CourseSkill
+                        {
+                            CourseID = entity.Id,
+                            SkillID = skillId
+                        };
+                        _courseSkillRepo.Add(courseSkill);
+                    }
+                }
+
+                // Create course schedules
+                if (request.Schedules != null && request.Schedules.Any())
+                {
+                    foreach (var schedule in request.Schedules)
+                    {
+                        var courseSchedule = new ACAD_CourseSchedule
+                        {
+                            CourseID = entity.Id,
+                            TimeSlotID = schedule.TimeSlotID,
+                            DayOfWeek = schedule.DayOfWeek
+                        };
+                        _courseScheduleRepo.Add(courseSchedule);
+                    }
+                }
+
+                await _uow.SaveChangesAsync(); // Save all related entities
+
+                return entity.Id;
             });
         }
 
@@ -150,6 +235,20 @@ namespace Application.Implementations.ACAD
 
                 _courseRepo.Update(entity);
             });
+        }
+
+        public async Task<CourseImageUploadResponse> GetImageUploadUrlAsync(string fileName, string contentType)
+        {
+            // Get presigned upload URL and generated file path
+            var (uploadUrl, filePath) = await _fileStorageService.GetPresignedPutUrlAsync("courses", fileName, contentType);
+            var publicUrl = _fileStorageService.GetPublicUrl(filePath);
+
+            return new CourseImageUploadResponse
+            {
+                UploadUrl = uploadUrl,
+                FilePath = filePath,
+                PublicUrl = publicUrl
+            };
         }
     }
 

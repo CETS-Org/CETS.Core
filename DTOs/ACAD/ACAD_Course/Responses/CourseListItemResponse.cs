@@ -21,6 +21,7 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public int StudentsCount { get; set; }
         public string CourseImageUrl { get; set; } = null!;
         public string CategoryName { get; set; } = null!;
+        public bool IsActive { get; set; }
         public List<TeacherAcademicDetailResponse> TeacherDetails { get; set; } = new List<TeacherAcademicDetailResponse>();
         public List<CourseSkillResponse> CourseSkills { get; set; } = new List<CourseSkillResponse>();
         public List<CourseScheduleResponse> Schedules { get; set; } = new List<CourseScheduleResponse>();

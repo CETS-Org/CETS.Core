@@ -17,5 +17,17 @@ namespace DTOs.ACAD.ACAD_Course.Requests
         public Guid CategoryID { get; set; }
         public string? Description { get; set; }
         public decimal StandardPrice { get; set; }
+
+        // Related details
+        public List<Guid>? BenefitIDs { get; set; } = new();
+        public List<Guid>? RequirementIDs { get; set; } = new();
+        public List<Guid>? SkillIDs { get; set; } = new();
+        public List<CreateCourseScheduleDetail>? Schedules { get; set; } = new();
+    }
+
+    public class CreateCourseScheduleDetail
+    {
+        public Guid TimeSlotID { get; set; }
+        public DayOfWeek DayOfWeek { get; set; }
     }
 }

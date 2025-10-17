@@ -1,6 +1,7 @@
 ﻿using DTOs.ACAD.ACAD_Course.Requests;
 using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_Course.Search;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace Application.Interfaces.ACAD
     {
         Task<IReadOnlyList<CourseResponse>> GetAllCoursesAsync();
         Task<Guid> CreateCourseAsync(CreateCourseRequest request);
+        Task<CourseImageUploadResponse> GetImageUploadUrlAsync(string fileName, string contentType);
         Task UpdateCourseAsync(UpdateCourseRequest request);
         Task SoftDeleteCourseAsync(Guid id);
         Task<CourseResponse?> GetCourseByIdAsync(Guid id);

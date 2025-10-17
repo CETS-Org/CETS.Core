@@ -76,7 +76,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
             return _context.ACAD_Courses
                 .AsNoTracking()
-                .Where(c => !c.IsDeleted && c.IsActive)
+                .Where(c => !c.IsDeleted)
                 .Include(c => c.Category)
                 .Include(c => c.CourseLevel)
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)

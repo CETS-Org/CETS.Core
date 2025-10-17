@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Domain.Entities;
 using DTOs.ACAD.ACAD_CourseCategory.Responses;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace Application.Mappers.ACAD
     {
         public ACAD_CourseCategoryProfile()
         {
-            CreateMap<ACAD_CourseCategoryProfile, CourseCategoryResponse>();
+            CreateMap<ACAD_CourseCategory, CourseCategoryResponse>();
         }
     }
 }
