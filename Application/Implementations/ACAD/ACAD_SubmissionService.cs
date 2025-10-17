@@ -33,17 +33,55 @@ namespace Application.Implementations.ACAD
             _fileStorageService = fileStorageService;
         }
 
-        public async Task<SubmissionResponse> SubmitAssignmentAsync(SubmitAssignmentRequest request)
-        {
-            var entity = _mapper.Map<ACAD_Submission>(request);
-            entity.Id = Guid.NewGuid();
-            entity.CreatedAt = DateTime.UtcNow;
+        //public async Task<SubmitAssignmentRequest> SubmitAssignmentAsync(SubmitAssignmentRequest request)
+        //{
+        //    var entity = _mapper.Map<ACAD_Submission>(request);
+        //    entity.Id = Guid.NewGuid();
+        //    entity.CreatedAt = DateTime.UtcNow;
 
-            _submissionRepository.Add(entity);
+        //    _submissionRepository.Add(entity);
+        //    await _unitOfWork.SaveChangesAsync();
+
+        //    return _mapper.Map<SubmitAssignmentRequest>(entity);
+        //}
+
+        public async Task<SubmitAssignmentRequest> SubmitAssignmentAsync(SubmitAssignmentRequest request)
+        {
+            // Tìm submission cũ (nếu có)
+            var existingSubmission = (await _submissionRepository
+                .FindAsync(x => x.AssignmentID == request.AssignmentID
+                             && x.StudentID == request.StudentID
+                             && !x.IsDeleted))
+                .FirstOrDefault();
+
+
+            ACAD_Submission entity;
+
+            if (existingSubmission == null)
+            {
+                entity = _mapper.Map<ACAD_Submission>(request);
+                entity.Id = Guid.NewGuid();
+                entity.CreatedAt = DateTime.UtcNow;
+                entity.UpdatedAt = entity.CreatedAt;
+
+                _submissionRepository.Add(entity);
+            }
+            else
+            {
+                if (!string.Equals(existingSubmission.StoreUrl, request.FileUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    existingSubmission.StoreUrl = request.FileUrl;
+                    existingSubmission.UpdatedAt = DateTime.UtcNow;
+                    _submissionRepository.Update(existingSubmission);
+                }
+                entity = existingSubmission;
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<SubmissionResponse>(entity);
+            return _mapper.Map<SubmitAssignmentRequest>(entity);
         }
+
 
         public async Task<IEnumerable<SubmissionResponse>> GetSubmissionsByAssignmentAsync(Guid assignmentId)
         {

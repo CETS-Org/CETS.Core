@@ -97,5 +97,10 @@ namespace Application.Implementations.ACAD
         {
             return await _classRepo.GetClassDetailAsync(classId);
         }
+
+        public async Task<List<ClassRowResponse>> GetAllClassRowsAsync()
+        {
+            return await _classRepo.GetAllClassRowsAsync();
+        }
     }
 }
