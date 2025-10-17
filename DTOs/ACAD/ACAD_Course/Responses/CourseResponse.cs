@@ -16,5 +16,10 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public string? Description { get; set; }
         public decimal StandardPrice { get; set; }
         public bool IsActive { get; set; }
+        
+        // IDs needed for edit forms
+        public Guid CourseLevelID { get; set; }
+        public Guid CourseFormatID { get; set; }
+        public Guid CategoryID { get; set; }
     }
 }

@@ -64,7 +64,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.CourseLevel)
                 .Include(c => c.CourseFormat)
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
-                .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
+                .Include(c => c.ACAD_Syllabi.Where(s => !s.IsDeleted))
+                    .ThenInclude(s => s.ACAD_SyllabusItems.Where(i => !i.IsDeleted).OrderBy(i => i.SessionNumber))
                 .Include(c => c.ACAD_Enrollments)
                 .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
                 .Include(c => c.ACAD_CourseRequirements).ThenInclude(r => r.Requirement)
@@ -83,7 +84,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.Category)
                 .Include(c => c.CourseLevel)
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
-                .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
+                .Include(c => c.ACAD_Syllabi.Where(s => !s.IsDeleted))
+                    .ThenInclude(s => s.ACAD_SyllabusItems.Where(i => !i.IsDeleted).OrderBy(i => i.SessionNumber))
                 .Include(c => c.ACAD_Enrollments);
         }
 
@@ -276,7 +278,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.CourseFormat)
                 .Include(c => c.ACAD_Enrollments)
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
-                .Include(c => c.ACAD_Syllabi).ThenInclude(s => s.ACAD_SyllabusItems)
+                .Include(c => c.ACAD_Syllabi.Where(s => !s.IsDeleted))
+                    .ThenInclude(s => s.ACAD_SyllabusItems.Where(i => !i.IsDeleted).OrderBy(i => i.SessionNumber))
                 .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
                 .Include(c => c.ACAD_CourseRequirements).ThenInclude(r => r.Requirement)
                 .Include(c => c.ACAD_CourseSkills).ThenInclude(cs => cs.Skill)

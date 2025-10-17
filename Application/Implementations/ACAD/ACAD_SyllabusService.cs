@@ -72,5 +72,26 @@ namespace Application.Implementations.ACAD
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<SyllabusResponse>(entity);
         }
+
+        public async Task<SyllabusResponse> SoftDeleteAsync(Guid id)
+        {
+            var entity = await _syllabusRepo.GetByIdAsync(id)
+                         ?? throw new KeyNotFoundException("Syllabus not found");
+            entity.IsDeleted = true;
+            _syllabusRepo.Update(entity);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<SyllabusResponse>(entity);
+
+        }
+
+        public async Task<SyllabusItemResponse> SoftDeleteSyllabusItemAsync(Guid id)
+        {
+            var entity = await _syllabusItemRepo.GetByIdAsync(id)
+                         ?? throw new KeyNotFoundException("Syllabus item not found");
+            entity.IsDeleted = true;
+            _syllabusItemRepo.Update(entity);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<SyllabusItemResponse>(entity);
+        }
     }
 }

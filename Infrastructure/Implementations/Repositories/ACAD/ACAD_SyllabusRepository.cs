@@ -14,8 +14,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         public async Task<IEnumerable<ACAD_Syllabus>> GetByCourseIdAsync(Guid courseId)
         {
             return await _context.ACAD_Syllabi
-                .Where(s => s.CourseID == courseId)
-                .Include(s => s.ACAD_SyllabusItems)
+                .Where(s => s.CourseID == courseId && !s.IsDeleted)
+                .Include(s => s.ACAD_SyllabusItems.Where(i => !i.IsDeleted).OrderBy(i => i.SessionNumber))
                 .ToListAsync();
         }
     }

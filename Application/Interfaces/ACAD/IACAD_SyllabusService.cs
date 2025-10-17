@@ -20,6 +20,8 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<SyllabusItemResponse>> GetItemsBySyllabusAsync(Guid syllabusId);
 
         Task<SyllabusItemResponse> UpdateSyllabusItemAsync(UpdateSyllabusItemRequest request);
+        Task<SyllabusResponse> SoftDeleteAsync(Guid id);
+        Task<SyllabusItemResponse> SoftDeleteSyllabusItemAsync(Guid id);
     }
 
 }

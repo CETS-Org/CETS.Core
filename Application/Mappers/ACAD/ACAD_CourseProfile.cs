@@ -5,6 +5,7 @@ using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_CourseBenefit.Responses;
 using DTOs.ACAD.ACAD_CourseRequirement.Responses;
 using DTOs.ACAD.ACAD_CourseSkill.Responses;
+using DTOs.ACAD.ACAD_Syllabus.Responses;
 using DTOs.ACAD.ACAD_SyllabusItem.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;
 using System;
@@ -53,8 +54,8 @@ namespace Application.Mappers.ACAD
                     src.UpdatedByNavigation != null ? src.UpdatedByNavigation.Email : null))
                 
                 // Detailed course content
-                .ForMember(dest => dest.SyllabusItems, opt => opt.MapFrom(src => 
-                    src.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).OrderBy(i => i.SessionNumber)))
+                .ForMember(dest => dest.Syllabi, opt => opt.MapFrom(src => 
+                    src.ACAD_Syllabi.Where(s => !s.IsDeleted).ToList()))
                 .ForMember(dest => dest.Benefits, opt => opt.MapFrom(src => src.ACAD_CourseBenefits))
                 .ForMember(dest => dest.Requirements, opt => opt.MapFrom(src => src.ACAD_CourseRequirements))
                 .ForMember(dest => dest.CourseSkills, opt => opt.MapFrom(src => src.ACAD_CourseSkills));
@@ -86,6 +87,11 @@ namespace Application.Mappers.ACAD
 
 
             CreateMap<ACAD_SyllabusItem, SyllabusItemResponse>();
+
+            CreateMap<ACAD_Syllabus, SyllabusResponse>()
+                .ForMember(dest => dest.SyllabusID, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => 
+                    src.ACAD_SyllabusItems.Where(i => !i.IsDeleted).OrderBy(i => i.SessionNumber).ToList()));
 
             CreateMap<ACAD_CourseBenefit, CourseBenefitResponse>()
                 .ForMember(dest => dest.BenefitName, opt => opt.MapFrom(src => src.Benefit.Name));
