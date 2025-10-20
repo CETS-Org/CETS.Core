@@ -21,7 +21,23 @@ namespace Application.Mappers.ACAD
         public CourseProfile()
         {
             CreateMap<CreateCourseRequest, ACAD_Course>()
-                .ForMember(dest => dest.CourseObjective, opt => opt.MapFrom(src => src.CourseObjective));
+                .ForMember(dest => dest.CourseObjective, opt => opt.MapFrom(src => src.CourseObjective))
+                .ForMember(dest => dest.ACAD_CourseBenefits, opt => opt.MapFrom(src => 
+                    src.BenefitIDs != null ? src.BenefitIDs.Select(id => new ACAD_CourseBenefit { BenefitID = id }) : new List<ACAD_CourseBenefit>()))
+                .ForMember(dest => dest.ACAD_CourseRequirements, opt => opt.MapFrom(src => 
+                    src.RequirementIDs != null ? src.RequirementIDs.Select(id => new ACAD_CourseRequirement { RequirementID = id }) : new List<ACAD_CourseRequirement>()))
+                .ForMember(dest => dest.ACAD_CourseSkills, opt => opt.MapFrom(src => 
+                    src.SkillIDs != null ? src.SkillIDs.Select(id => new ACAD_CourseSkill { SkillID = id }) : new List<ACAD_CourseSkill>()))
+                .ForMember(dest => dest.ACAD_CourseSchedules, opt => opt.MapFrom(src => 
+                    src.Schedules != null ? src.Schedules.Select(s => new ACAD_CourseSchedule { TimeSlotID = s.TimeSlotID, DayOfWeek = s.DayOfWeek }) : new List<ACAD_CourseSchedule>()))
+                .ForMember(dest => dest.ACAD_Syllabi, opt => opt.MapFrom(src => src.Syllabi ?? new List<CreateCourseSyllabusDetail>()));
+            
+            CreateMap<CreateCourseScheduleDetail, ACAD_CourseSchedule>();
+            
+            CreateMap<CreateCourseSyllabusDetail, ACAD_Syllabus>()
+                .ForMember(dest => dest.ACAD_SyllabusItems, opt => opt.MapFrom(src => src.Items ?? new List<CreateCourseSyllabusItemDetail>()));
+            
+            CreateMap<CreateCourseSyllabusItemDetail, ACAD_SyllabusItem>();
             
             CreateMap<UpdateCourseRequest, ACAD_Course>()
                 .ForMember(dest => dest.CourseObjective, opt => opt.MapFrom(src => src.CourseObjective));
