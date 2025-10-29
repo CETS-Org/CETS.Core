@@ -69,4 +69,5 @@ public partial class ACAD_Course : AuditedEntity
     public virtual ICollection<ACAD_CourseRequirement> ACAD_CourseRequirements { get; set; } = new List<ACAD_CourseRequirement>();
     public virtual ICollection<ACAD_CourseSkill> ACAD_CourseSkills { get; set; } = new List<ACAD_CourseSkill>();
     public virtual ICollection<ACAD_CourseSchedule> ACAD_CourseSchedules { get; set; } = new List<ACAD_CourseSchedule>();
+    public virtual ICollection<ACAD_CourseWishlist> ACAD_CourseWishlists { get; set; } = new List<ACAD_CourseWishlist>();
 }
