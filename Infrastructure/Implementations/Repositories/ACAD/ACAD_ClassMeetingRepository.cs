@@ -91,6 +91,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     StartTime = startStr,              
                     EndTime = endStr,               
                     ClassName = m.Class.ClassName,
+                    ClassId = m.ClassID.ToString(), // ✅ Added for navigation to class detail
                     CourseName = courseMap.ContainsKey(m.ClassID) ? courseMap[m.ClassID] : string.Empty,
                     Room = m.Room?.RoomCode,
                     Teacher = m.Class.TeacherAssignment?.Teacher.Account.FullName,
@@ -146,6 +147,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     StartTime = startStr,
                     EndTime = endStr,
                     ClassName = classInfo?.ClassName ?? string.Empty,
+                    ClassId = m.ClassID.ToString(), // ✅ Added for navigation to class detail
                     CourseName = classInfo?.CourseName ?? string.Empty,
                     Room = m.Room?.RoomCode,
                     EnrolledCount = classInfo?.EnrolledCount ?? 0,

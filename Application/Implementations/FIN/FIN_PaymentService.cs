@@ -13,7 +13,9 @@ using Domain.Interfaces.IDN;
 using DTOs.FIN.FIN_Invoice.Requests;
 using DTOs.FIN.FIN_Payment.Requests;
 using DTOs.FIN.FIN_Payment.Responses;
+using DTOs.FIN.FIN_PaymentWebhook.Requests;
 using System.Linq;
+using System.Text.Json;
 
 namespace Application.Implementations.FIN
 {
@@ -66,6 +68,29 @@ namespace Application.Implementations.FIN
                     CreatedAt = DateTime.Now
                 };
                 _repository.Add(payment);
+
+                //Create payment webhook record
+                var webhookPayload = new
+                {
+                    paymentId = payment.Id,
+                    invoiceId = invoiceId,
+                    studentId = studentId,
+                    reservationItemId = reservationItemId,
+                    amount = invoice.TotalAmount,
+                    paymentDate = DateTime.Now,
+                    status = "PAID"
+                };
+
+                var createWebhookRequest = new CreatePaymentWebhookRequest
+                {
+                    PaymentID = payment.Id,
+                    EventId = Guid.NewGuid(),
+                    GatewayID = payos.LookUpId,
+                    EventType = "payment.success",
+                    ReceivedAt = DateTime.Now,
+                    Payload = JsonSerializer.Serialize(webhookPayload)
+                };
+                await _paymentWebhookService.CreateAsync(createWebhookRequest);
 
                 //Send billing mail to user
                 var account = await _accountService.GetAccountByIdAsync(studentId);
