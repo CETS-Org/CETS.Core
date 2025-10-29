@@ -17,6 +17,7 @@ namespace DTOs.ACAD.ACAD_Course.Requests
         public Guid CategoryID { get; set; }
         public string? Description { get; set; }
         public decimal StandardPrice { get; set; }
+        public bool IsActive { get; set; } = true;
 
         // Related details
         public List<Guid>? BenefitIDs { get; set; } = new();

@@ -15,8 +15,14 @@ namespace DTOs.ACAD.ACAD_CoursePackage.Responses
         public string? PackageImageUrl { get; set; }
         public decimal TotalPrice { get; set; }
         public decimal TotalIndividualPrice { get; set; }
-
+        public bool IsActive { get; set; }
         public List<CourseInPackageResponse> Courses { get; set; } = new();
+        
+        // Audit fields
+        public DateTime CreatedAt { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public string? UpdatedBy { get; set; }
     }
 
 }

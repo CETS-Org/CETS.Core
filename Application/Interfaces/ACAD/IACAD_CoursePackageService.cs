@@ -32,5 +32,11 @@ namespace Application.Interfaces.ACAD
         
         // Search operations
         Task<CoursePackageSearchResult> SearchBasicAsync(CoursePackageSearchQuery query, CancellationToken ct);
+        
+        // Statistics operations
+        Task<CoursePackageStatisticsResponse> GetStatisticsAsync();
+        
+        // Image upload operations
+        Task<CoursePackageImageUploadResponse> GetImageUploadUrlAsync(string fileName, string contentType);
     }
 }

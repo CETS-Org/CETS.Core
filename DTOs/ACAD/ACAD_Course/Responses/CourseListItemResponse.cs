@@ -13,6 +13,7 @@ namespace DTOs.ACAD.ACAD_Course.Responses
     {
         public string Id { get; set; } = null!;
         public string CourseName { get; set; } = null!;
+        public string CourseCode { get; set; } = null!; // Added course code
         public string? Description { get; set; }
         public string Duration { get; set; } = null!;
         public string CourseLevel { get; set; } = null!;

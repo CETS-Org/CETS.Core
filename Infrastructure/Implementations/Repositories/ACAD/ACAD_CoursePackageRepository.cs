@@ -64,7 +64,9 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(p => p.ACAD_CoursePackageItems)
                     .ThenInclude(i => i.Course)
                         .ThenInclude(c => c.ACAD_Enrollments)
-                .FirstOrDefaultAsync(p => p.Id == packageId && p.IsActive);
+                .Include(p => p.CreatedByNavigation)
+                .Include(p => p.UpdatedByNavigation)
+                .FirstOrDefaultAsync(p => p.Id == packageId);
         }
 
         public async Task<CoursePackageSearchResult> SearchBasicAsync(CoursePackageSearchQuery q, CancellationToken ct)

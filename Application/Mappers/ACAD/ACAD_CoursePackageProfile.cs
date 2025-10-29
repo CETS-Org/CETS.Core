@@ -17,8 +17,10 @@ namespace Application.Mappers.ACAD
         public ACAD_CoursePackageProfile()
         {
             // CoursePackage mappings
-            CreateMap<CreateCoursePackageRequest, ACAD_CoursePackage>();
-            CreateMap<UpdateCoursePackageRequest, ACAD_CoursePackage>();
+            CreateMap<CreateCoursePackageRequest, ACAD_CoursePackage>()
+                .ForMember(dest => dest.ACAD_CoursePackageItems, opt => opt.Ignore()); // Handled separately in service
+            CreateMap<UpdateCoursePackageRequest, ACAD_CoursePackage>()
+                .ForMember(dest => dest.ACAD_CoursePackageItems, opt => opt.Ignore()); // Handled separately in service
             CreateMap<ACAD_CoursePackage, CoursePackageResponse>()
                 .ForMember(dest => dest.TotalIndividualPrice,
                            opt => opt.MapFrom(src => src.ACAD_CoursePackageItems.Where(i => !i.IsDeleted).Sum(i => i.Course.StandardPrice)))
@@ -28,7 +30,15 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.Courses,
                            opt => opt.MapFrom(src => src.ACAD_CoursePackageItems))
                 .ForMember(dest => dest.TotalIndividualPrice,
-                           opt => opt.MapFrom(src => src.ACAD_CoursePackageItems.Where(i => !i.IsDeleted).Sum(i => i.Course.StandardPrice)));
+                           opt => opt.MapFrom(src => src.ACAD_CoursePackageItems.Where(i => !i.IsDeleted).Sum(i => i.Course.StandardPrice)))
+                .ForMember(dest => dest.CreatedAt,
+                           opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.CreatedBy,
+                           opt => opt.MapFrom(src => src.CreatedByNavigation != null ? src.CreatedByNavigation.FullName : null))
+                .ForMember(dest => dest.UpdatedAt,
+                           opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.UpdatedBy,
+                           opt => opt.MapFrom(src => src.UpdatedByNavigation != null ? src.UpdatedByNavigation.FullName : null));
 
             // CoursePackageItem mappings
             CreateMap<AddCourseToPackageRequest, ACAD_CoursePackageItem>();

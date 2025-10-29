@@ -12,5 +12,8 @@ namespace DTOs.ACAD.ACAD_CoursePackage.Requests
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public decimal TotalPrice { get; set; }
+        public string? PackageImageUrl { get; set; }
+        public bool IsActive { get; set; } = true;
+        public List<Guid>? CourseIDs { get; set; }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using Application.Interfaces.ACAD;
+using Application.Interfaces.Common.Storage;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using Domain.Interfaces.FIN;
 using DTOs.ACAD.ACAD_CoursePackage.Requests;
 using DTOs.ACAD.ACAD_CoursePackage.Responses;
 using DTOs.ACAD.ACAD_CoursePackage.Search;
@@ -20,19 +22,25 @@ namespace Application.Implementations.ACAD
     {
         private readonly IACAD_CoursePackageRepository _packageRepo;
         private readonly IACAD_CoursePackageItemRepository _itemRepo;
+        private readonly IFIN_InvoiceItemRepository _invoiceItemRepo;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
+        private readonly IFileStorageService _fileStorageService;
 
         public ACAD_CoursePackageService(
             IACAD_CoursePackageRepository packageRepo,
             IACAD_CoursePackageItemRepository itemRepo,
+            IFIN_InvoiceItemRepository invoiceItemRepo,
             IUnitOfWork uow,
-            IMapper mapper)
+            IMapper mapper,
+            IFileStorageService fileStorageService)
         {
             _packageRepo = packageRepo;
             _itemRepo = itemRepo;
+            _invoiceItemRepo = invoiceItemRepo;
             _uow = uow;
             _mapper = mapper;
+            _fileStorageService = fileStorageService;
         }
 
         public async Task<Guid> CreatePackageAsync(CreateCoursePackageRequest request)
@@ -43,6 +51,24 @@ namespace Application.Implementations.ACAD
 
                 _packageRepo.Add(entity);
                 await _uow.SaveChangesAsync();
+
+                // Create package items if course IDs are provided
+                if (request.CourseIDs != null && request.CourseIDs.Any())
+                {
+                    int sequence = 1;
+                    foreach (var courseId in request.CourseIDs)
+                    {
+                        var packageItem = new ACAD_CoursePackageItem
+                        {
+                            PackageID = entity.Id,
+                            CourseID = courseId,
+                            Sequence = sequence++,
+                            IsDeleted = false
+                        };
+                        _itemRepo.Add(packageItem);
+                    }
+                    await _uow.SaveChangesAsync();
+                }
 
                 return entity.Id;
             });
@@ -86,6 +112,54 @@ namespace Application.Implementations.ACAD
 
                 _packageRepo.Update(entity);
                 await _uow.SaveChangesAsync();
+
+                // Update package items if course IDs are provided
+                if (request.CourseIDs != null)
+                {
+                    // Get existing package items
+                    var existingItems = await _itemRepo.FindAsync(i => i.PackageID == request.Id && !i.IsDeleted);
+                    var existingCourseIds = existingItems.Select(i => i.CourseID).ToList();
+
+                    // Remove items that are no longer in the list
+                    foreach (var item in existingItems)
+                    {
+                        if (!request.CourseIDs.Contains(item.CourseID))
+                        {
+                            item.IsDeleted = true;
+                            _itemRepo.Update(item);
+                        }
+                    }
+
+                    // Add new items
+                    int sequence = 1;
+                    foreach (var courseId in request.CourseIDs)
+                    {
+                        if (!existingCourseIds.Contains(courseId))
+                        {
+                            var packageItem = new ACAD_CoursePackageItem
+                            {
+                                PackageID = request.Id,
+                                CourseID = courseId,
+                                Sequence = sequence,
+                                IsDeleted = false
+                            };
+                            _itemRepo.Add(packageItem);
+                        }
+                        else
+                        {
+                            // Update sequence for existing items
+                            var existingItem = existingItems.FirstOrDefault(i => i.CourseID == courseId);
+                            if (existingItem != null)
+                            {
+                                existingItem.Sequence = sequence;
+                                _itemRepo.Update(existingItem);
+                            }
+                        }
+                        sequence++;
+                    }
+
+                    await _uow.SaveChangesAsync();
+                }
             });
         }
 
@@ -187,6 +261,48 @@ namespace Application.Implementations.ACAD
         public async Task<CoursePackageSearchResult> SearchBasicAsync(CoursePackageSearchQuery query, CancellationToken ct)
         {
             return await _packageRepo.SearchBasicAsync(query, ct);
+        }
+
+        public async Task<CoursePackageStatisticsResponse> GetStatisticsAsync()
+        {
+            // Get all non-deleted packages
+            var allPackages = await _packageRepo.FindAsync(p => !p.IsDeleted);
+            var packagesList = allPackages.ToList();
+
+            // Get active packages count
+            var activePackages = packagesList.Count(p => p.IsActive);
+
+            // Get invoice items with packages to calculate actual revenue and packages sold
+            var invoiceItems = await _invoiceItemRepo.FindAsync(ii => ii.CoursePackageID != null);
+            var invoiceItemsList = invoiceItems.ToList();
+
+            // Calculate total revenue from actual sales (sum of Total from invoice items)
+            var totalRevenue = invoiceItemsList.Sum(ii => ii.Total);
+
+            // Get packages sold count (sum of quantities from invoice items)
+            var packagesSold = invoiceItemsList.Sum(ii => ii.Quantity);
+
+            return new CoursePackageStatisticsResponse
+            {
+                TotalPackages = packagesList.Count,
+                ActivePackages = activePackages,
+                TotalRevenue = totalRevenue,
+                PackagesSold = packagesSold
+            };
+        }
+
+        public async Task<CoursePackageImageUploadResponse> GetImageUploadUrlAsync(string fileName, string contentType)
+        {
+            // Get presigned upload URL and generated file path
+            var (uploadUrl, filePath) = await _fileStorageService.GetPresignedPutUrlAsync("packages", fileName, contentType);
+            var publicUrl = _fileStorageService.GetPublicUrl(filePath);
+
+            return new CoursePackageImageUploadResponse
+            {
+                UploadUrl = uploadUrl,
+                FilePath = filePath,
+                PublicUrl = publicUrl
+            };
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Application.Implementations.ACAD
 
                 // Create the main course entity with all relationships (AutoMapper handles the mapping)
                 var entity = _mapper.Map<ACAD_Course>(request);
-                entity.IsActive = false;
+                // IsActive is now set from the request via AutoMapper
 
                 _courseRepo.Add(entity);
                 await _uow.SaveChangesAsync(); // EF Core will automatically handle all related entities
@@ -144,7 +144,6 @@ namespace Application.Implementations.ACAD
                     throw new KeyNotFoundException("Course not found");
 
                 entity.IsActive = true;
-                entity.UpdatedAt = DateTime.UtcNow;
 
                 _courseRepo.Update(entity);
             });
@@ -159,7 +158,6 @@ namespace Application.Implementations.ACAD
                     throw new KeyNotFoundException("Course not found");
 
                 entity.IsActive = false;
-                entity.UpdatedAt = DateTime.UtcNow;
 
                 _courseRepo.Update(entity);
             });
