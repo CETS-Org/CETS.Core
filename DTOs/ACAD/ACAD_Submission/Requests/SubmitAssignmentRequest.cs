@@ -10,7 +10,9 @@ namespace DTOs.ACAD.ACAD_Submission.Requests
     {
         public Guid AssignmentID { get; set; }
         public Guid StudentID { get; set; }
-        public string? FileUrl { get; set; }
+
+        public string FileName { get; set; } = null!;
+        public string ContentType { get; set; } = null!;
         public string? Content { get; set; }
     }
 }
