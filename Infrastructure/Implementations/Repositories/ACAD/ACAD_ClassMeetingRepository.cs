@@ -59,7 +59,10 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 return Enumerable.Empty<StudentWeeklyScheduleResponse>();
 
             var classIds = enrolled.Select(e => e.ClassID).ToList();
-            var courseMap = enrolled.ToDictionary(e => e.ClassID, e => e.CourseName);
+            var courseMap = enrolled
+                            .GroupBy(e => e.ClassID)
+                            .ToDictionary(g => g.Key, g => g.First().CourseName);
+
 
             var meetings = await _context.ACAD_ClassMeetings
                 .Include(m => m.Class)
