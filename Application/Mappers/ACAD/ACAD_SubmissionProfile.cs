@@ -14,8 +14,7 @@ namespace Application.Mappers.ACAD
     {
         public ACAD_SubmissionProfile()
         {
-            CreateMap<SubmitAssignmentRequest, ACAD_Submission>()
-            .ForMember(dest => dest.StoreUrl, opt => opt.MapFrom(src => src.FileUrl));
+            CreateMap<SubmitAssignmentRequest, ACAD_Submission>();
 
             CreateMap<ACAD_Submission, SubmissionResponse>()
                 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Account.FullName))
@@ -24,9 +23,7 @@ namespace Application.Mappers.ACAD
 
             CreateMap<ACAD_Submission, SubmitAssignmentRequest>()
                 .ForMember(dest => dest.AssignmentID, opt => opt.MapFrom(src => src.AssignmentID ?? Guid.Empty))
-                .ForMember(dest => dest.StudentID, opt => opt.MapFrom(src => src.StudentID))
-                .ForMember(dest => dest.FileUrl, opt => opt.MapFrom(src => src.StoreUrl));
-
+                .ForMember(dest => dest.StudentID, opt => opt.MapFrom(src => src.StudentID));
 
             CreateMap<ACAD_Submission, SubmissionDetailResponse>()
                 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Account.FullName))

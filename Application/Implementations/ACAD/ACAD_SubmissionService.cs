@@ -33,53 +33,66 @@ namespace Application.Implementations.ACAD
             _fileStorageService = fileStorageService;
         }
 
-        //public async Task<SubmitAssignmentRequest> SubmitAssignmentAsync(SubmitAssignmentRequest request)
-        //{
-        //    var entity = _mapper.Map<ACAD_Submission>(request);
-        //    entity.Id = Guid.NewGuid();
-        //    entity.CreatedAt = DateTime.UtcNow;
-
-        //    _submissionRepository.Add(entity);
-        //    await _unitOfWork.SaveChangesAsync();
-
-        //    return _mapper.Map<SubmitAssignmentRequest>(entity);
-        //}
-
-        public async Task<SubmitAssignmentRequest> SubmitAssignmentAsync(SubmitAssignmentRequest request)
+        public async Task<SubmissionResponse> SubmitAssignmentAsync(SubmitAssignmentRequest request)
         {
-            // Tìm submission cũ (nếu có)
-            var existingSubmission = (await _submissionRepository
-                .FindAsync(x => x.AssignmentID == request.AssignmentID
-                             && x.StudentID == request.StudentID
-                             && !x.IsDeleted))
-                .FirstOrDefault();
-
-
-            ACAD_Submission entity;
-
-            if (existingSubmission == null)
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
-                entity = _mapper.Map<ACAD_Submission>(request);
-                entity.Id = Guid.NewGuid();
-                entity.CreatedAt = DateTime.UtcNow;
-                entity.UpdatedAt = entity.CreatedAt;
+                var existing = (await _submissionRepository.FindAsync(x =>
+                    x.AssignmentID == request.AssignmentID &&
+                    x.StudentID == request.StudentID &&
+                    !x.IsDeleted)).FirstOrDefault();
 
-                _submissionRepository.Add(entity);
-            }
-            else
-            {
-                if (!string.Equals(existingSubmission.StoreUrl, request.FileUrl, StringComparison.OrdinalIgnoreCase))
+                var fileExtension = Path.GetExtension(request.FileName);
+                var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+                var filePath = $"submissions/{DateTime.UtcNow:yyyy/MM/dd}/{uniqueFileName}";
+
+                //var uploadUrl = await _fileStorageService.GetPresignedPutUrlAsync(filePath, request.ContentType);
+                var directory = "submissions";
+                var fileName = Path.GetFileName(filePath);
+                var (uploadUrl, _) = await _fileStorageService.GetPresignedPutUrlAsync(directory, fileName, request.ContentType);
+
+
+                ACAD_Submission entity;
+
+                if (existing == null)
                 {
-                    existingSubmission.StoreUrl = request.FileUrl;
-                    existingSubmission.UpdatedAt = DateTime.UtcNow;
-                    _submissionRepository.Update(existingSubmission);
+                    entity = _mapper.Map<ACAD_Submission>(request);
+                    entity.Id = Guid.NewGuid();
+                    entity.StoreUrl = filePath;
+                    entity.CreatedAt = DateTime.UtcNow;
+                    entity.UpdatedAt = entity.CreatedAt;
+                    entity.IsDeleted = false;
+
+                    _submissionRepository.Add(entity);
                 }
-                entity = existingSubmission;
-            }
+                else
+                {
+                    var oldPath = existing.StoreUrl;
+                    existing.StoreUrl = filePath;
+                    existing.UpdatedAt = DateTime.UtcNow;
 
-            await _unitOfWork.SaveChangesAsync();
+                    _submissionRepository.Update(existing);
 
-            return _mapper.Map<SubmitAssignmentRequest>(entity);
+                    if (!string.IsNullOrEmpty(oldPath))
+                    {
+                        try { await _fileStorageService.DeleteFileAsync(oldPath); }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Warning: Could not delete old submission file {oldPath}: {ex.Message}");
+                        }
+                    }
+
+                    entity = existing;
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+
+                var response = _mapper.Map<SubmissionResponse>(entity);
+                response.StoreUrl = filePath;
+                response.UploadUrl = uploadUrl;
+                return response;
+            });
         }
 
 
@@ -145,10 +158,10 @@ namespace Application.Implementations.ACAD
         {
             var entity = await _submissionRepository.FindFirstAsync(a => a.Id == id && !a.IsDeleted);
             if (entity == null)
-                throw new KeyNotFoundException("Assignment not found");
+                throw new KeyNotFoundException("Submission not found");
 
             if (string.IsNullOrEmpty(entity.StoreUrl))
-                throw new InvalidOperationException("Assignment has no associated file");
+                throw new InvalidOperationException("Submission has no associated file");
 
             var fileExists = await _fileStorageService.FileExistsAsync(entity.StoreUrl);
             if (!fileExists)
