@@ -56,6 +56,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     Id = e.Class.Id,
                     StatusName = e.StatusLookup.Name,
                     CourseName = e.Course.CourseName,
+                    CourseCode = e.Course.CourseCode,
                     ClassName = e.Class.ClassName,
                     TeacherName = e.TeacherName,
                     StartDate = e.Class.StartDate,
