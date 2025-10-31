@@ -222,5 +222,111 @@ namespace Application.Implementations.ACAD
             };
         }
 
+        public async Task<BulkUpdateSubmissionsResponse> BulkUpdateSubmissionsAsync(BulkUpdateSubmissionsRequest request)
+        {
+            var response = new BulkUpdateSubmissionsResponse
+            {
+                Success = true,
+                Data = new BulkUpdateData
+                {
+                    Results = new List<SubmissionUpdateResult>()
+                }
+            };
+
+            // Process each submission update
+            foreach (var submissionUpdate in request.Submissions)
+            {
+                try
+                {
+                    // Retrieve the submission from database
+                    var submission = await _submissionRepository.GetByIdAsync(submissionUpdate.SubmissionId);
+
+                    if (submission == null)
+                    {
+                        // Submission not found
+                        response.Data.Results.Add(new SubmissionUpdateResult
+                        {
+                            SubmissionId = submissionUpdate.SubmissionId,
+                            Status = "failed",
+                            Error = "Submission not found"
+                        });
+                        response.Data.FailedCount++;
+                        continue;
+                    }
+
+                    // Store previous values
+                    var previousScore = submission.Score;
+                    var previousFeedback = submission.Feedback;
+
+                    // Update fields if provided (non-null)
+                    if (submissionUpdate.Score.HasValue)
+                    {
+                        submission.Score = submissionUpdate.Score.Value;
+                    }
+
+                    if (submissionUpdate.Feedback != null)
+                    {
+                        submission.Feedback = submissionUpdate.Feedback;
+                    }
+
+                    // Update timestamp
+                    submission.UpdatedAt = DateTime.UtcNow;
+
+                    // Save changes to database
+                    _submissionRepository.Update(submission);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    // Add successful result with previous and new values
+                    response.Data.Results.Add(new SubmissionUpdateResult
+                    {
+                        SubmissionId = submissionUpdate.SubmissionId,
+                        Status = "success",
+                        Updates = new UpdateDetails
+                        {
+                            Score = new FieldUpdate<decimal?>
+                            {
+                                Previous = previousScore,
+                                New = submission.Score
+                            },
+                            Feedback = new FieldUpdate<string?>
+                            {
+                                Previous = previousFeedback,
+                                New = submission.Feedback
+                            }
+                        }
+                    });
+                    response.Data.UpdatedCount++;
+                }
+                catch (Exception ex)
+                {
+                    // Handle any unexpected errors
+                    response.Data.Results.Add(new SubmissionUpdateResult
+                    {
+                        SubmissionId = submissionUpdate.SubmissionId,
+                        Status = "failed",
+                        Error = $"Error updating submission: {ex.Message}"
+                    });
+                    response.Data.FailedCount++;
+                }
+            }
+
+            // Set appropriate message based on results
+            if (response.Data.FailedCount == 0)
+            {
+                response.Message = $"Successfully updated {response.Data.UpdatedCount} submissions";
+            }
+            else if (response.Data.UpdatedCount == 0)
+            {
+                response.Success = false;
+                response.Message = $"Failed to update all {response.Data.FailedCount} submissions";
+            }
+            else
+            {
+                response.Message = $"Partially updated submissions: {response.Data.UpdatedCount} succeeded, {response.Data.FailedCount} failed";
+            }
+
+            return response;
+        }
+
     }
 }

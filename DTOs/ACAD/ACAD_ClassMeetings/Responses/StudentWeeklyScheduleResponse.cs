@@ -14,6 +14,7 @@ namespace DTOs.ACAD.ACAD_ClassMeetings.Responses
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
         public string ClassName { get; set; } = string.Empty;
+        public string ClassId { get; set; } = string.Empty; // ✅ Added for navigation to class detail
         public string CourseName { get; set; } = string.Empty;
         public string? Room { get; set; }
         public string? Teacher { get; set; }

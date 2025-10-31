@@ -12,7 +12,12 @@ namespace DTOs.FIN.FIN_PaymentWebhook.Responses
 		public DateTime ReceivedAt { get; set; }
 		public string Payload { get; set; } = null!;
 		public DateTime CreatedAt { get; set; }
-		public bool IsDeleted { get; set; }
+
+		// Additional fields from related entities
+		public string? CreatedByName { get; set; }
+		public decimal? PaymentAmount { get; set; }
+		public string? CourseName { get; set; }
+		public string? GatewayName { get; set; }
 	}
 }
 

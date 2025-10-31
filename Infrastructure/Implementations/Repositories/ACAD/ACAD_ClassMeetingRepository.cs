@@ -59,7 +59,10 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 return Enumerable.Empty<StudentWeeklyScheduleResponse>();
 
             var classIds = enrolled.Select(e => e.ClassID).ToList();
-            var courseMap = enrolled.ToDictionary(e => e.ClassID, e => e.CourseName);
+            var courseMap = enrolled
+                            .GroupBy(e => e.ClassID)
+                            .ToDictionary(g => g.Key, g => g.First().CourseName);
+
 
             var meetings = await _context.ACAD_ClassMeetings
                 .Include(m => m.Class)
@@ -91,6 +94,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     StartTime = startStr,              
                     EndTime = endStr,               
                     ClassName = m.Class.ClassName,
+                    ClassId = m.ClassID.ToString(), // ✅ Added for navigation to class detail
                     CourseName = courseMap.ContainsKey(m.ClassID) ? courseMap[m.ClassID] : string.Empty,
                     Room = m.Room?.RoomCode,
                     Teacher = m.Class.TeacherAssignment?.Teacher.Account.FullName,
@@ -146,6 +150,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     StartTime = startStr,
                     EndTime = endStr,
                     ClassName = classInfo?.ClassName ?? string.Empty,
+                    ClassId = m.ClassID.ToString(), // ✅ Added for navigation to class detail
                     CourseName = classInfo?.CourseName ?? string.Empty,
                     Room = m.Room?.RoomCode,
                     EnrolledCount = classInfo?.EnrolledCount ?? 0,
