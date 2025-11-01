@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.IDN;
+﻿using Application.Interfaces.Common.Storage;
+using Application.Interfaces.IDN;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
@@ -19,14 +20,16 @@ namespace Application.Implementations.IDN
     {
         private readonly IIDN_StudentRepository _studentRepository;
         private readonly IIDN_AccountRepository _accountRepository;
+        private readonly IFileStorageService _fileStorageService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public IDN_StudentService(IIDN_StudentRepository studentRepository, IIDN_AccountRepository accountRepository, IUnitOfWork unitOfWork, IMapper mapper)
+        public IDN_StudentService(IIDN_StudentRepository studentRepository, IIDN_AccountRepository accountRepository, IUnitOfWork unitOfWork, IMapper mapper, IFileStorageService fileStorageService)
         {
             _studentRepository = studentRepository;
             _accountRepository = accountRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _fileStorageService = fileStorageService;
         }
 
         /* Get methods */
@@ -93,9 +96,9 @@ namespace Application.Implementations.IDN
             bool isPrivileged = user.IsInRole("AcademicStaff") || user.IsInRole("Admin");
 
             // Kiểm tra quyền trước khi update CID
-           // if (!isPrivileged && !string.IsNullOrEmpty(dto.CID) && dto.CID != account.CID)
-           //     throw new UnauthorizedAccessException("Student is not allowed to update CID");
-
+            // if (!isPrivileged && !string.IsNullOrEmpty(dto.CID) && dto.CID != account.CID)
+            //     throw new UnauthorizedAccessException("Student is not allowed to update CID");
+            
             // Map DTO vào student + account
             _mapper.Map(dto, account);
             _mapper.Map(dto, student);
