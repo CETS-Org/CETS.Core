@@ -51,16 +51,22 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
             var enrolled = await _context.ACAD_Enrollments
                 .Include(e => e.Course)
-                .Where(e => e.StudentID == studentId)
+                .Where(e => e.StudentID == studentId && e.ClassID != null)
                 .Select(e => new { e.ClassID, e.Course.CourseName })
                 .ToListAsync(ct);
 
             if (!enrolled.Any())
                 return Enumerable.Empty<StudentWeeklyScheduleResponse>();
 
-            var classIds = enrolled.Select(e => e.ClassID).ToList();
-            var courseMap = enrolled
-                            .GroupBy(e => e.ClassID)
+            // Filter out any null ClassIDs to prevent dictionary key errors
+            var validEnrollments = enrolled.Where(e => e.ClassID != null).ToList();
+            
+            if (!validEnrollments.Any())
+                return Enumerable.Empty<StudentWeeklyScheduleResponse>();
+            
+            var classIds = validEnrollments.Select(e => e.ClassID!.Value).ToList();
+            var courseMap = validEnrollments
+                            .GroupBy(e => e.ClassID!.Value)
                             .ToDictionary(g => g.Key, g => g.First().CourseName);
 
 
