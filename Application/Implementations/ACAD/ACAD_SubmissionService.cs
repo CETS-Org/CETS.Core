@@ -44,14 +44,12 @@ namespace Application.Implementations.ACAD
 
                 var fileExtension = Path.GetExtension(request.FileName);
                 var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-                var filePath = $"submissions/{DateTime.UtcNow:yyyy/MM/dd}/{uniqueFileName}";
 
-                //var uploadUrl = await _fileStorageService.GetPresignedPutUrlAsync(filePath, request.ContentType);
                 var directory = "submissions";
-                var fileName = Path.GetFileName(filePath);
-                var (uploadUrl, _) = await _fileStorageService.GetPresignedPutUrlAsync(directory, fileName, request.ContentType);
+                var fileName = uniqueFileName;
 
-
+                var (uploadUrl, filePath) = await _fileStorageService.GetPresignedPutUrlAsync(directory, fileName, request.ContentType);
+            
                 ACAD_Submission entity;
 
                 if (existing == null)
