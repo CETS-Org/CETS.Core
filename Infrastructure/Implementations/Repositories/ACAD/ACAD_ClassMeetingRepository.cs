@@ -76,6 +76,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                         .ThenInclude(ta => ta.Teacher.Account)
                 .Include(m => m.Slot)
                 .Include(m => m.Room)
+                 .Include(m => m.ACAD_Attendances)
+                    .ThenInclude(a => a.AttendanceStatus)
                 .Where(m => classIds.Contains(m.ClassID))
                 .OrderBy(m => m.Date)
                 .ThenBy(m => m.Slot.Name)
@@ -92,6 +94,12 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     endStr = (start + TimeSpan.FromMinutes(90)).ToString(@"hh\:mm");
                 }
 
+                // 🔹 Lấy attendance record của chính student đó (nếu có)
+                var attendance = m.ACAD_Attendances
+                    .FirstOrDefault(a => a.StudentID == studentId);
+
+                string attendanceStatus = attendance?.AttendanceStatus?.Name
+                                 ?? "";
                 return new StudentWeeklyScheduleResponse
                 {
                     Date = m.Date.ToDateTime(TimeOnly.MinValue),
@@ -104,7 +112,9 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     CourseName = courseMap.ContainsKey(m.ClassID) ? courseMap[m.ClassID] : string.Empty,
                     Room = m.Room?.RoomCode,
                     Teacher = m.Class.TeacherAssignment?.Teacher.Account.FullName,
-                    OnlineMeetingUrl = m.OnlineMeetingUrl
+                    OnlineMeetingUrl = m.OnlineMeetingUrl,
+                    ClassMeetingId = m.Id.ToString(),
+                    AttendanceStatus = attendanceStatus
                 };
             });
             return result.ToList();

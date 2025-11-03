@@ -36,5 +36,8 @@ namespace Application.Interfaces.IDN
         Task<string?> GetOTP(string email);
         bool VerifyOTP(VerifyOtpRequest dto);
         Task<bool> ChangePassword(string password, string email);
+
+        Task<bool> CheckEmailExist(string email);
+        Task<bool> CheckCIDExist(string cid);
     }
 }

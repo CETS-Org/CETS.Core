@@ -61,7 +61,12 @@ namespace Infrastructure.Implementations.Repositories.IDN
 
         public async Task<bool> IsPhoneUniqueAsync(string phoneNumber)
         {
-            return !await _context.IDN_Accounts.AnyAsync(u => u.PhoneNumber == phoneNumber);
+            return await _context.IDN_Accounts.AnyAsync(u => u.PhoneNumber == phoneNumber);
+        }
+
+        public async Task<bool> IsCIDUniqueAsync(string cid)
+        {
+            return await _context.IDN_Accounts.AnyAsync(u => u.CID == cid);
         }
     }
 }

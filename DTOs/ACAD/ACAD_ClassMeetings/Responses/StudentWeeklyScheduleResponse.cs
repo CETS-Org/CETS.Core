@@ -19,5 +19,7 @@ namespace DTOs.ACAD.ACAD_ClassMeetings.Responses
         public string? Room { get; set; }
         public string? Teacher { get; set; }
         public string? OnlineMeetingUrl { get; set; }
+        public string? ClassMeetingId { get; set; }
+        public string? AttendanceStatus { get; set; }
     }
 }

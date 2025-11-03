@@ -699,6 +699,16 @@ namespace Application.Implementations.IDN
             await _unitOfWork.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> CheckEmailExist(string email)
+        {
+            return  await _accountRepository.IsEmailUniqueAsync(email);
+        }
+
+        public async Task<bool> CheckCIDExist(string cid)
+        {
+            return await _accountRepository.IsCIDUniqueAsync(cid);
+        }
         #endregion
     }
 }
