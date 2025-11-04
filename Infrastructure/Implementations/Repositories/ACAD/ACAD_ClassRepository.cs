@@ -4,6 +4,7 @@ using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Class.Responses;
 using Infrastructure.Implementations.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace Infrastructure.Implementations.Repositories.ACAD
 {
@@ -205,9 +206,32 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     EndDate = item.Class.EndDate.ToString("yyyy-MM-dd")
                 });
             }
-
             return responses;
         }
+
+        private IQueryable<ACAD_Class> StaffViewQuery()
+            => _context.ACAD_Classes
+                .AsNoTracking()
+                .Include(c => c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Teacher)
+                        .ThenInclude(t => t.Account)
+                .Include(c => c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Course)              
+                .Include(c => c.CourseFormat)
+                .Include(c => c.ClassStatus)
+                .Where(c => !c.IsDeleted); 
+
+        public async Task<List<ACAD_Class>> GetAllClassStaffView()
+        {
+            return await StaffViewQuery().ToListAsync();
+        }
+
+        public async Task<ACAD_Class?> GetClassStaffViewById(Guid id)
+        {
+            return await StaffViewQuery()
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
     }
 }
 
