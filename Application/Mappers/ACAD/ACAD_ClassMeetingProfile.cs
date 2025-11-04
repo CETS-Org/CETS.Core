@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using DTOs.ACAD.ACAD_Class.Requests;
+using DTOs.ACAD.ACAD_ClassMeetings.Requests;
 
 
 namespace Application.Mappers.ACAD
@@ -15,6 +17,8 @@ namespace Application.Mappers.ACAD
         public ACAD_ClassMeetingProfile()
         {
             CreateMap<ACAD_ClassMeeting, ClassMeetingResponse>();
+            CreateMap<CreateClassMeetingRequest, ACAD_ClassMeeting>();
+            CreateMap<UpdateClassMeetingRequest, ACAD_ClassMeeting>();
         }
     }
 }
