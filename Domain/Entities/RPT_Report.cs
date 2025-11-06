@@ -7,7 +7,7 @@ using static Domain.Entities.EntityBases.AuditableInterfaces;
 
 namespace Domain.Entities;
 
-public partial class RPT_Report : EntityBase
+public partial class RPT_Report : EntityBase, IHasCreationTime
 {
     public Guid ReportTypeID { get; set; }
 
@@ -43,6 +43,4 @@ public partial class RPT_Report : EntityBase
 
     [ForeignKey(nameof(ResolvedBy))]
     public virtual IDN_Account? ResolvedByNavigation { get; set; }
-
-   
 }
