@@ -30,6 +30,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
             return await _context.ACAD_Assignments
                 .Include(a => a.ACAD_Submissions.Where(s => s.StudentID == studentId && !s.IsDeleted))
+                .Include(a => a.Skill)
                 .Where(a => a.ClassMeetingID == classMeetingId && !a.IsDeleted)
                 .ToListAsync();
         }
@@ -37,6 +38,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         public async Task<IEnumerable<AssignmentWithSubmissionCountResponse>> GetAssignmentsWithSubmissionCountAsync(Guid classMeetingId)
         {
             var assignments = await _context.ACAD_Assignments
+                .Include(a => a.Skill)
                 .Where(a => a.ClassMeetingID == classMeetingId && !a.IsDeleted)
                 .Select(a => new AssignmentWithSubmissionCountResponse
                 {
@@ -47,7 +49,9 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     StoreUrl = a.StoreUrl,
                     DueAt = a.DueAt,
                     CreatedAt = a.CreatedAt,
-                    SubmissionCount = a.ACAD_Submissions.Count(s => !s.IsDeleted)
+                    SubmissionCount = a.ACAD_Submissions.Count(s => !s.IsDeleted),
+                    SkillID = a.SkillID,
+                    SkillName = a.Skill != null ? a.Skill.Name : null
                 })
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();

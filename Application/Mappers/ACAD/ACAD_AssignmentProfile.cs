@@ -53,7 +53,9 @@ namespace Application.Mappers.ACAD
              .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
              .ForMember(dest => dest.FileUrl, opt => opt.MapFrom(src => src.StoreUrl))
              .ForMember(dest => dest.DueDate, opt => opt.MapFrom(src => src.DueAt))
-             .ForMember(dest => dest.Submissions, opt => opt.MapFrom(src => src.ACAD_Submissions));
+             .ForMember(dest => dest.Submissions, opt => opt.MapFrom(src => src.ACAD_Submissions))
+             .ForMember(dest => dest.SkillID, opt => opt.MapFrom(src => src.SkillID))
+             .ForMember(dest => dest.SkillName, opt => opt.MapFrom(src => src.Skill != null ? src.Skill.Name : null));
         }
     }
 }

@@ -18,5 +18,8 @@ namespace DTOs.ACAD.ACAD_Assignment.Responses
         public DateTime DueDate { get; set; }
         public DateTime CreatedAt { get; set; }
         public IEnumerable<SubmissionResponse>? Submissions { get; set; }
+     
+        public Guid? SkillID { get; set; }
+        public string? SkillName { get; set; }
     }
 }
