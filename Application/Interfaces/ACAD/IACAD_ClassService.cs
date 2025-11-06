@@ -21,6 +21,12 @@ namespace Application.Interfaces.ACAD
 
         Task<ClassDetailResponse?> GetClassDetailAsync(Guid classId);
         Task<List<ClassRowResponse>> GetAllClassRowsAsync();
+        Task<ClassStaffViewResponse?> GetClassByIdStaffView(Guid id);
+        Task<List<ClassStaffViewResponse>> GetAllClassStaffView();
+
+        Task SoftDeleteClassAsync(Guid id);
+
+
 
     }
 }

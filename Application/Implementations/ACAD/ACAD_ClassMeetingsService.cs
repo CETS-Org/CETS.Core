@@ -1,8 +1,11 @@
 ﻿using Application.Interfaces.ACAD;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Assignment.Responses;
+using DTOs.ACAD.ACAD_Class.Requests;
+using DTOs.ACAD.ACAD_ClassMeetings.Requests;
 using DTOs.ACAD.ACAD_ClassMeetings.Responses;
 using DTOs.ACAD.ACAD_SyllabusItem.Responses;
 using System;
@@ -17,10 +20,12 @@ namespace Application.Implementations.ACAD
     {
         private readonly IACAD_ClassMeetingRepository _classMeetingRepository;
         private readonly IMapper _mapper;
-        public ACAD_ClassMeetingsService(IACAD_ClassMeetingRepository classMeetingRepository, IMapper mapper)
+        private readonly IUnitOfWork _uow;
+        public ACAD_ClassMeetingsService(IACAD_ClassMeetingRepository classMeetingRepository, IMapper mapper, IUnitOfWork uow)
         {
             _classMeetingRepository = classMeetingRepository;
             _mapper = mapper;
+            _uow = uow;
         }
 
         public async Task<IEnumerable<ClassMeetingResponse>> GetAllClassMeetingByClassId(Guid classId)
@@ -50,6 +55,43 @@ namespace Application.Implementations.ACAD
             return await _classMeetingRepository.WeeklyScheduleGetByTeacherAsync(teacherId, ct);
         }
 
-        
+        public async Task<Guid> CreateClassMeetingAsync(CreateClassMeetingRequest request)
+        {
+            return await _uow.ExecuteInTransactionAsync(async () =>
+            {
+                var entity = _mapper.Map<ACAD_ClassMeeting>(request);
+                entity.Id = Guid.NewGuid();
+                entity.ClassID = request.ClassID;
+                entity.SlotID = request.SlotID;
+                entity.Date = request.Date;
+                entity.RoomID = request.RoomID;
+                entity.TeacherAssignmentID = request.TeacherAssignmentID;
+                entity.OnlineMeetingUrl = request.OnlineMeetingUrl;
+                entity.Passcode = request.Passcode;
+                entity.CoveredTopicID = request.CoveredTopicID;                           
+
+                _classMeetingRepository.Add(entity);
+                await _uow.SaveChangesAsync();
+
+                return entity.Id;
+            });
+        }
+
+        public async Task UpdateClassMeetingAsync(UpdateClassMeetingRequest request)
+        {
+            await _uow.ExecuteInTransactionAsync(async () =>
+            {
+                var entity = await _classMeetingRepository.GetByIdAsync(request.Id);
+                if (entity == null) throw new Exception("ClassMeeting not found");
+
+                _mapper.Map(request, entity);
+                entity.UpdatedAt = DateTime.UtcNow;
+
+                _classMeetingRepository.Update(entity);
+                await _uow.SaveChangesAsync();
+            });
+        }
+
+
     }
 }
