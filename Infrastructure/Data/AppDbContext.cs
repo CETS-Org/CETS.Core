@@ -184,6 +184,11 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK_ACAD_Assignments_Created");
 
             entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_AssignmentUpdatedByNavigations).HasConstraintName("FK_ACAD_Assignments_Updated");
+
+            entity.HasOne(d => d.Skill).WithMany(p => p.ACAD_Assignments)
+                .HasForeignKey(d => d.SkillID)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_ACAD_Assignment_Skills");
         });
 
         modelBuilder.Entity<ACAD_Attendance>(entity =>
