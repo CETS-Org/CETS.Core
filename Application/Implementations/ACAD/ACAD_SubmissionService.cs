@@ -1,9 +1,11 @@
 ﻿using Application.Interfaces.ACAD;
 using Application.Interfaces.Common.Storage;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using Domain.Interfaces.CORE;
 using DTOs.ACAD.ACAD_Submission.Requests;
 using DTOs.ACAD.ACAD_Submission.Responses;
 using System;
@@ -20,17 +22,26 @@ namespace Application.Implementations.ACAD
         private readonly IFileStorageService _fileStorageService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICORE_LookUpRepository _lookUpRepository;
+        private readonly ICORE_LookUpTypeRepository _lookUpTypeRepository;
+        private readonly IACAD_AssignmentRepository _assignmentRepository;
 
         public ACAD_SubmissionService(
             IACAD_SubmissionRepository submissionRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            ICORE_LookUpRepository lookUpRepository,
+            IACAD_AssignmentRepository assignmentRepository,
+            ICORE_LookUpTypeRepository lookUpTypeRepository)
         {
             _submissionRepository = submissionRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _fileStorageService = fileStorageService;
+            _lookUpRepository = lookUpRepository;
+            _assignmentRepository = assignmentRepository;
+            _lookUpTypeRepository = lookUpTypeRepository;
         }
 
         public async Task<SubmissionResponse> SubmitAssignmentAsync(SubmitAssignmentRequest request)
@@ -337,6 +348,39 @@ namespace Application.Implementations.ACAD
             }
 
             return response;
+        }
+
+        public async Task<IEnumerable<SubmissionResponse>> GetSubmissionsByAssignmentAndSkillAsync(Guid assignmentId, string? assignmentSkill)
+        {
+            // Lấy assignment để kiểm tra SkillID
+            var assignment = await _assignmentRepository.GetByIdAsync(assignmentId);
+            if (assignment == null || assignment.IsDeleted)
+            {
+                return Enumerable.Empty<SubmissionResponse>();
+            }
+
+            // Nếu có assignmentSkill, kiểm tra assignment.SkillID có khớp không
+            if (!string.IsNullOrWhiteSpace(assignmentSkill))
+            {
+                // Get skill lookup by code (reading, writing, speaking, listening)
+                var skill = await _lookUpRepository.GetByCodeAsync(LookUpTypes.CourseSkill, assignmentSkill);
+                if (skill == null)
+                {
+                    // Skill code không tồn tại, trả về empty list
+                    return Enumerable.Empty<SubmissionResponse>();
+                }
+
+                // Kiểm tra assignment.SkillID có khớp với skillId không
+                if (assignment.SkillID != skill.Id)
+                {
+                    // Assignment không có skill này, trả về empty list
+                    return Enumerable.Empty<SubmissionResponse>();
+                }
+            }
+
+            // Lấy tất cả submissions của assignment
+            var submissions = await _submissionRepository.GetByAssignmentAsync(assignmentId);
+            return _mapper.Map<IEnumerable<SubmissionResponse>>(submissions);
         }
 
     }

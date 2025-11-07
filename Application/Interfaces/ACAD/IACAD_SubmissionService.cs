@@ -22,6 +22,7 @@ namespace Application.Interfaces.ACAD
         Task<SubmissionResponse>GetSubmissionByIdAsync(Guid id);
         Task<AssignmentSubmissionsResponse> GetSubmissionsWithDownloadUrlsAsync(Guid assignmentId);
         Task<BulkUpdateSubmissionsResponse> BulkUpdateSubmissionsAsync(BulkUpdateSubmissionsRequest request);
+        Task<IEnumerable<SubmissionResponse>> GetSubmissionsByAssignmentAndSkillAsync(Guid assignmentId, string? assignmentSkill);
     }
 
 }

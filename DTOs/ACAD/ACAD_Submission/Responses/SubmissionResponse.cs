@@ -14,6 +14,7 @@ namespace DTOs.ACAD.ACAD_Submission.Responses
         public decimal? Score { get; set; }
         public string? Feedback { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public string UploadUrl { get; set; }
 
         // public AssignmentResponse? Assignment { get; set; }
