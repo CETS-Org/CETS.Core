@@ -18,6 +18,7 @@ public partial class ACAD_Assignment : AuditedEntity
     public string? Description { get; set; }
 
     public string? StoreUrl { get; set; }
+    public string? QuestionUrl { get; set; }
     public Guid? SkillID { get; set; }
 
     [Precision(0)]

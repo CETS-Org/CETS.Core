@@ -176,6 +176,7 @@ public partial class AppDbContext : DbContext
         {
             entity.Property(e => e.Id).HasColumnName("AssignmentID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.QuestionUrl).HasMaxLength(500);
 
             entity.HasOne(d => d.ClassMeeting).WithMany(p => p.ACAD_Assignments).HasConstraintName("FK_ACAD_Assignments_ClassMeeting");
 
