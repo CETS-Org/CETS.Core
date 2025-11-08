@@ -13,8 +13,10 @@ namespace DTOs.ACAD.ACAD_Assignment.Requests
         public string? Title { get; set; }
         public string? Description { get; set; }
         public DateTime? DueDate { get; set; }
+        public Guid? SkillID { get; set; }
         public string? StoreUrl { get; set; }
         public string? ContentType { get; set; }
         public string? FileName { get; set; }
+        public string? QuestionUrl { get; set; } // File path for question JSON 
     }
 }

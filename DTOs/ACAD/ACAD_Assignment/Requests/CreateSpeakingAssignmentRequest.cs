@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DTOs.ACAD.ACAD_Assignment.Requests
 {
-    public class CreateAssignmentWithFileRequest
+    public class CreateSpeakingAssignmentRequest
     {
         [Required]
         public Guid ClassMeetingId { get; set; }
@@ -19,15 +19,9 @@ namespace DTOs.ACAD.ACAD_Assignment.Requests
         [Required]
         public DateTime DueDate { get; set; }
 
+        [Required]
+        public string QuestionJson { get; set; } = null!; // JSON string from frontend
+
         public Guid? SkillID { get; set; }
-
-        [Required]
-        public string ContentType { get; set; } = null!;
-
-        [Required]
-        public string FileName { get; set; } = null!;
     }
 }
-
-
-
