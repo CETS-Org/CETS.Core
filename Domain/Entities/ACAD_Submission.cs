@@ -17,6 +17,8 @@ public partial class ACAD_Submission : AuditedEntity
 
     public decimal? Score { get; set; }
 
+    public bool IsAiScore { get; set; }
+
     public bool IsDeleted { get; set; }
 
     [ForeignKey(nameof(AssignmentID))]

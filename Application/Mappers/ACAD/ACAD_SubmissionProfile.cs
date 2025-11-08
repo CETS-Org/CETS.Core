@@ -19,7 +19,8 @@ namespace Application.Mappers.ACAD
             CreateMap<ACAD_Submission, SubmissionResponse>()
                 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Account.FullName))
                 .ForMember(dest => dest.StudentCode, opt => opt.MapFrom(src => src.Student.StudentCode))
-                .ForMember(dest => dest.StoreUrl, opt => opt.MapFrom(src => src.StoreUrl));
+                .ForMember(dest => dest.StoreUrl, opt => opt.MapFrom(src => src.StoreUrl))
+                .ForMember(dest => dest.IsAiScore, opt => opt.MapFrom(src => src.IsAiScore));
 
             CreateMap<ACAD_Submission, SubmitAssignmentRequest>()
                 .ForMember(dest => dest.AssignmentID, opt => opt.MapFrom(src => src.AssignmentID ?? Guid.Empty))

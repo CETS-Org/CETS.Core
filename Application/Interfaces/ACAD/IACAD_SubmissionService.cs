@@ -1,6 +1,7 @@
 ﻿using Domain.Entities;
 using DTOs.ACAD.ACAD_Submission.Requests;
 using DTOs.ACAD.ACAD_Submission.Responses;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,9 @@ namespace Application.Interfaces.ACAD
         Task<AssignmentSubmissionsResponse> GetSubmissionsWithDownloadUrlsAsync(Guid assignmentId);
         Task<BulkUpdateSubmissionsResponse> BulkUpdateSubmissionsAsync(BulkUpdateSubmissionsRequest request);
         Task<IEnumerable<SubmissionResponse>> GetSubmissionsByAssignmentAndSkillAsync(Guid assignmentId, string? assignmentSkill);
+        Task<(double Score, string Feedback)> GradeEssayByAiAsync(IFormFile submissionFile);
+        Task<(double Score, string Feedback)> GradeEssayByTextAsync(string essayText);
+        Task<SubmissionResponse> SubmitWritingAssignmentAsync(SubmitWritingSubmissionRequest request);
     }
 
 }
