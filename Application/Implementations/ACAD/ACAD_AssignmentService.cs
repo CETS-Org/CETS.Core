@@ -105,7 +105,14 @@ namespace Application.Implementations.ACAD
 
         public async Task DeleteAssignmentAsync(Guid id)
         {
-            await _assignmentRepository.RemoveByIdAsync(id);
+            var entity = await _assignmentRepository.GetByIdAsync(id)
+                         ?? throw new KeyNotFoundException("Assignment not found");
+
+            // Soft delete - set IsDeleted = true
+            entity.IsDeleted = true;
+            entity.UpdatedAt = DateTime.UtcNow;
+
+            _assignmentRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
         }
 
