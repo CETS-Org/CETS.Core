@@ -22,8 +22,8 @@ namespace DTOs.ACAD.ACAD_Assignment.Responses
         public Guid? SkillID { get; set; }
         public string? SkillName { get; set; }
         
-        // Speaking assignment properties
-        public string AssignmentType { get; set; } = "file"; // "file" or "speaking"
+        // Assignment type properties
+        public string? AssignmentType { get; set; } // "quiz" or "homework"
         public string? QuestionUrl { get; set; } // Presigned URL for frontend to download JSON
     }
 }

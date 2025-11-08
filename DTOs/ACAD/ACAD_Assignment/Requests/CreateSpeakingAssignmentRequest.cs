@@ -23,5 +23,9 @@ namespace DTOs.ACAD.ACAD_Assignment.Requests
         public string QuestionJson { get; set; } = null!; // JSON string from frontend
 
         public Guid? SkillID { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string AssignmentType { get; set; } = "homework"; // "quiz" or "homework"
     }
 }

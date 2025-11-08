@@ -19,6 +19,10 @@ public partial class ACAD_Assignment : AuditedEntity
 
     public string? StoreUrl { get; set; }
     public string? QuestionUrl { get; set; }
+    
+    [StringLength(50)]
+    public string? AssignmentType { get; set; } // "quiz" or "homework" 
+    
     public Guid? SkillID { get; set; }
 
     [Precision(0)]

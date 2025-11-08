@@ -14,6 +14,7 @@ namespace DTOs.ACAD.ACAD_Assignment.Requests
         public string? Description { get; set; }
         public DateTime? DueDate { get; set; }
         public Guid? SkillID { get; set; }
+        public string? AssignmentType { get; set; } // "quiz" or "homework"
         public string? StoreUrl { get; set; }
         public string? ContentType { get; set; }
         public string? FileName { get; set; }

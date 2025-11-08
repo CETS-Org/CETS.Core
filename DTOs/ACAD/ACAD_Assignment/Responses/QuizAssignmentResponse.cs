@@ -11,8 +11,6 @@ namespace DTOs.ACAD.ACAD_Assignment.Responses
         public DateTime CreatedAt { get; set; }
         public Guid? SkillID { get; set; }
         public string? SkillName { get; set; }
-        public string? AudioUrl { get; set; }
-        public string? VideoUrl { get; set; }
         public string? UploadUrl { get; set; } // Presigned URL for frontend to upload JSON
         public string? QuestionJson { get; set; } // JSON content for frontend to upload
         public string? QuestionJsonUrl { get; set; } // Presigned URL for frontend to download JSON

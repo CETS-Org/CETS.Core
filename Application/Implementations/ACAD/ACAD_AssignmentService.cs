@@ -81,10 +81,7 @@ namespace Application.Implementations.ACAD
                 _assignmentRepository.Add(entity);
                 await _unitOfWork.SaveChangesAsync();
 
-                // Map entity to response and set computed properties
                 var response = _mapper.Map<QuizAssignmentResponse>(entity);
-                response.AudioUrl = request.AudioUrl;
-                response.VideoUrl = request.VideoUrl;
                 response.UploadUrl = uploadUrl; // Return presigned URL for frontend to upload JSON
                 response.QuestionJson = request.QuestionJson; // Return JSON content for frontend to upload
                 response.QuestionFilePath = jsonFilePath; // Return file path for updates
@@ -105,11 +102,9 @@ namespace Application.Implementations.ACAD
                 var entity = _mapper.Map<ACAD_Assignment>(request);
                 entity.QuestionUrl = jsonFilePath; // Store JSON file path
 
-
                 _assignmentRepository.Add(entity);
                 await _unitOfWork.SaveChangesAsync();
 
-                // Map entity to response and set computed properties
                 var response = _mapper.Map<SpeakingAssignmentResponse>(entity);
                 response.UploadUrl = jsonUploadUrl; // Return presigned URL for JSON upload
                 response.QuestionJson = request.QuestionJson; // Return JSON content for frontend to upload
@@ -140,35 +135,7 @@ namespace Application.Implementations.ACAD
                 return null;
 
             var response = _mapper.Map<AssignmentResponse>(assignment);
-           
-            // Determine assignment type and populate question data if applicable
-            if (!string.IsNullOrEmpty(assignment.QuestionUrl))
-            {
-                response.AssignmentType = "quiz"; 
-                response.QuestionUrl = assignment.QuestionUrl;
-               
-                try
-                {
-                    // Check if QuestionUrl is a file path (cloud storage)
-                    if (assignment.QuestionUrl.StartsWith("assignments/"))
-                    {
-                        // Get presigned URL for frontend to download JSON
-                        response.QuestionUrl = await _fileStorageService.GetPresignedGetUrlAsync(assignment.QuestionUrl);
-                        // Frontend will fetch and deserialize the JSON
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Log other exceptions but don't throw to maintain API contract
-                    Console.WriteLine($"Error fetching assignment data: {ex.Message}");
-                    response.AssignmentType = "file";
-                }
-            }
-            else
-            {
-                // Homework assignment (has StoreUrl/FileUrl)
-                response.AssignmentType = "file";
-            }
+            response.QuestionUrl = assignment.QuestionUrl;
 
             return response;
         }
@@ -203,7 +170,19 @@ namespace Application.Implementations.ACAD
         public async Task<IEnumerable<AssignmentResponse>> GetAssignmentsWithSubmissions(Guid classMeetingId, Guid studentId)
         {
             var assignments = await _assignmentRepository.GetAssignmentsWithSubmissions(classMeetingId, studentId);
-            return _mapper.Map<IEnumerable<AssignmentResponse>>(assignments);
+            var responses = _mapper.Map<IEnumerable<AssignmentResponse>>(assignments).ToList();
+            
+           
+            foreach (var assignment in assignments)
+            {
+                var response = responses.FirstOrDefault(r => r.Id == assignment.Id);
+                if (response != null)
+                {
+                    response.QuestionUrl = assignment.QuestionUrl;
+                }
+            }
+            
+            return responses;
         }
 
         public async Task<IEnumerable<AssignmentWithSubmissionCountResponse>> GetAssignmentsWithSubmissionCountAsync(Guid classMeetingId)
@@ -227,6 +206,28 @@ namespace Application.Implementations.ACAD
             return await _fileStorageService.GetPresignedGetUrlAsync(entity.StoreUrl);
         }
 
+    
+        public async Task<string> GetQuestionDataUrlAsync(Guid id)
+        {
+            var entity = await _assignmentRepository.FindFirstAsync(a => a.Id == id && !a.IsDeleted);
+            if (entity == null)
+                throw new KeyNotFoundException("Assignment not found");
+
+            if (string.IsNullOrEmpty(entity.QuestionUrl))
+                throw new InvalidOperationException("Assignment has no question data");
+
+            // Check if QuestionUrl is a file path (cloud storage)
+            if (entity.QuestionUrl.StartsWith("assignments/"))
+            {
+                // Get presigned URL for frontend to download JSON
+                return await _fileStorageService.GetPresignedGetUrlAsync(entity.QuestionUrl);
+            }
+            else
+            {
+                // Already a URL, return as is
+                return entity.QuestionUrl;
+            }
+        }
 
     }
 }

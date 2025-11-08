@@ -24,8 +24,8 @@ namespace DTOs.ACAD.ACAD_Assignment.Requests
 
         public Guid? SkillID { get; set; }
 
-        public string? AudioUrl { get; set; }
-
-        public string? VideoUrl { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string AssignmentType { get; set; } = "quiz"; // "quiz" or "homework"
     }
 }

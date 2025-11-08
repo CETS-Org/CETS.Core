@@ -13,5 +13,6 @@ namespace DTOs.ACAD.ACAD_Assignment.Requests
         public string Title { get; set; } = null!;
         public string? Description { get; set; }
         public DateTime DueDate { get; set; }
+        public string AssignmentType { get; set; } = "homework"; // "quiz" or "homework"
     }
 }
