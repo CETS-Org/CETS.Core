@@ -66,6 +66,7 @@ namespace Application.Mappers.ACAD
              .ForMember(dest => dest.StoreUrl, opt => opt.MapFrom(src => src.StoreUrl))
              .ForMember(dest => dest.Feedback, opt => opt.MapFrom(src => src.Feedback))
              .ForMember(dest => dest.Score, opt => opt.MapFrom(src => src.Score))
+             .ForMember(dest => dest.IsAiScore, opt => opt.MapFrom(src => src.IsAiScore))
              .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
 
             // map Assignment

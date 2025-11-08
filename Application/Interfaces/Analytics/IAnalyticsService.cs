@@ -47,3 +47,15 @@ namespace Application.Interfaces.Analytics
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

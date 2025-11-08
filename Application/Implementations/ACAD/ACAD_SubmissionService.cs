@@ -8,10 +8,15 @@ using Domain.Interfaces.ACAD;
 using Domain.Interfaces.CORE;
 using DTOs.ACAD.ACAD_Submission.Requests;
 using DTOs.ACAD.ACAD_Submission.Responses;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Application.Implementations.ACAD
@@ -25,6 +30,8 @@ namespace Application.Implementations.ACAD
         private readonly ICORE_LookUpRepository _lookUpRepository;
         private readonly ICORE_LookUpTypeRepository _lookUpTypeRepository;
         private readonly IACAD_AssignmentRepository _assignmentRepository;
+        private readonly IConfiguration _configuration;
+        private readonly HttpClient _httpClient;
 
         public ACAD_SubmissionService(
             IACAD_SubmissionRepository submissionRepository,
@@ -33,7 +40,8 @@ namespace Application.Implementations.ACAD
             IFileStorageService fileStorageService,
             ICORE_LookUpRepository lookUpRepository,
             IACAD_AssignmentRepository assignmentRepository,
-            ICORE_LookUpTypeRepository lookUpTypeRepository)
+            ICORE_LookUpTypeRepository lookUpTypeRepository,
+            IConfiguration configuration)
         {
             _submissionRepository = submissionRepository;
             _unitOfWork = unitOfWork;
@@ -42,6 +50,8 @@ namespace Application.Implementations.ACAD
             _lookUpRepository = lookUpRepository;
             _assignmentRepository = assignmentRepository;
             _lookUpTypeRepository = lookUpTypeRepository;
+            _configuration = configuration;
+            _httpClient = new HttpClient();
         }
 
         public async Task<SubmissionResponse> SubmitAssignmentAsync(SubmitAssignmentRequest request)
@@ -124,6 +134,7 @@ namespace Application.Implementations.ACAD
 
             entity.Score = request.Score;
             entity.Feedback = request.Feedback;
+            entity.IsAiScore = false; // Teacher graded
 
             _submissionRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -141,6 +152,7 @@ namespace Application.Implementations.ACAD
                          ?? throw new KeyNotFoundException($"Submission with ID {request.SubmissionId} not found");
 
             submission.Score = request.Score;
+            submission.IsAiScore = false; // Teacher updated
             submission.UpdatedAt = DateTime.UtcNow;
 
             _submissionRepository.Update(submission);
@@ -155,6 +167,7 @@ namespace Application.Implementations.ACAD
                          ?? throw new KeyNotFoundException($"Submission with ID {request.SubmissionId} not found");
 
             submission.Feedback = request.Feedback;
+            submission.IsAiScore = false; // Teacher updated
             submission.UpdatedAt = DateTime.UtcNow;
 
             _submissionRepository.Update(submission);
@@ -279,6 +292,7 @@ namespace Application.Implementations.ACAD
                     // Store previous values
                     var previousScore = submission.Score;
                     var previousFeedback = submission.Feedback;
+                    var previousIsAiScore = submission.IsAiScore;
 
                     // Update fields if provided (non-null)
                     if (submissionUpdate.Score.HasValue)
@@ -289,6 +303,12 @@ namespace Application.Implementations.ACAD
                     if (submissionUpdate.Feedback != null)
                     {
                         submission.Feedback = submissionUpdate.Feedback;
+                    }
+
+                    // Mark as teacher graded when score or feedback is updated
+                    if (submissionUpdate.Score.HasValue || submissionUpdate.Feedback != null)
+                    {
+                        submission.IsAiScore = false; // Teacher updated
                     }
 
                     // Update timestamp
@@ -314,6 +334,11 @@ namespace Application.Implementations.ACAD
                             {
                                 Previous = previousFeedback,
                                 New = submission.Feedback
+                            },
+                            IsAiScore = new FieldUpdate<bool>
+                            {
+                                Previous = previousIsAiScore,
+                                New = submission.IsAiScore
                             }
                         }
                     });
@@ -383,5 +408,288 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<IEnumerable<SubmissionResponse>>(submissions);
         }
 
+        //Gemini Score and feeback
+        public async Task<(double Score, string Feedback)> GradeEssayByAiAsync(IFormFile file)
+        {
+            var ApiKey = _configuration["GeminiApi:ApiKey"];
+            string uploadUrl = $"https://generativelanguage.googleapis.com/upload/v1beta/files?key={ApiKey}";
+            string metadata = JsonSerializer.Serialize(new
+            {
+                file = new
+                {
+                    displayName = file.FileName
+                }
+            });
+
+            var boundary = "boundary_" + Guid.NewGuid().ToString("N");
+            var content = new MultipartContent("related", boundary);
+
+            var metadataPart = new StringContent(metadata, Encoding.UTF8, "application/json");
+            content.Add(metadataPart);
+
+            var fileStream = file.OpenReadStream();
+            var fileContent = new StreamContent(fileStream);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+            content.Add(fileContent);
+
+            var uploadRequest = new HttpRequestMessage(HttpMethod.Post, uploadUrl)
+            {
+                Content = content
+            };
+            uploadRequest.Headers.ExpectContinue = false;
+
+            var uploadResponse = await _httpClient.SendAsync(uploadRequest);
+            var uploadBody = await uploadResponse.Content.ReadAsStringAsync();
+
+            if (!uploadResponse.IsSuccessStatusCode)
+            {
+                throw new Exception($"Gemini upload failed: {uploadResponse.StatusCode} - {uploadBody}");
+            }
+
+            var uploadJson = JsonDocument.Parse(uploadBody);
+            var fileUri = uploadJson.RootElement.GetProperty("file").GetProperty("uri").GetString();
+            var mimeType = uploadJson.RootElement.GetProperty("file").GetProperty("mimeType").GetString();
+
+
+
+            string modelUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={ApiKey}";
+
+            var prompt = @"You are an IELTS Writing examiner.
+                    Read the uploaded essay file and provide:
+                    1. A band score (0–9)
+                    2. Short feedback (3–5 sentences)
+                    Output JSON: { ""score"": number, ""feedback"": string }";
+
+            var requestJson = new
+            {
+                contents = new[]
+                {
+                new {
+                    role = "user",
+                    parts = new object[]
+                    {
+                        new { text = prompt },
+                        new { fileData = new { mimeType = mimeType, fileUri = fileUri } }
+                    }
+                }
+            }
+            };
+
+            var jsonBody = JsonSerializer.Serialize(requestJson);
+            var request = new HttpRequestMessage(HttpMethod.Post, modelUrl)
+            {
+                Content = new StringContent(jsonBody, Encoding.UTF8, "application/json")
+            };
+
+            var response = await _httpClient.SendAsync(request);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Gemini grading failed: {response.StatusCode}");
+            }
+
+
+
+            try
+            {
+                var doc = JsonDocument.Parse(responseBody);
+                var textResponse = doc.RootElement
+                    .GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
+
+                var resultJson = JsonDocument.Parse(textResponse);
+                double score = resultJson.RootElement.GetProperty("score").GetDouble();
+                string feedback = resultJson.RootElement.GetProperty("feedback").GetString();
+
+                return (score, feedback);
+            }
+            catch (Exception ex)
+            {
+                return (0, "Could not parse Gemini response");
+            }
+        }
+
+        // New method: Grade essay by text (instead of file upload)
+        public async Task<(double Score, string Feedback)> GradeEssayByTextAsync(string essayText)
+        {
+            var ApiKey = _configuration["GeminiApi:ApiKey"];
+            string modelUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+            var prompt = $@"You are an IELTS Writing examiner.
+                        Read the following essay and provide:
+                        1. A band score (0–9)
+                        2. Short feedback (3–5 sentences)
+                        Output ONLY valid JSON in this exact format: {{""score"": number, ""feedback"": string}}
+
+                        Essay:
+                        {essayText}";
+
+            var requestJson = new
+            {
+                contents = new[]
+                {
+                    new {
+                        parts = new[]
+                        {
+                            new { text = prompt }
+                        }
+                    }
+                }
+            };
+
+            var jsonBody = JsonSerializer.Serialize(requestJson);
+            var request = new HttpRequestMessage(HttpMethod.Post, modelUrl)
+            {
+                Content = new StringContent(jsonBody, Encoding.UTF8, "application/json")
+            };
+            
+            // Add API key as header instead of query parameter
+            request.Headers.Add("X-goog-api-key", ApiKey);
+
+            var response = await _httpClient.SendAsync(request);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Gemini grading failed: {response.StatusCode} - {responseBody}");
+            }
+
+            try
+            {
+                var doc = JsonDocument.Parse(responseBody);
+                var textResponse = doc.RootElement
+                    .GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
+
+                // Clean up the response (remove markdown code blocks if present)
+                textResponse = textResponse?.Trim();
+                if (textResponse?.StartsWith("```json") == true)
+                {
+                    textResponse = textResponse.Substring(7);
+                }
+                if (textResponse?.StartsWith("```") == true)
+                {
+                    textResponse = textResponse.Substring(3);
+                }
+                if (textResponse?.EndsWith("```") == true)
+                {
+                    textResponse = textResponse.Substring(0, textResponse.Length - 3);
+                }
+                textResponse = textResponse?.Trim();
+
+                var resultJson = JsonDocument.Parse(textResponse);
+                double score = resultJson.RootElement.GetProperty("score").GetDouble();
+                string feedback = resultJson.RootElement.GetProperty("feedback").GetString() ?? "";
+
+                return (score, feedback);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Could not parse Gemini response: {ex.Message}. Response: {responseBody}");
+            }
+        }
+
+        public async Task<SubmissionResponse> SubmitWritingAssignmentAsync(SubmitWritingSubmissionRequest request)
+        {
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
+            {
+                // Validate file
+                if (request.File == null)
+                {
+                    throw new ArgumentException("File is required");
+                }
+
+                // Extract text from document
+                string essayText = await Application.Helpers.DocumentTextExtractor.ExtractTextFromFileAsync(request.File);
+
+                if (string.IsNullOrWhiteSpace(essayText))
+                {
+                    throw new ArgumentException("Could not extract text from the document or document is empty");
+                }
+
+                // Grade essay by AI using extracted text
+                var (score, feedback) = await GradeEssayByTextAsync(essayText);
+
+                // Check if submission already exists
+                var existing = (await _submissionRepository.FindAsync(x =>
+                    x.AssignmentID == request.AssignmentId &&
+                    x.StudentID == request.StudentId &&
+                    !x.IsDeleted)).FirstOrDefault();
+
+                // Get presigned upload URL and generated file path (similar to assignment)
+                var (uploadUrl, filePath) = await _fileStorageService.GetPresignedPutUrlAsync(
+                    "submissions",
+                    request.FileName,
+                    request.ContentType
+                );
+
+                ACAD_Submission entity;
+
+                if (existing == null)
+                {
+                    // Create new submission
+                    entity = new ACAD_Submission
+                    {
+                        Id = Guid.NewGuid(),
+                        AssignmentID = request.AssignmentId,
+                        StudentID = request.StudentId,
+                        StoreUrl = filePath,
+                        Score = (decimal)score,
+                        Feedback = feedback,
+                        IsAiScore = true, // AI graded
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        IsDeleted = false
+                    };
+
+                    _submissionRepository.Add(entity);
+                }
+                else
+                {
+                    // Update existing submission
+                    var oldPath = existing.StoreUrl;
+                    existing.StoreUrl = filePath;
+                    existing.Score = (decimal)score;
+                    existing.Feedback = feedback;
+                    existing.IsAiScore = true; // AI graded
+                    existing.UpdatedAt = DateTime.UtcNow;
+
+                    _submissionRepository.Update(existing);
+
+                    // Delete old file if exists
+                    if (!string.IsNullOrEmpty(oldPath))
+                    {
+                        try
+                        {
+                            await _fileStorageService.DeleteFileAsync(oldPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Warning: Could not delete old submission file {oldPath}: {ex.Message}");
+                        }
+                    }
+
+                    entity = existing;
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                // Map to response (similar to assignment)
+                var response = _mapper.Map<SubmissionResponse>(entity);
+                response.StoreUrl = filePath;
+                response.UploadUrl = uploadUrl;
+                response.Score = (decimal)score;
+                response.Feedback = feedback;
+
+                return response;
+            });
+        }
     }
 }
