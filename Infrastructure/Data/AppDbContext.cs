@@ -116,8 +116,8 @@ public partial class AppDbContext : DbContext
         var builder = new ConfigurationBuilder()
            .SetBasePath(Directory.GetCurrentDirectory())
            .AddJsonFile("appsettings.json", true, true);
-       var configuration = builder.Build();
-       optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
+        var configuration = builder.Build();
+        optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -176,6 +176,8 @@ public partial class AppDbContext : DbContext
         {
             entity.Property(e => e.Id).HasColumnName("AssignmentID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.QuestionUrl).HasMaxLength(500);
+            entity.Property(e => e.AssignmentType).HasMaxLength(50).HasDefaultValue("homework");
 
             entity.HasOne(d => d.ClassMeeting).WithMany(p => p.ACAD_Assignments).HasConstraintName("FK_ACAD_Assignments_ClassMeeting");
 
@@ -184,6 +186,11 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK_ACAD_Assignments_Created");
 
             entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_AssignmentUpdatedByNavigations).HasConstraintName("FK_ACAD_Assignments_Updated");
+
+            entity.HasOne(d => d.Skill).WithMany(p => p.ACAD_Assignments)
+                .HasForeignKey(d => d.SkillID)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_ACAD_Assignment_Skills");
         });
 
         modelBuilder.Entity<ACAD_Attendance>(entity =>
@@ -405,6 +412,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("SubmissionID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Score).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.IsAiScore).HasDefaultValue(false);
             entity.Property<string?>("Title").HasMaxLength(255).HasColumnName("Title");
 
             entity.HasOne(d => d.Assignment).WithMany(p => p.ACAD_Submissions)

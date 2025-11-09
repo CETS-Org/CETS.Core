@@ -18,5 +18,12 @@ namespace DTOs.ACAD.ACAD_Assignment.Responses
         public DateTime DueDate { get; set; }
         public DateTime CreatedAt { get; set; }
         public IEnumerable<SubmissionResponse>? Submissions { get; set; }
+     
+        public Guid? SkillID { get; set; }
+        public string? SkillName { get; set; }
+        
+        // Assignment type properties
+        public string? AssignmentType { get; set; } // "quiz" or "homework"
+        public string? QuestionUrl { get; set; } // Presigned URL for frontend to download JSON
     }
 }

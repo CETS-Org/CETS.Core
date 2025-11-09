@@ -139,7 +139,7 @@ namespace Application.Implementations.FIN
                 }
                 
 
-                var paymentStatus = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.PaymentStatus);               
+                var invoiceStatusForUpdate = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.InvoiceStatus);               
                 var invoiceStatus = await _lookUpService.GetByIdAsync(invoice.InvoiceStatusID);
                 var reservationItem = await _reservationItemService.GetReservationItemByIdAsync(reservationItemId);
 
@@ -147,7 +147,7 @@ namespace Application.Implementations.FIN
                 if (invoiceStatus.Code == "Pending")
                 {
                     //update instalment pay status
-                    var firstStatus = paymentStatus?.Where(x => x.Code == "1stPaid").FirstOrDefault();
+                    var firstStatus = invoiceStatusForUpdate?.Where(x => x.Code == "1stPaid").FirstOrDefault();
                     await _invoiceService.updateInvoiceStatus(invoice.Id, firstStatus.LookUpId);
                     var ReservationStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.ReservationStatus);
                     var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Completed").FirstOrDefault();
@@ -170,7 +170,7 @@ namespace Application.Implementations.FIN
                 if (invoiceStatus.Code == "1stPaid" )
                 {
                     //update 2nd second instalment pay status
-                    var firstStatus = paymentStatus?.Where(x => x.Code == "2ndPaid").FirstOrDefault();
+                    var firstStatus = invoiceStatusForUpdate?.Where(x => x.Code == "2ndPaid").FirstOrDefault();
                     await _invoiceService.updateInvoiceStatus(invoice.Id, firstStatus.LookUpId);
                     var ReservationStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.ReservationStatus);
                     var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Completed").FirstOrDefault();
@@ -181,7 +181,7 @@ namespace Application.Implementations.FIN
                 if (invoiceStatus.Code == "Pending" && reservationItem.PlanType == "OneTime")
                 {
                     //update payment complete status
-                    var paymentComplete = paymentStatus?.Where(x => x.Code == "PaymentComplete").FirstOrDefault();
+                    var paymentComplete = invoiceStatusForUpdate?.Where(x => x.Code == "Paid").FirstOrDefault();
                     await _invoiceService.updateInvoiceStatus(invoice.Id, paymentComplete.LookUpId);
                     var ReservationStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.ReservationStatus);
                     var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Complete").FirstOrDefault();

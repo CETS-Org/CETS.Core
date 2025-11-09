@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using DTOs.ACAD.ACAD_ClassMeetings.Requests;
 using DTOs.ACAD.ACAD_ClassMeetings.Responses;
 using DTOs.ACAD.ACAD_SyllabusItem.Responses;
 using System;
@@ -16,6 +17,10 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<TeacherWeeklyScheduleResponse>> WeeklyScheduleGetByTeacherAsync(Guid teacherId, CancellationToken ct);
         Task<IEnumerable<ClassMeetingResponse>> GetAllClassMeetingByClassId(Guid classId);
         Task<SyllabusItemResponse?> GetCoveredTopicAsync(Guid classMeetingId);
+
+        Task<Guid> CreateClassMeetingAsync(CreateClassMeetingRequest request);
+        Task UpdateClassMeetingAsync(UpdateClassMeetingRequest request);
+      
 
     }
 }

@@ -135,6 +135,12 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("AssignmentID");
 
+                    b.Property<string>("AssignmentType")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("homework");
+
                     b.Property<Guid?>("ClassMeetingID")
                         .HasColumnType("uniqueidentifier");
 
@@ -159,6 +165,13 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("QuestionUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("SkillID")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("StoreUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -178,6 +191,8 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ClassMeetingID");
 
                     b.HasIndex("CreatedBy");
+
+                    b.HasIndex("SkillID");
 
                     b.HasIndex("UpdatedBy");
 
@@ -992,6 +1007,11 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Feedback")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAiScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -2482,6 +2502,12 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_ACAD_Assignments_Created");
 
+                    b.HasOne("Domain.Entities.CORE_LookUp", "Skill")
+                        .WithMany("ACAD_Assignments")
+                        .HasForeignKey("SkillID")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK_ACAD_Assignment_Skills");
+
                     b.HasOne("Domain.Entities.IDN_Teacher", "UpdatedByNavigation")
                         .WithMany("ACAD_AssignmentUpdatedByNavigations")
                         .HasForeignKey("UpdatedBy")
@@ -2490,6 +2516,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("ClassMeeting");
 
                     b.Navigation("CreatedByNavigation");
+
+                    b.Navigation("Skill");
 
                     b.Navigation("UpdatedByNavigation");
                 });
@@ -3679,6 +3707,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("ACAD_AcademicRequestHistories");
 
                     b.Navigation("ACAD_AcademicRequestRequestTypes");
+
+                    b.Navigation("ACAD_Assignments");
 
                     b.Navigation("ACAD_Attendances");
 

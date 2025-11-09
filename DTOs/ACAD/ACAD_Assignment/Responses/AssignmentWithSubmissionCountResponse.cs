@@ -20,6 +20,12 @@ namespace DTOs.ACAD.ACAD_Assignment.Responses
         /// Tổng số submissions của assignment này
         /// </summary>
         public int SubmissionCount { get; set; }
+        
+      
+        public Guid? SkillID { get; set; }
+        
+       
+        public string? SkillName { get; set; }
     }
 }
 

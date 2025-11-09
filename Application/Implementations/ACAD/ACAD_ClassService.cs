@@ -71,6 +71,27 @@ namespace Application.Implementations.ACAD
             });
         }
 
+        public async Task SoftDeleteClassAsync(Guid id)
+        {
+            await _uow.ExecuteInTransactionAsync(async () =>
+            {
+                var entity = await _classRepo.GetByIdAsync(id);
+                if (entity == null)
+                    throw new KeyNotFoundException("Class not found");
+
+                if (entity.IsDeleted)
+                    return; // idempotent
+
+                entity.IsDeleted = true;
+                entity.IsActive = false;                 
+                entity.UpdatedAt = DateTime.UtcNow;
+               
+
+                _classRepo.Update(entity);
+                await _uow.SaveChangesAsync();
+            });
+        }
+
         public async Task<ClassResponse?> GetClassByIdAsync(Guid id)
         {
             var entity = await _classRepo.GetByIdAsync(id);
@@ -102,5 +123,21 @@ namespace Application.Implementations.ACAD
         {
             return await _classRepo.GetAllClassRowsAsync();
         }
+
+        public async Task<ClassStaffViewResponse?> GetClassByIdStaffView(Guid id)
+        {
+            var entity = await _classRepo.GetClassStaffViewById(id);
+            return _mapper.Map<ClassStaffViewResponse?>(entity);
+        }
+
+        public async Task<List<ClassStaffViewResponse>> GetAllClassStaffView()
+        {
+            var entities = await _classRepo.GetAllClassStaffView();
+            return _mapper.Map<List<ClassStaffViewResponse>>(entities);
+        }
+
+
+
+
     }
 }

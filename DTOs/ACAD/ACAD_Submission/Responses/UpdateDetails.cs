@@ -4,7 +4,9 @@ namespace DTOs.ACAD.ACAD_Submission.Responses
     {
         public FieldUpdate<decimal?> Score { get; set; } = new FieldUpdate<decimal?>();
         public FieldUpdate<string?> Feedback { get; set; } = new FieldUpdate<string?>();
+        public FieldUpdate<bool> IsAiScore { get; set; } = new FieldUpdate<bool>();
     }
 }
+
 
 

@@ -18,6 +18,12 @@ public partial class ACAD_Assignment : AuditedEntity
     public string? Description { get; set; }
 
     public string? StoreUrl { get; set; }
+    public string? QuestionUrl { get; set; }
+    
+    [StringLength(50)]
+    public string? AssignmentType { get; set; } // "quiz" or "homework" 
+    
+    public Guid? SkillID { get; set; }
 
     [Precision(0)]
     public DateTime? DueAt { get; set; }
@@ -34,4 +40,7 @@ public partial class ACAD_Assignment : AuditedEntity
 
     [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Teacher? UpdatedByNavigation { get; set; }
+
+    [ForeignKey(nameof(SkillID))]
+    public virtual CORE_LookUp? Skill { get; set; }
 }

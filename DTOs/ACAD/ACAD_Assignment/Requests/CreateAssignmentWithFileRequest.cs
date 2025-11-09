@@ -19,6 +19,12 @@ namespace DTOs.ACAD.ACAD_Assignment.Requests
         [Required]
         public DateTime DueDate { get; set; }
 
+        public Guid? SkillID { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string AssignmentType { get; set; } = "homework"; // "quiz" or "homework"
+
         [Required]
         public string ContentType { get; set; } = null!;
 
