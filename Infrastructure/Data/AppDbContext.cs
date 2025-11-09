@@ -1183,7 +1183,7 @@ public partial class AppDbContext : DbContext
 
         //TODO: Replace with actual system user ID or a dedicated service account ID.
         //Temporary hardcoded admin ID for system processes when no user is logged in.
-        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("B48117F8-9752-4BCB-A0EB-B8FBA524A321");
+        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("BC1D19E1-E706-4618-A6F6-5708C3D1E5FD");
         var now = DateTime.Now;
 
         foreach (var entry in entries)
