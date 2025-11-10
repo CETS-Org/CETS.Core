@@ -15,5 +15,8 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public string CategoryName { get; set; } = null!;
         public string CourseLevel { get; set; } = null!;
         public string FormatName { get; set; } = null!;
+
+        
+        public int ActiveClassCount { get; set; }
     }
 }
