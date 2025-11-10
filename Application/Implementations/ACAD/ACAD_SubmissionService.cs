@@ -691,5 +691,131 @@ namespace Application.Implementations.ACAD
                 return response;
             });
         }
+
+        public async Task<SubmissionResponse> StartAttemptAsync(StartAttemptRequest request)
+        {
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
+            {
+                // Check if assignment exists
+                var assignment = await _assignmentRepository.GetByIdAsync(request.AssignmentID);
+                if (assignment == null)
+                {
+                    throw new KeyNotFoundException("Assignment not found");
+                }
+
+                // Check if there's already ANY submission (completed or in-progress) for this student and assignment
+                var existing = (await _submissionRepository.FindAsync(x =>
+                    x.AssignmentID == request.AssignmentID &&
+                    x.StudentID == request.StudentID &&
+                    !x.IsDeleted))
+                    .OrderByDescending(x => x.CreatedAt)
+                    .FirstOrDefault();
+
+                if (existing != null)
+                {
+                    // Student has already attempted this assignment - only one attempt allowed
+                    throw new InvalidOperationException("You have already attempted this assignment. Only one attempt is allowed.");
+                }
+
+                // Create new submission record for this attempt using AutoMapper
+                var entity = _mapper.Map<ACAD_Submission>(request);
+                entity.StoreUrl = null; // Will be set when actually submitted
+                entity.IsDeleted = false;
+                entity.Score = null;
+                entity.Feedback = null;
+                entity.IsAiScore = false;
+
+                _submissionRepository.Add(entity);
+                await _unitOfWork.SaveChangesAsync();
+
+                var response = _mapper.Map<SubmissionResponse>(entity);
+                return response;
+            });
+        }
+
+        public async Task<SpeakingSubmissionUploadUrlsResponse> GetSpeakingSubmissionUploadUrlsAsync(GetSpeakingSubmissionUploadUrlsRequest request)
+        {
+            // Verify that there's an active attempt
+            var existing = (await _submissionRepository.FindAsync(x =>
+                x.AssignmentID == request.AssignmentID &&
+                x.StudentID == request.StudentID &&
+                !x.IsDeleted &&
+                string.IsNullOrEmpty(x.StoreUrl))) // In-progress submissions have no StoreUrl
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefault();
+
+            if (existing == null)
+            {
+                throw new InvalidOperationException("No active attempt found. Please start the assignment first.");
+            }
+
+            // Get presigned URL for answers JSON file
+            var jsonFileName = $"submission-{existing.Id}-{Guid.NewGuid()}.json";
+            var (answersJsonUploadUrl, answersJsonFilePath) = await _fileStorageService.GetPresignedPutUrlAsync(
+                "submissions/answers",
+                jsonFileName,
+                "application/json"
+            );
+
+            // Get presigned URLs for audio files
+            var audioUploadUrls = new Dictionary<string, AudioUploadInfo>();
+            if (request.AudioQuestionIds != null && request.AudioQuestionIds.Count > 0)
+            {
+                foreach (var questionId in request.AudioQuestionIds)
+                {
+                    var audioFileName = $"audio-{questionId}-{Guid.NewGuid()}.webm";
+                    var (audioUploadUrl, audioFilePath) = await _fileStorageService.GetPresignedPutUrlAsync(
+                        "submissions/audio",
+                        audioFileName,
+                        "audio/webm"
+                    );
+
+                    audioUploadUrls[questionId] = new AudioUploadInfo
+                    {
+                        UploadUrl = audioUploadUrl,
+                        FilePath = audioFilePath,
+                        ContentType = "audio/webm"
+                    };
+                }
+            }
+
+            return new SpeakingSubmissionUploadUrlsResponse
+            {
+                AnswersJsonUploadUrl = answersJsonUploadUrl,
+                AnswersJsonFilePath = answersJsonFilePath,
+                AudioUploadUrls = audioUploadUrls
+            };
+        }
+
+        public async Task<SubmissionResponse> SubmitSpeakingSubmissionAsync(SubmitSpeakingSubmissionRequest request)
+        {
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
+            {
+                // Find the existing in-progress submission
+                var existing = (await _submissionRepository.FindAsync(x =>
+                    x.AssignmentID == request.AssignmentID &&
+                    x.StudentID == request.StudentID &&
+                    !x.IsDeleted &&
+                    string.IsNullOrEmpty(x.StoreUrl))) // In-progress submissions have no StoreUrl
+                    .OrderByDescending(x => x.CreatedAt)
+                    .FirstOrDefault();
+
+                if (existing == null)
+                {
+                    throw new InvalidOperationException("No active attempt found. Please start the assignment first.");
+                }
+
+                // Update existing submission with the uploaded file path
+                existing.StoreUrl = request.AnswersJsonFilePath;
+                existing.UpdatedAt = DateTime.UtcNow;
+
+                _submissionRepository.Update(existing);
+                await _unitOfWork.SaveChangesAsync();
+
+                var response = _mapper.Map<SubmissionResponse>(existing);
+                response.StoreUrl = request.AnswersJsonFilePath;
+                return response;
+            });
+        }
     }
 }
