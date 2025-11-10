@@ -62,15 +62,21 @@ namespace Application.Implementations.ACAD
                     x.AssignmentID == request.AssignmentID &&
                     x.StudentID == request.StudentID &&
                     !x.IsDeleted)).FirstOrDefault();
+                var uploadUrl = "";
+                var filePath = "";
 
-                var fileExtension = Path.GetExtension(request.FileName);
-                var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+                if (request.FileName != null)
+                {
+                    var fileExtension = Path.GetExtension(request.FileName);
+                    var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
 
-                var directory = "submissions";
-                var fileName = uniqueFileName;
+                    var directory = "submissions";
+                    var fileName = uniqueFileName;
 
-                var (uploadUrl, filePath) = await _fileStorageService.GetPresignedPutUrlAsync(directory, fileName, request.ContentType);
-            
+                    (uploadUrl, filePath) = await _fileStorageService.GetPresignedPutUrlAsync(directory, fileName, request.ContentType);
+
+                }
+
                 ACAD_Submission entity;
 
                 if (existing == null)
@@ -81,6 +87,7 @@ namespace Application.Implementations.ACAD
                     entity.CreatedAt = DateTime.UtcNow;
                     entity.UpdatedAt = entity.CreatedAt;
                     entity.IsDeleted = false;
+                   
 
                     _submissionRepository.Add(entity);
                 }

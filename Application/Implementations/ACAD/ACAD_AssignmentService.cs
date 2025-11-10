@@ -205,8 +205,9 @@ namespace Application.Implementations.ACAD
 
             return await _fileStorageService.GetPresignedGetUrlAsync(entity.StoreUrl);
         }
+        
 
-    
+
         public async Task<string> GetQuestionDataUrlAsync(Guid id)
         {
             var entity = await _assignmentRepository.FindFirstAsync(a => a.Id == id && !a.IsDeleted);
