@@ -16,6 +16,22 @@ namespace Application.Mappers.ACAD
         {
             CreateMap<SubmitAssignmentRequest, ACAD_Submission>();
 
+            CreateMap<StartAttemptRequest, ACAD_Submission>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.StoreUrl, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
+                .ForMember(dest => dest.Score, opt => opt.Ignore())
+                .ForMember(dest => dest.Feedback, opt => opt.Ignore())
+                .ForMember(dest => dest.IsAiScore, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.Assignment, opt => opt.Ignore())
+                .ForMember(dest => dest.Student, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedByNavigation, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedByNavigation, opt => opt.Ignore());
+
             CreateMap<ACAD_Submission, SubmissionResponse>()
                 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.Account.FullName))
                 .ForMember(dest => dest.StudentCode, opt => opt.MapFrom(src => src.Student.StudentCode))

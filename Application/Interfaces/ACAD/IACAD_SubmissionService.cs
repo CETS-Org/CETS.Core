@@ -27,6 +27,9 @@ namespace Application.Interfaces.ACAD
         Task<(double Score, string Feedback)> GradeEssayByAiAsync(IFormFile submissionFile);
         Task<(double Score, string Feedback)> GradeEssayByTextAsync(string essayText);
         Task<SubmissionResponse> SubmitWritingAssignmentAsync(SubmitWritingSubmissionRequest request);
+        Task<SubmissionResponse> StartAttemptAsync(StartAttemptRequest request);
+        Task<SpeakingSubmissionUploadUrlsResponse> GetSpeakingSubmissionUploadUrlsAsync(GetSpeakingSubmissionUploadUrlsRequest request);
+        Task<SubmissionResponse> SubmitSpeakingSubmissionAsync(SubmitSpeakingSubmissionRequest request);
     }
 
 }
