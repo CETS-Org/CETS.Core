@@ -17,6 +17,7 @@ namespace DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses
         public string className { get; set; } = string.Empty;
         public int classNumber { get; set; }
         public ClassSession? classSession { get; set; } 
+        public DateOnly EndDate { get; set; }
 
     }
 }

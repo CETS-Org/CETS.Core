@@ -50,7 +50,7 @@ namespace Application.Implementations.ACAD
                                 slot = classMeetings.Slot.Name,
                                 RoomCode = classMeetings.Room.RoomCode,
                                 TopicName = classMeetings.CoveredTopic.TopicTitle,
-                                Date = classMeetings.Date,
+                                Date = classMeetings.Date,                              
                                 isStudyingDay = classMeetings.IsStudy
                             };
                         }
@@ -66,6 +66,7 @@ namespace Application.Implementations.ACAD
                             classSession = classSession,
                             className = classItem.ClassName,
                             classNumber= classItem.ClassNum,
+                            EndDate = classItem.EndDate
                         };
                         result.Add(classTeachingListResponseItem);
                     }
