@@ -82,10 +82,7 @@ namespace Application.Implementations.ACAD
                 if (existing == null)
                 {
                     entity = _mapper.Map<ACAD_Submission>(request);
-                    entity.Id = Guid.NewGuid();
                     entity.StoreUrl = filePath;
-                    entity.CreatedAt = DateTime.UtcNow;
-                    entity.UpdatedAt = entity.CreatedAt;
                     entity.IsDeleted = false;
 
 
@@ -95,7 +92,6 @@ namespace Application.Implementations.ACAD
                 {
                     var oldPath = existing.StoreUrl;
                     existing.StoreUrl = filePath;
-                    existing.UpdatedAt = DateTime.UtcNow;
                     existing.Score = request.Score;
 
                     _submissionRepository.Update(existing);
@@ -161,7 +157,6 @@ namespace Application.Implementations.ACAD
 
             submission.Score = request.Score;
             submission.IsAiScore = false; // Teacher updated
-            submission.UpdatedAt = DateTime.UtcNow;
 
             _submissionRepository.Update(submission);
             await _unitOfWork.SaveChangesAsync();
@@ -176,7 +171,6 @@ namespace Application.Implementations.ACAD
 
             submission.Feedback = request.Feedback;
             submission.IsAiScore = false; // Teacher updated
-            submission.UpdatedAt = DateTime.UtcNow;
 
             _submissionRepository.Update(submission);
             await _unitOfWork.SaveChangesAsync();
@@ -319,8 +313,6 @@ namespace Application.Implementations.ACAD
                         submission.IsAiScore = false; // Teacher updated
                     }
 
-                    // Update timestamp
-                    submission.UpdatedAt = DateTime.UtcNow;
 
                     // Save changes to database
                     _submissionRepository.Update(submission);
@@ -645,15 +637,12 @@ namespace Application.Implementations.ACAD
                     // Create new submission
                     entity = new ACAD_Submission
                     {
-                        Id = Guid.NewGuid(),
                         AssignmentID = request.AssignmentId,
                         StudentID = request.StudentId,
                         StoreUrl = filePath,
                         Score = (decimal)score,
                         Feedback = feedback,
                         IsAiScore = true, // AI graded
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow,
                         IsDeleted = false
                     };
 
@@ -667,7 +656,6 @@ namespace Application.Implementations.ACAD
                     existing.Score = (decimal)score;
                     existing.Feedback = feedback;
                     existing.IsAiScore = true; // AI graded
-                    existing.UpdatedAt = DateTime.UtcNow;
 
                     _submissionRepository.Update(existing);
 
@@ -815,7 +803,6 @@ namespace Application.Implementations.ACAD
 
                 // Update existing submission with the uploaded file path
                 existing.StoreUrl = request.AnswersJsonFilePath;
-                existing.UpdatedAt = DateTime.UtcNow;
 
                 _submissionRepository.Update(existing);
                 await _unitOfWork.SaveChangesAsync();
