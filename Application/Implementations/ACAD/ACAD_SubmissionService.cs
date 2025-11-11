@@ -87,7 +87,7 @@ namespace Application.Implementations.ACAD
                     entity.CreatedAt = DateTime.UtcNow;
                     entity.UpdatedAt = entity.CreatedAt;
                     entity.IsDeleted = false;
-                   
+
 
                     _submissionRepository.Add(entity);
                 }
@@ -96,6 +96,7 @@ namespace Application.Implementations.ACAD
                     var oldPath = existing.StoreUrl;
                     existing.StoreUrl = filePath;
                     existing.UpdatedAt = DateTime.UtcNow;
+                    existing.Score = request.Score;
 
                     _submissionRepository.Update(existing);
 
