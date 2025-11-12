@@ -33,19 +33,16 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .FirstOrDefaultAsync(a => a.MeetingID == meetingId && a.StudentID == studentId);
         }
 
-        //public async Task<int> CountTotalMeetingsByCourseAsync(Guid courseId)
-        //{
-        //    return await _context.ACAD_ClassMeetings
-        //        .Where(m => m.TeacherAssignment != null &&
-        //                    m.TeacherAssignment.CourseID == courseId)
-        //        .CountAsync();
-        //}
         public async Task<int> CountTotalMeetingsByCourseAsync(Guid courseId)
         {
             return await _context.ACAD_SyllabusItems
-                .Where(i => i.Syllabus.CourseID == courseId)
+                .Where(i => i.Syllabus != null &&
+                            !i.IsDeleted &&
+                            i.Syllabus.CourseID == courseId &&
+                            !i.Syllabus.IsDeleted)
                 .CountAsync();
         }
+
 
         public async Task<List<ACAD_Attendance>> GetByStudentAndCourseAsync(Guid studentId, Guid courseId)
         {
