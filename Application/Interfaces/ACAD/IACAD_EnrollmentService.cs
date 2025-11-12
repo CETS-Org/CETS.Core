@@ -19,5 +19,7 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<CourseEnrollmentListResponse>> GetStudentCoursesEnrollmentAsync(Guid studentId);
         Task<AcademicResultResponse> GetStudentAcademicResultsAsync(Guid studentId);
         Task<StudentCourseDetailResponse?> GetStudentCourseDetailAsync(Guid studentId, Guid courseId);
+        Task<LearningPathOverviewResponse?> GetLearningPathOverviewAsync(Guid studentId);
+
     }
 }
