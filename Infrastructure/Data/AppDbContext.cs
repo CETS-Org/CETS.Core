@@ -24,6 +24,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<ACAD_Assignment> ACAD_Assignments { get; set; }
 
+    public virtual DbSet<ACAD_WeeklyFeedback> ACAD_WeeklyFeedbacks { get; set; }
+
     public virtual DbSet<ACAD_Attendance> ACAD_Attendances { get; set; }
 
     public virtual DbSet<ACAD_Class> ACAD_Classes { get; set; }
@@ -282,6 +284,71 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.ReservationStatus).WithMany(p => p.ACAD_ClassReservations)
                 .HasConstraintName("FK_ACAD_ACAD_ClassReservations_ReservationStatus");
         });
+
+        modelBuilder.Entity<ACAD_WeeklyFeedback>(entity =>
+        {
+            entity.ToTable("ACAD_WeeklyFeedback");
+
+            entity.HasKey(e => e.Id);
+
+            entity.HasIndex(e => new { e.ClassID, e.StudentID, e.WeekNumber })
+                  .IsUnique();
+
+            entity.Property(e => e.Participation)
+                  .HasMaxLength(2000)
+                  .IsRequired();
+
+            entity.Property(e => e.AssignmentQuality)
+                  .HasMaxLength(2000)
+                  .IsRequired();
+
+            entity.Property(e => e.SkillProgress)
+                  .HasMaxLength(2000)
+                  .IsRequired();
+
+            entity.Property(e => e.NextStep)
+                  .HasMaxLength(2000);
+
+            entity.Property(e => e.CustomNote)
+                  .HasMaxLength(2000);
+
+            entity.Property(e => e.Status)
+                  .HasDefaultValue(1);
+
+            entity.Property(e => e.UpdatedAt)
+                  .HasDefaultValueSql("(sysutcdatetime())");
+
+
+            entity.HasOne(d => d.Teacher)
+                 .WithMany(p => p.ACAD_WeeklyFeedbacks)
+                 .HasForeignKey(d => d.TeacherID)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .HasConstraintName("FK_WeeklyFeedback_Teacher");
+
+            entity.HasOne(d => d.Class)
+                  .WithMany(p => p.ACAD_WeeklyFeedbacks)
+                  .HasForeignKey(d => d.ClassID)
+                  .OnDelete(DeleteBehavior.Restrict)
+                  .HasConstraintName("FK_WeeklyFeedback_Class");
+
+            entity.HasOne(d => d.Student)
+                  .WithMany(p => p.ACAD_WeeklyFeedbacks)
+                  .HasForeignKey(d => d.StudentID)
+                  .OnDelete(DeleteBehavior.Restrict)
+                  .HasConstraintName("FK_WeeklyFeedback_Student");
+
+            entity.HasOne(d => d.ClassMeeting)
+                  .WithMany(p => p.ACAD_WeeklyFeedbacks)
+                  .HasForeignKey(d => d.ClassMeetingID)
+                  .OnDelete(DeleteBehavior.Restrict)
+                  .HasConstraintName("FK_WeeklyFeedback_ClassMeeting");
+
+            entity.HasIndex(e => e.TeacherID);
+            entity.HasIndex(e => e.StudentID);
+            entity.HasIndex(e => new { e.ClassID, e.WeekNumber });
+
+        });
+
 
         modelBuilder.Entity<ACAD_Course>(entity =>
         {

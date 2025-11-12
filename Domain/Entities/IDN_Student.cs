@@ -55,6 +55,8 @@ public partial class IDN_Student : EntityBase, IHasCreationTime, IHasModificatio
 
     public virtual ICollection<FIN_Invoice> FIN_Invoices { get; set; } = new List<FIN_Invoice>();
 
+    public virtual ICollection<ACAD_WeeklyFeedback> ACAD_WeeklyFeedbacks { get; set; } = new List<ACAD_WeeklyFeedback>();
+
     public virtual ICollection<ACAD_CourseWishlist> ACAD_CourseWishlists { get; set; } = new List<ACAD_CourseWishlist>();
 
     [ForeignKey(nameof(UpdatedBy))]

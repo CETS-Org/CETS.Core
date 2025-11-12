@@ -19,7 +19,7 @@ namespace DTOs.ACAD.ACAD_ClassMeetings.Responses
 
         public bool IsStudy { get; set; }
 
-        public Guid? RoomID { get; set; }
+        public string? RoomID { get; set; }
 
         public string? OnlineMeetingUrl { get; set; }
 
