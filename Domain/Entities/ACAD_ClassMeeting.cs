@@ -40,6 +40,8 @@ public partial class ACAD_ClassMeeting : AuditedEntity
 
     public virtual ICollection<ACAD_Attendance> ACAD_Attendances { get; set; } = new List<ACAD_Attendance>();
 
+    public virtual ICollection<ACAD_WeeklyFeedback> ACAD_WeeklyFeedbacks { get; set; } = new List<ACAD_WeeklyFeedback>();
+
     [ForeignKey(nameof(ClassID))]
     public virtual ACAD_Class Class { get; set; } = null!;
 

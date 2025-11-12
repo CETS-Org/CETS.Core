@@ -16,7 +16,10 @@ namespace Application.Mappers.ACAD
     {
         public ACAD_ClassMeetingProfile()
         {
-            CreateMap<ACAD_ClassMeeting, ClassMeetingResponse>();
+            CreateMap<ACAD_ClassMeeting, ClassMeetingResponse>()
+                .ForMember(dest => dest.RoomID,
+                           opt => opt.MapFrom(src => src.Room != null ? src.Room.RoomCode : string.Empty)); ;
+
             CreateMap<CreateClassMeetingRequest, ACAD_ClassMeeting>();
             CreateMap<UpdateClassMeetingRequest, ACAD_ClassMeeting>();
         }

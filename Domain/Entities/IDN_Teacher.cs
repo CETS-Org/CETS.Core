@@ -39,9 +39,9 @@ public partial class IDN_Teacher : EntityBase, IHasCreationTime, IHasModificatio
     public virtual IDN_Account Account { get; set; } = null!;
 
 
-    public virtual ICollection<COM_Feedback> COM_Feedbacks { get; set; } = new List<COM_Feedback>();
+    public virtual ICollection<COM_Feedback> COM_Feedbacks { get; set; } = new List<COM_Feedback>(); 
 
-
+    public virtual ICollection<ACAD_WeeklyFeedback> ACAD_WeeklyFeedbacks { get; set; } = new List<ACAD_WeeklyFeedback>();
     public virtual ICollection<HR_Contract> HR_Contracts { get; set; } = new List<HR_Contract>();
 
 
