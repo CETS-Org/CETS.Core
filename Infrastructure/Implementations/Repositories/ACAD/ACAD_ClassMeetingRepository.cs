@@ -21,6 +21,9 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             return await _context.ACAD_ClassMeetings
                  .Where(cta => cta.ClassID == classId)
                  .Include(c => c.Room)
+                 .Include(c => c.Slot)
+                    .Include(c => c.CoveredTopic)
+
                  .ToListAsync();
         }
 

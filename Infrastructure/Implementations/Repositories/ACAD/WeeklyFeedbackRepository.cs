@@ -57,34 +57,76 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             await _db.SaveChangesAsync(ct);
         }
 
-        public async Task<IReadOnlyList<WeeklyFeedbackViewDto>> GetByClassWeekAsync(Guid ClassID, int weekNumber, CancellationToken ct = default)
+        public async Task<IReadOnlyList<WeeklyFeedbackViewDto>> GetByClassWeekAsync(
+     Guid classId,
+     int weekNumber,
+     CancellationToken ct = default)
         {
-            return await _db.ACAD_WeeklyFeedbacks
-                .Where(x => x.ClassID == ClassID && x.WeekNumber == weekNumber)
-                .Select(x => new WeeklyFeedbackViewDto
+            return await (
+                from fb in _db.ACAD_WeeklyFeedbacks
+
+                    // JOIN CLASS
+                join cls in _db.ACAD_Classes
+                    on fb.ClassID equals cls.Id into clsJoin
+                from cls in clsJoin.DefaultIfEmpty()
+
+                    // JOIN STUDENT + ACCOUNT
+                join std in _db.IDN_Students
+                    on fb.StudentID equals std.Id into stdJoin
+                from std in stdJoin.DefaultIfEmpty()
+
+                join stdAcc in _db.IDN_Accounts
+                    on std.Id equals stdAcc.Id into stdAccJoin
+                from stdAcc in stdAccJoin.DefaultIfEmpty()
+
+                    // JOIN TEACHER + ACCOUNT
+                join tea in _db.IDN_Teachers
+                    on fb.TeacherID equals tea.Id into teaJoin
+                from tea in teaJoin.DefaultIfEmpty()
+
+                join teaAcc in _db.IDN_Accounts
+                    on tea.Id equals teaAcc.Id into teaAccJoin
+                from teaAcc in teaAccJoin.DefaultIfEmpty()
+
+                where fb.ClassID == classId && fb.WeekNumber == weekNumber
+
+                select new WeeklyFeedbackViewDto
                 {
-                    Id = x.Id,
-                    ClassID = x.ClassID,
-                    ClassMeetingId = x.ClassMeetingID,
-                    TeacherId = x.TeacherID,
-                    StudentId = x.StudentID,
-                    WeekNumber = x.WeekNumber,
-                    Participation = x.Participation,
-                    AssignmentQuality = x.AssignmentQuality,
-                    SkillProgress = x.SkillProgress,
-                    NextStep = x.NextStep,
-                    CustomNote = x.CustomNote,
-                    Status = x.Status,
-                    UpdatedAt = x.UpdatedAt,
-                    // TODO: join Class/Student/Teacher to enrich names if needed
-                })
-                .ToListAsync(ct);
+                    Id = fb.Id,
+                    ClassID = fb.ClassID,
+                    ClassMeetingId = fb.ClassMeetingID,
+                    TeacherId = fb.TeacherID,
+                    StudentId = fb.StudentID,
+                    WeekNumber = fb.WeekNumber,
+                    Participation = fb.Participation,
+                    AssignmentQuality = fb.AssignmentQuality,
+                    SkillProgress = fb.SkillProgress,
+                    NextStep = fb.NextStep,
+                    CustomNote = fb.CustomNote,
+                    Status = fb.Status,
+                    UpdatedAt = fb.UpdatedAt,
+
+                    // ⭐ ENRICHED DATA
+                    ClassName = cls.ClassName,                     // từ ACAD_Class
+                    StudentName = stdAcc.FullName,                // từ IDN_Account
+                    TeacherName = teaAcc.FullName                 // từ IDN_Account
+                }
+            ).ToListAsync(ct);
         }
 
-        public async Task<IReadOnlyList<WeeklyFeedbackViewDto>> GetByStudentAsync(Guid studentId, Guid? ClassID, CancellationToken ct = default)
+        public async Task<IReadOnlyList<WeeklyFeedbackViewDto>> GetByStudentAsync(
+     Guid studentId,
+     Guid? ClassID,
+     CancellationToken ct = default)
         {
-            var q = _db.ACAD_WeeklyFeedbacks.AsQueryable().Where(x => x.StudentID == studentId);
-            if (ClassID.HasValue) q = q.Where(x => x.ClassID == ClassID.Value);
+            var q = _db.ACAD_WeeklyFeedbacks
+                .Include(x => x.Class)
+                .Include(x => x.Student).ThenInclude(s => s.Account)
+                .Include(x => x.Teacher).ThenInclude(t => t.Account)
+                .Where(x => x.StudentID == studentId);
+
+            if (ClassID.HasValue)
+                q = q.Where(x => x.ClassID == ClassID.Value);
 
             return await q
                 .OrderByDescending(x => x.UpdatedAt)
@@ -103,13 +145,22 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     CustomNote = x.CustomNote,
                     Status = x.Status,
                     UpdatedAt = x.UpdatedAt,
+
+                    // ⭐ Enrich:
+                    ClassName = x.Class.ClassName,
+                    StudentName = x.Student.Account.FullName,
+                    TeacherName = x.Teacher.Account.FullName
                 })
                 .ToListAsync(ct);
         }
 
+
         public async Task<WeeklyFeedbackViewDto?> GetDetailAsync(Guid id, CancellationToken ct = default)
         {
             return await _db.ACAD_WeeklyFeedbacks
+                .Include(x => x.Class)
+                .Include(x => x.Student).ThenInclude(s => s.Account)
+                .Include(x => x.Teacher).ThenInclude(t => t.Account)
                 .Where(x => x.Id == id)
                 .Select(x => new WeeklyFeedbackViewDto
                 {
@@ -126,8 +177,14 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     CustomNote = x.CustomNote,
                     Status = x.Status,
                     UpdatedAt = x.UpdatedAt,
+
+                    // ⭐ Enrich:
+                    ClassName = x.Class.ClassName,
+                    StudentName = x.Student.Account.FullName,
+                    TeacherName = x.Teacher.Account.FullName
                 })
                 .FirstOrDefaultAsync(ct);
         }
+
     }
 }

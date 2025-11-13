@@ -34,6 +34,8 @@ namespace DTOs.ACAD.ACAD_ClassMeetings.Responses
 
         public bool IsDeleted { get; set; }
 
-       
+        public string slot { get; set; }
+
+
     }
 }
