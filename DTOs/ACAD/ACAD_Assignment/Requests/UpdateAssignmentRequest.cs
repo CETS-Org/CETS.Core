@@ -12,7 +12,7 @@ namespace DTOs.ACAD.ACAD_Assignment.Requests
         public Guid Id { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
-        public DateTime? DueDate { get; set; }
+        public DateTime? DueAt { get; set; }
         public Guid? SkillID { get; set; }
         public string? AssignmentType { get; set; } // "quiz" or "homework"
         public string? StoreUrl { get; set; }

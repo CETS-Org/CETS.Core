@@ -17,7 +17,7 @@ namespace DTOs.ACAD.ACAD_Assignment.Requests
         public string? Description { get; set; }
 
         [Required]
-        public DateTime DueDate { get; set; }
+        public DateTime DueAt { get; set; }
 
         public Guid? SkillID { get; set; }
 

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace DTOs.ACAD.ACAD_Assignment.Responses
 {
     public class SpeakingAssignmentResponse
@@ -7,7 +9,7 @@ namespace DTOs.ACAD.ACAD_Assignment.Responses
         public Guid TeacherId { get; set; }
         public string Title { get; set; } = null!;
         public string? Description { get; set; }
-        public DateTime DueDate { get; set; }
+        public DateTime DueAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public Guid? SkillID { get; set; }
         public string? SkillName { get; set; }

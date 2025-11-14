@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace DTOs.ACAD.ACAD_Assignment.Responses
 {
     public class AssignmentUploadResponse
@@ -6,7 +8,7 @@ namespace DTOs.ACAD.ACAD_Assignment.Responses
         public string UploadUrl { get; set; } = null!;
         public string FilePath { get; set; } = null!;
         public string Title { get; set; } = null!;
-        public DateTime DueDate { get; set; }
+        public DateTime DueAt { get; set; }
     }
 }
 

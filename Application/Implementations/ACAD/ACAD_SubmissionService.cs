@@ -748,7 +748,7 @@ namespace Application.Implementations.ACAD
             // Get presigned URL for answers JSON file
             var jsonFileName = $"submission-{existing.Id}-{Guid.NewGuid()}.json";
             var (answersJsonUploadUrl, answersJsonFilePath) = await _fileStorageService.GetPresignedPutUrlAsync(
-                "submissions/answers",
+                "submissions",
                 jsonFileName,
                 "application/json"
             );
