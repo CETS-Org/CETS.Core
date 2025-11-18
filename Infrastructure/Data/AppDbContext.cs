@@ -66,8 +66,6 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<COM_FeedbackRecord> COM_FeedbackRecords { get; set; }
 
-    public virtual DbSet<COM_Notification> COM_Notifications { get; set; }
-
     public virtual DbSet<CORE_LookUp> CORE_LookUps { get; set; }
 
     public virtual DbSet<CORE_LookUpType> CORE_LookUpTypes { get; set; }
@@ -580,12 +578,7 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.COM_FeedbackRecords).HasConstraintName("FK_COM_FeedbackRecord_Created");
         });
 
-        modelBuilder.Entity<COM_Notification>(entity =>
-        {
-            entity.Property(e => e.Id).HasColumnName("NotificationID").ValueGeneratedNever();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
-        });
-
+     
         modelBuilder.Entity<CORE_LookUp>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("LookUpID").ValueGeneratedNever();
@@ -1160,10 +1153,6 @@ public partial class AppDbContext : DbContext
         });
 
         // --- COMMUNICATIONS ---
-        modelBuilder.Entity<COM_Notification>(entity =>
-        {
-            entity.Property(e => e.IsPush).HasDefaultValue(false);
-        });
 
         modelBuilder.Entity<COM_Feedback>(entity =>
         {
