@@ -9,11 +9,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.9" />
+    <PackageReference Include="MongoDB.Bson" Version="2.28.0" />
     <PackageReference Include="UUIDNext" Version="4.1.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\COM\" />
     <Folder Include="Interfaces\CORE\" />
     <Folder Include="Interfaces\EVT\" />
     <Folder Include="Interfaces\HR\" />
