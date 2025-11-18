@@ -58,59 +58,59 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         }
 
         public async Task<IReadOnlyList<WeeklyFeedbackViewDto>> GetByClassWeekAsync(
-     Guid classId,
-     int weekNumber,
-     CancellationToken ct = default)
-        {
-            return await (
-                from fb in _db.ACAD_WeeklyFeedbacks
-
-                    // JOIN CLASS
-                join cls in _db.ACAD_Classes
-                    on fb.ClassID equals cls.Id into clsJoin
-                from cls in clsJoin.DefaultIfEmpty()
-
-                    // JOIN STUDENT + ACCOUNT
-                join std in _db.IDN_Students
-                    on fb.StudentID equals std.Id into stdJoin
-                from std in stdJoin.DefaultIfEmpty()
-
-                join stdAcc in _db.IDN_Accounts
-                    on std.Id equals stdAcc.Id into stdAccJoin
-                from stdAcc in stdAccJoin.DefaultIfEmpty()
-
-                    // JOIN TEACHER + ACCOUNT
-                join tea in _db.IDN_Teachers
-                    on fb.TeacherID equals tea.Id into teaJoin
-                from tea in teaJoin.DefaultIfEmpty()
-
-                join teaAcc in _db.IDN_Accounts
-                    on tea.Id equals teaAcc.Id into teaAccJoin
-                from teaAcc in teaAccJoin.DefaultIfEmpty()
-
-                where fb.ClassID == classId && fb.WeekNumber == weekNumber
-
-                select new WeeklyFeedbackViewDto
+             Guid classId,
+             int weekNumber,
+             CancellationToken ct = default)
                 {
-                    Id = fb.Id,
-                    ClassID = fb.ClassID,
-                    ClassMeetingId = fb.ClassMeetingID,
-                    TeacherId = fb.TeacherID,
-                    StudentId = fb.StudentID,
-                    WeekNumber = fb.WeekNumber,
-                    Participation = fb.Participation,
-                    AssignmentQuality = fb.AssignmentQuality,
-                    SkillProgress = fb.SkillProgress,
-                    NextStep = fb.NextStep,
-                    CustomNote = fb.CustomNote,
-                    Status = fb.Status,
-                    UpdatedAt = fb.UpdatedAt,
+                    return await (
+                        from fb in _db.ACAD_WeeklyFeedbacks
 
-                    // ⭐ ENRICHED DATA
-                    ClassName = cls.ClassName,                     // từ ACAD_Class
-                    StudentName = stdAcc.FullName,                // từ IDN_Account
-                    TeacherName = teaAcc.FullName                 // từ IDN_Account
-                }
+                            // JOIN CLASS
+                        join cls in _db.ACAD_Classes
+                            on fb.ClassID equals cls.Id into clsJoin
+                        from cls in clsJoin.DefaultIfEmpty()
+
+                            // JOIN STUDENT + ACCOUNT
+                        join std in _db.IDN_Students
+                            on fb.StudentID equals std.Id into stdJoin
+                        from std in stdJoin.DefaultIfEmpty()
+
+                        join stdAcc in _db.IDN_Accounts
+                            on std.Id equals stdAcc.Id into stdAccJoin
+                        from stdAcc in stdAccJoin.DefaultIfEmpty()
+
+                            // JOIN TEACHER + ACCOUNT
+                        join tea in _db.IDN_Teachers
+                            on fb.TeacherID equals tea.Id into teaJoin
+                        from tea in teaJoin.DefaultIfEmpty()
+
+                        join teaAcc in _db.IDN_Accounts
+                            on tea.Id equals teaAcc.Id into teaAccJoin
+                        from teaAcc in teaAccJoin.DefaultIfEmpty()
+
+                        where fb.ClassID == classId && fb.WeekNumber == weekNumber
+
+                        select new WeeklyFeedbackViewDto
+                        {
+                            Id = fb.Id,
+                            ClassID = fb.ClassID,
+                            ClassMeetingId = fb.ClassMeetingID,
+                            TeacherId = fb.TeacherID,
+                            StudentId = fb.StudentID,
+                            WeekNumber = fb.WeekNumber,
+                            Participation = fb.Participation,
+                            AssignmentQuality = fb.AssignmentQuality,
+                            SkillProgress = fb.SkillProgress,
+                            NextStep = fb.NextStep,
+                            CustomNote = fb.CustomNote,
+                            Status = fb.Status,
+                            UpdatedAt = fb.UpdatedAt,
+
+                            // ⭐ ENRICHED DATA
+                            ClassName = cls.ClassName,                     // từ ACAD_Class
+                            StudentName = stdAcc.FullName,                // từ IDN_Account
+                            TeacherName = teaAcc.FullName                 // từ IDN_Account
+                        }
             ).ToListAsync(ct);
         }
 
