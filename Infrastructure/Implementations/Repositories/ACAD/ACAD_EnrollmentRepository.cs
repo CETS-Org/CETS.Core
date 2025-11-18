@@ -28,6 +28,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
             return await _context.ACAD_Enrollments
                 .Include(e => e.Student)
+                    .ThenInclude(s => s.Account)
                 .Where(e => e.ClassID == classId)
                 .ToListAsync();
         }

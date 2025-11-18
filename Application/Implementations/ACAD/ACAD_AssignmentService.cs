@@ -1,4 +1,5 @@
 using Application.Interfaces.ACAD;
+using Application.Interfaces.COM;
 using Application.Interfaces.Common.Storage;
 using AutoMapper;
 using Domain.Entities;
@@ -7,6 +8,7 @@ using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Assignment.Requests;
 using DTOs.ACAD.ACAD_Assignment.Responses;
 using DTOs.ACAD.ACAD_Submission.Responses;
+using DTOs.COM.COM_Notification.Requests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,19 +20,32 @@ namespace Application.Implementations.ACAD
     public class AssignmentService : IACAD_AssignmentService
     {
         private readonly IACAD_AssignmentRepository _assignmentRepository;
+        private readonly IACAD_ClassMeetingRepository _classMeetingRepository;
+        private readonly IACAD_EnrollmentRepository _enrollmentRepository;
+        private readonly IACAD_ClassRepository _classRepository;
         private readonly IFileStorageService _fileStorageService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICOM_NotificationService _notificationService;
+
         public AssignmentService(
             IACAD_AssignmentRepository assignmentRepository,
             IFileStorageService fileStorageService,
             IUnitOfWork unitOfWork,
-            IMapper mapper)
+            IMapper mapper,
+            IACAD_ClassMeetingRepository classMeetingRepository,
+            IACAD_EnrollmentRepository enrollmentRepository,
+            IACAD_ClassRepository classRepository,
+            ICOM_NotificationService notificationService)
         {
             _assignmentRepository = assignmentRepository;
             _fileStorageService = fileStorageService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _classMeetingRepository = classMeetingRepository;
+            _enrollmentRepository = enrollmentRepository;
+            _classRepository = classRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<AssignmentResponse> CreateAssignmentAsync(CreateAssignmentRequest request)
@@ -39,6 +54,8 @@ namespace Application.Implementations.ACAD
 
             _assignmentRepository.Add(entity);
             await _unitOfWork.SaveChangesAsync();
+
+            await NotifyStudentsAboutAssignmentAsync(entity, "A new assignment has been posted");
 
             return _mapper.Map<AssignmentResponse>(entity);
         }
@@ -56,6 +73,8 @@ namespace Application.Implementations.ACAD
 
                 _assignmentRepository.Add(entity);
                 await _unitOfWork.SaveChangesAsync();
+
+                await NotifyStudentsAboutAssignmentAsync(entity, "A new assignment with attached file has been posted");
 
                 // Map entity to response and set computed properties
                 var response = _mapper.Map<AssignmentUploadResponse>(entity);
@@ -81,6 +100,8 @@ namespace Application.Implementations.ACAD
                 _assignmentRepository.Add(entity);
                 await _unitOfWork.SaveChangesAsync();
 
+                await NotifyStudentsAboutAssignmentAsync(entity, "A new quiz assignment has been posted");
+
                 var response = _mapper.Map<QuizAssignmentResponse>(entity);
                 response.UploadUrl = uploadUrl; // Return presigned URL for frontend to upload JSON
                 response.QuestionJson = request.QuestionJson; // Return JSON content for frontend to upload
@@ -105,6 +126,8 @@ namespace Application.Implementations.ACAD
                 _assignmentRepository.Add(entity);
                 await _unitOfWork.SaveChangesAsync();
 
+                await NotifyStudentsAboutAssignmentAsync(entity, "A new speaking assignment has been posted");
+
                 var response = _mapper.Map<SpeakingAssignmentResponse>(entity);
                 response.UploadUrl = jsonUploadUrl; // Return presigned URL for JSON upload
                 response.QuestionJson = request.QuestionJson; // Return JSON content for frontend to upload
@@ -114,8 +137,7 @@ namespace Application.Implementations.ACAD
             });
         }
    
-
-
+    
         public async Task<IEnumerable<AssignmentResponse>> GetAssignmentsByClassMeetingAsync(Guid classMeetingId)
         {
             var assignments = await _assignmentRepository.GetByClassMeetingAsync(classMeetingId);
@@ -149,6 +171,8 @@ namespace Application.Implementations.ACAD
             _assignmentRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
 
+            await NotifyStudentsAboutAssignmentAsync(entity, "An assignment has been updated");
+
             return _mapper.Map<AssignmentResponse>(entity);
         }
 
@@ -165,6 +189,8 @@ namespace Application.Implementations.ACAD
             
             _assignmentRepository.Update(entity);
             await _unitOfWork.SaveChangesAsync();
+
+            await NotifyStudentsAboutAssignmentAsync(entity, "An assignment has been removed");
         }
 
         public async Task<IEnumerable<AssignmentResponse>> GetAssignmentsWithSubmissions(Guid classMeetingId, Guid studentId)
@@ -229,6 +255,48 @@ namespace Application.Implementations.ACAD
                 return entity.QuestionUrl;
             }
         }
+        private async Task NotifyStudentsAboutAssignmentAsync(ACAD_Assignment assignment, string message)
+        {
+            if (assignment.ClassMeetingID == null)
+            {
+                return;
+            }
 
+            var classMeeting = await _classMeetingRepository.GetByIdAsync(assignment.ClassMeetingID.Value);
+            if (classMeeting == null)
+            {
+                return;
+            }
+
+            var @class = await _classRepository.GetByIdAsync(classMeeting.ClassID);
+            var className = @class?.ClassName ?? "your class";
+
+            var enrollments = await _enrollmentRepository.GetByClassAsync(classMeeting.ClassID);
+            if (enrollments == null)
+            {
+                return;
+            }
+
+            var fullMessage = $"{message} in class {className}.";
+
+            var requests = enrollments
+                .Where(e => e.Student?.Account != null)
+                .Select(e => new CreateNotificationRequest
+                {
+                    UserId = e.Student.Account.Id.ToString().ToUpperInvariant(),
+                    Title = assignment.Title ?? "New assignment",
+                    Message = fullMessage,
+                    Type = "system",
+                    IsRead = false
+                })
+                .ToList();
+
+            if (requests.Count == 0)
+            {
+                return;
+            }
+
+            await _notificationService.CreateManyAsync(requests);
+        }
     }
 }
