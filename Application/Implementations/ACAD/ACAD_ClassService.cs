@@ -136,8 +136,10 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<List<ClassStaffViewResponse>>(entities);
         }
 
-
-
+        public async Task<List<FeedbackClassResponse>> GetFeedbackClassesByStudentId(Guid studentId)
+        {
+            return await _classRepo.GetFeedbackClassesByStudentId(studentId);
+        }
 
     }
 }

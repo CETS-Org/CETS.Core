@@ -207,6 +207,76 @@ namespace Application.Implementations.FIN
             return null;
         }
 
+		public async Task<IReadOnlyList<PaymentHistoryResponse>> GetPaymentHistoryByStudentIdAsync(Guid studentId)
+		{
+			var payments = await ((IFIN_PaymentRepository)_repository).GetPaymentsByStudentIdAsync(studentId);
+
+			var paymentHistoryList = new List<PaymentHistoryResponse>();
+
+			foreach (var payment in payments)
+			{
+				// Get invoice status
+				var invoiceStatus = await _lookUpService.GetByIdAsync(payment.Invoice.InvoiceStatusID);
+				
+				// Get invoice items to get course name
+				var invoiceItems = await _invoiceItemService.GetByInvoiceIdAsync(payment.InvoiceID);
+				var firstInvoiceItem = invoiceItems.FirstOrDefault();
+				
+				// Determine current installment based on invoice status
+				int? currentInstallment = null;
+				DateTime? nextDueDate = null;
+				
+				if (payment.Invoice.IsInstallment)
+				{
+					if (invoiceStatus?.Code == "1stPaid")
+					{
+						currentInstallment = 1;
+						// Get second invoice item for next due date
+						var secondInvoiceItem = invoiceItems.Skip(1).FirstOrDefault();
+						if (secondInvoiceItem != null && payment.Invoice.DueDate.HasValue)
+						{
+							nextDueDate = payment.Invoice.DueDate.Value.ToDateTime(TimeOnly.MinValue);
+						}
+					}
+					else if (invoiceStatus?.Code == "2ndPaid")
+					{
+						currentInstallment = 2;
+						nextDueDate = null; // No next payment
+					}
+					else if (invoiceStatus?.Code == "Pending")
+					{
+						currentInstallment = 0; // Not yet paid
+						if (payment.Invoice.DueDate.HasValue)
+						{
+							nextDueDate = payment.Invoice.DueDate.Value.ToDateTime(TimeOnly.MinValue);
+						}
+					}
+				}
+
+				var paymentHistory = new PaymentHistoryResponse
+				{
+					Id = payment.Id,
+					StudentId = payment.Invoice.StudentID,
+					StudentName = payment.Invoice.Student?.Account?.FullName ?? "Unknown",
+					InvoiceId = payment.InvoiceID,
+					InvoiceStatus = invoiceStatus?.Name ?? "Unknown",
+					Name = firstInvoiceItem?.Course?.CourseName ?? payment.Invoice.InvoiceNumber,
+					PaymentMethod = payment.PaymentMethod?.Name ?? "Unknown",
+					Amount = payment.Amount,
+					CreatedAt = payment.CreatedAt,
+					InstallmentInfo = payment.Invoice.IsInstallment && currentInstallment.HasValue ? new InstallmentInfoResponse
+					{
+						CurrentInstallment = currentInstallment.Value,
+						NextDueDate = nextDueDate
+					} : null
+				};
+
+				paymentHistoryList.Add(paymentHistory);
+			}
+
+			return paymentHistoryList.AsReadOnly();
+		}
+
     }
 }
 

@@ -8,8 +8,7 @@ namespace Application.Interfaces.COM
 	{
 		Task<FeedbackResponse> SoftDeleteAsync(Guid id);
 		Task<FeedbackResponse> RestoreAsync(Guid id);
+		Task<CombinedFeedbackResponse> CreateCombinedFeedbackAsync(CreateCombinedFeedbackRequest request);
+		Task<List<CourseFeedbackListResponse>> GetFeedbacksByCourseIdAsync(Guid courseId);
     }
 }
-
-
-

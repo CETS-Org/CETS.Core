@@ -26,7 +26,7 @@ namespace Application.Interfaces.ACAD
 
         Task SoftDeleteClassAsync(Guid id);
 
-
+        Task<List<FeedbackClassResponse>> GetFeedbackClassesByStudentId(Guid studentId);
 
     }
 }

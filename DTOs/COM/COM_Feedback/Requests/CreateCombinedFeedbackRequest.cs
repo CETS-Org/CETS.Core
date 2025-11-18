@@ -3,19 +3,32 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DTOs.COM.COM_Feedback.Requests
 {
-	public class UpdateFeedbackRequest
+	public class CreateCombinedFeedbackRequest
 	{
-		public Guid? FeedbackTypeID { get; set; }
-		public Guid? CourseID { get; set; }
-		public Guid? TeacherID { get; set; }
+		[Required]
+		public Guid SubmitterID { get; set; }
 
+		[Required]
+		public Guid CourseID { get; set; }
+
+		[Required]
+		public Guid TeacherID { get; set; }
+
+		// Course Feedback
+		public CourseFeedbackData? CourseFeedback { get; set; }
+
+		// Teacher Feedback
+		public TeacherFeedbackData? TeacherFeedback { get; set; }
+	}
+
+	public class CourseFeedbackData
+	{
 		[Range(1, 5)]
 		public int? Rating { get; set; }
 
 		[StringLength(4000)]
 		public string? Comment { get; set; }
 
-		// Course Feedback Fields
 		[StringLength(50)]
 		public string? ContentClarity { get; set; }
 
@@ -24,8 +37,16 @@ namespace DTOs.COM.COM_Feedback.Requests
 
 		[StringLength(50)]
 		public string? MaterialsQuality { get; set; }
+	}
 
-		// Teacher Feedback Fields
+	public class TeacherFeedbackData
+	{
+		[Range(1, 5)]
+		public int? Rating { get; set; }
+
+		[StringLength(4000)]
+		public string? Comment { get; set; }
+
 		[StringLength(50)]
 		public string? TeachingEffectiveness { get; set; }
 
@@ -34,10 +55,5 @@ namespace DTOs.COM.COM_Feedback.Requests
 
 		[StringLength(50)]
 		public string? TeacherSupportiveness { get; set; }
-
-		public bool IsDeleted { get; set; }
 	}
 }
-
-
-

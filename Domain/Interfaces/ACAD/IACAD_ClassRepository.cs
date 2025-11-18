@@ -11,9 +11,6 @@ namespace Domain.Interfaces.ACAD
         Task<List<ClassRowResponse>> GetAllClassRowsAsync();
         Task<List<ACAD_Class>> GetAllClassStaffView();
         Task<ACAD_Class?> GetClassStaffViewById(Guid id);
-       
+        Task<List<FeedbackClassResponse>> GetFeedbackClassesByStudentId(Guid studentId);
     }
-
 }
-
-

@@ -32,6 +32,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     Class = cls,
                     Course = course,
                     StatusLookup = statusLookup,
+                    TeacherId = assign != null ? assign.TeacherID : (Guid?)null,
                     TeacherName = assign != null ? assign.Teacher.Account.FullName : null,
                     NextMeeting = _context.ACAD_ClassMeetings
                         .Where(m => m.ClassID == cls.Id && !m.IsDeleted && m.IsActive && m.Date >= today)
@@ -59,6 +60,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     CourseName = e.Course.CourseName,
                     CourseCode = e.Course.CourseCode,
                     ClassName = e.Class.ClassName,
+                    TeacherId = e.TeacherId,
                     TeacherName = e.TeacherName,
                     StartDate = e.Class.StartDate,
                     EndDate = e.Class.EndDate,
@@ -69,6 +71,46 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             }
 
             return responses;
+        }
+
+        public async Task<List<FeedbackClassResponse>> GetFeedbackClassesByStudentId(Guid studentId)
+        {
+            var enrollments = await _context.ACAD_Enrollments
+                .Where(e => e.StudentID == studentId && !e.IsDeleted)
+                .Include(e => e.Class)
+                    .ThenInclude(c => c.TeacherAssignment)
+                        .ThenInclude(ta => ta.Teacher)
+                            .ThenInclude(t => t.Account)
+                .Include(e => e.Course)
+                .Where(e => e.Class != null && !e.Class.IsDeleted && e.Class.IsActive)
+                .ToListAsync();
+
+            var uniqueCourses = enrollments
+                .GroupBy(e => e.CourseID)
+                .Select(g => g.First())
+                .ToList();
+
+            var feedbackClasses = new List<FeedbackClassResponse>();
+
+            foreach (var enrollment in uniqueCourses)
+            {
+                // Check if student has already submitted feedback for this course
+                var hasSubmittedFeedback = await _context.COM_Feedbacks
+                    .AnyAsync(f => f.SubmitterID == studentId 
+                                && f.CourseID == enrollment.CourseID 
+                                && !f.IsDeleted);
+
+                feedbackClasses.Add(new FeedbackClassResponse
+                {
+                    CourseId = enrollment.Course.Id,
+                    CourseName = enrollment.Course.CourseName,
+                    TeacherId = enrollment.Class?.TeacherAssignment?.TeacherID,
+                    TeacherName = enrollment.Class?.TeacherAssignment?.Teacher?.Account?.FullName,
+                    HasSubmittedFeedback = hasSubmittedFeedback
+                });
+            }
+
+            return feedbackClasses;
         }
 
         public async Task<ClassDetailResponse?> GetClassDetailAsync(Guid classId)

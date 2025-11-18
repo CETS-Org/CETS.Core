@@ -544,11 +544,15 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("FeedbackID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
+            // Disable OUTPUT clause for tables with triggers
+            entity.ToTable(tb => tb.HasTrigger("TR_COM_Feedback_Audit"));
+
             entity.HasOne(d => d.Course).WithMany(p => p.COM_Feedbacks)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_COM_Feedback_Course");
 
-            entity.HasOne(d => d.FeedbackType).WithMany(p => p.COM_Feedbacks).HasConstraintName("FK_COM_Feedback_FeedbackTypeID");
+            entity.HasOne(d => d.FeedbackType).WithMany(p => p.COM_Feedbacks)
+                .HasConstraintName("FK_COM_Feedback_FeedbackTypeID");
 
             entity.HasOne(d => d.Submitter).WithMany(p => p.COM_Feedbacks)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -557,11 +561,20 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Teacher).WithMany(p => p.COM_Feedbacks)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_COM_Feedback_Teacher");
+
+            // Configure string length for feedback fields
+            entity.Property(e => e.ContentClarity).HasMaxLength(50);
+            entity.Property(e => e.CourseRelevance).HasMaxLength(50);
+            entity.Property(e => e.MaterialsQuality).HasMaxLength(50);
+            entity.Property(e => e.TeachingEffectiveness).HasMaxLength(50);
+            entity.Property(e => e.CommunicationSkills).HasMaxLength(50);
+            entity.Property(e => e.TeacherSupportiveness).HasMaxLength(50);
         });
 
         modelBuilder.Entity<COM_FeedbackRecord>(entity =>
         {
             entity.Property(e => e.Id).HasColumnName("FeedbackRecordID").ValueGeneratedNever();
+
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.COM_FeedbackRecords).HasConstraintName("FK_COM_FeedbackRecord_Created");

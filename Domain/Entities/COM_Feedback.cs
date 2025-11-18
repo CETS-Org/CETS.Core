@@ -19,7 +19,21 @@ public partial class COM_Feedback : EntityBase, IHasCreationTime
 
     public int? Rating { get; set; }
 
-    public string Comment { get; set; } = null!;
+    public string? Comment { get; set; }
+
+    // Course Feedback Fields (only used when FeedbackType = COURSE_FEEDBACK)
+    public string? ContentClarity { get; set; }
+
+    public string? CourseRelevance { get; set; }
+
+    public string? MaterialsQuality { get; set; }
+
+    // Teacher Feedback Fields (only used when FeedbackType = TEACHER_FEEDBACK)
+    public string? TeachingEffectiveness { get; set; }
+
+    public string? CommunicationSkills { get; set; }
+
+    public string? TeacherSupportiveness { get; set; }
 
     [Precision(0)]
     public DateTime CreatedAt { get; set; }
