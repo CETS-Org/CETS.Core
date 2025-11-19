@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251117144323_addPlacementTest")]
+    partial class addPlacementTest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -522,9 +525,6 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("StandardPrice")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<decimal>("StandardScore")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(0)
                         .HasColumnType("datetime2(0)");
@@ -957,14 +957,12 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.ACAD_PlacementQuestion", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("PlacementQuestionID");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasPrecision(0)
-                        .HasColumnType("datetime2(0)")
-                        .HasDefaultValueSql("(sysutcdatetime())");
+                        .HasColumnType("datetime2(0)");
 
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -975,8 +973,10 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("QuestionTypeID")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("QuestionType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("QuestionUrl")
                         .HasColumnType("nvarchar(max)");
@@ -1000,8 +1000,6 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.HasIndex("QuestionTypeID");
-
                     b.HasIndex("SkillTypeID");
 
                     b.HasIndex("UpdatedBy");
@@ -1012,14 +1010,12 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.ACAD_PlacementTest", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("PlacementTestID");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasPrecision(0)
-                        .HasColumnType("datetime2(0)")
-                        .HasDefaultValueSql("(sysutcdatetime())");
+                        .HasColumnType("datetime2(0)");
 
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -3167,32 +3163,20 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Entities.IDN_Account", "CreatedByNavigation")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .IsRequired()
-                        .HasConstraintName("FK_ACAD_PlacementQuestions_Created");
-
-                    b.HasOne("Domain.Entities.CORE_LookUp", "QuestionType")
-                        .WithMany()
-                        .HasForeignKey("QuestionTypeID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
-                        .HasConstraintName("FK_ACAD_PlacementQuestions_QuestionTypeID");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.CORE_LookUp", "Skill")
                         .WithMany()
                         .HasForeignKey("SkillTypeID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
-                        .HasConstraintName("FK_ACAD_PlacementQuestions_SkillType");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.IDN_Account", "UpdatedByNavigation")
                         .WithMany()
-                        .HasForeignKey("UpdatedBy")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("FK_ACAD_PlacementQuestions_Updated");
+                        .HasForeignKey("UpdatedBy");
 
                     b.Navigation("CreatedByNavigation");
-
-                    b.Navigation("QuestionType");
 
                     b.Navigation("Skill");
 
@@ -3204,14 +3188,12 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Entities.IDN_Account", "CreatedByNavigation")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .IsRequired()
-                        .HasConstraintName("FK_ACAD_PlacementTests_Created");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.IDN_Account", "UpdatedByNavigation")
                         .WithMany()
-                        .HasForeignKey("UpdatedBy")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("FK_ACAD_PlacementTests_Updated");
+                        .HasForeignKey("UpdatedBy");
 
                     b.Navigation("CreatedByNavigation");
 

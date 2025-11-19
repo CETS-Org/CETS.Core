@@ -36,6 +36,8 @@ public partial class ACAD_Course : AuditedEntity
 
     public decimal? AverageRating { get; set; }
 
+    public decimal StandardScore { get; set; }
+
     public virtual ICollection<ACAD_CoursePackageItem> ACAD_CoursePackageItems { get; set; } = new List<ACAD_CoursePackageItem>();
 
     public virtual ICollection<ACAD_CourseTeacherAssignment> ACAD_CourseTeacherAssignments { get; set; } = new List<ACAD_CourseTeacherAssignment>();

@@ -56,6 +56,10 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<ACAD_Submission> ACAD_Submissions { get; set; }
 
+    public virtual DbSet<ACAD_PlacementTest> ACAD_PlacementTests { get; set; }
+
+    public virtual DbSet<ACAD_PlacementQuestion> ACAD_PlacementQuestions { get; set; }
+
     public virtual DbSet<ACAD_Syllabus> ACAD_Syllabi { get; set; }
 
     public virtual DbSet<ACAD_SyllabusItem> ACAD_SyllabusItems { get; set; }
@@ -493,6 +497,54 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK_ACAD_Submissions_Student");
 
             entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.ACAD_SubmissionUpdatedByNavigations).HasConstraintName("FK_ACAD_Submissions_Updated");
+        });
+
+        modelBuilder.Entity<ACAD_PlacementTest>(entity =>
+        {
+            entity.Property(e => e.Id).HasColumnName("PlacementTestID").ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+
+            entity.HasOne(d => d.CreatedByNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.CreatedBy)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ACAD_PlacementTests_Created");
+
+            entity.HasOne(d => d.UpdatedByNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.UpdatedBy)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_ACAD_PlacementTests_Updated");
+        });
+
+        modelBuilder.Entity<ACAD_PlacementQuestion>(entity =>
+        {
+            entity.Property(e => e.Id).HasColumnName("PlacementQuestionID").ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+
+            entity.HasOne(d => d.Skill)
+                .WithMany()
+                .HasForeignKey(d => d.SkillTypeID)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_ACAD_PlacementQuestions_SkillType");
+
+            entity.HasOne(d => d.QuestionType)
+                .WithMany()
+                .HasForeignKey(d => d.QuestionTypeID)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_ACAD_PlacementQuestions_QuestionTypeID");
+
+            entity.HasOne(d => d.CreatedByNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.CreatedBy)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ACAD_PlacementQuestions_Created");
+
+            entity.HasOne(d => d.UpdatedByNavigation)
+                .WithMany()
+                .HasForeignKey(d => d.UpdatedBy)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_ACAD_PlacementQuestions_Updated");
         });
 
         modelBuilder.Entity<ACAD_Syllabus>(entity =>
