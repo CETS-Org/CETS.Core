@@ -4,6 +4,7 @@ using Application.Interfaces.Common.Storage;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -108,7 +109,6 @@ namespace Infrastructure.Implementations.Common.Storage
 
 
 
-        [Obsolete("Use PresignedPutUrl instead.", true)]
         public async Task<string> UploadFileAsync(string filePath, Stream fileStream, string contentType)
         {
             var putRequest = new PutObjectRequest
@@ -123,12 +123,8 @@ namespace Infrastructure.Implementations.Common.Storage
 
             await _s3Client.PutObjectAsync(putRequest);
 
-            // You'll need to set up a public domain for your bucket in the Cloudflare dashboard for this to work.
-            // For example, if you set up "media.yourdomain.com" to point to your bucket.
-            // For now, let's return a path that assumes a public domain is configured.
-            return $"https://pub-59cfd11e5f0d4b00af54839edc83842d.r2.dev/{filePath}";
-            // Or just return the filePath and construct the full URL in the client/service.
-            //return filePath;
+            // Return filePath (not full URL) so it can be stored in DB
+            return filePath;
         }
 
 
@@ -137,6 +133,43 @@ namespace Infrastructure.Implementations.Common.Storage
             var testFileName = $"connection-test-{DateTime.Now:yyyyMMdd-HHmmss}.txt";
             var (presignedUrl, _) = await GetPresignedPutUrlAsync("test", testFileName, "text/plain");
             return presignedUrl;
+        }
+
+        public async Task<string> UploadFileContentAsync(string directory, string fileName, string content, string contentType)
+        {
+            // Generate unique file path
+            var fileExtension = Path.GetExtension(fileName);
+            var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+            var filePath = $"{directory.TrimEnd('/')}/{DateTime.Now:yyyy/MM/dd}/{uniqueFileName}";
+
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            using var stream = new MemoryStream(contentBytes);
+
+            var putRequest = new PutObjectRequest
+            {
+                BucketName = _settings.BucketName,
+                Key = filePath,
+                InputStream = stream,
+                ContentType = contentType,
+                CannedACL = S3CannedACL.Private
+            };
+
+            await _s3Client.PutObjectAsync(putRequest);
+
+            return filePath;
+        }
+
+        public async Task<string> DownloadFileContentAsync(string filePath)
+        {
+            var request = new GetObjectRequest
+            {
+                BucketName = _settings.BucketName,
+                Key = filePath
+            };
+
+            using var response = await _s3Client.GetObjectAsync(request);
+            using var reader = new StreamReader(response.ResponseStream);
+            return await reader.ReadToEndAsync();
         }
     }
 }

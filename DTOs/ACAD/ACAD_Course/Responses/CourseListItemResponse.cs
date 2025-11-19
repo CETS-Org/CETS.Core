@@ -18,6 +18,7 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public string Duration { get; set; } = null!;
         public string CourseLevel { get; set; } = null!;
         public decimal StandardPrice { get; set; }
+        public decimal StandardScore { get; set; }
         public double Rating { get; set; }
         public int StudentsCount { get; set; }
         public string CourseImageUrl { get; set; } = null!;

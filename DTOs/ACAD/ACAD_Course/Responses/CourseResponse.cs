@@ -15,6 +15,7 @@ namespace DTOs.ACAD.ACAD_Course.Responses
         public List<string>? CourseObjective { get; set; } = new();
         public string? Description { get; set; }
         public decimal StandardPrice { get; set; }
+        public decimal StandardScore { get; set; }
         public bool IsActive { get; set; }
         
         // IDs needed for edit forms

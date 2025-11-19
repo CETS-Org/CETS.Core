@@ -29,5 +29,7 @@ namespace DTOs.IDN.IDN_Student.Responses
         public Guid? UpdatedBy { get; set; }
 
         public bool IsDeleted { get; set; }
+
+        public decimal PlacementTestGrade { get; set; }
     }
 }

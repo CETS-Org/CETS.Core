@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251119162559_updateCourse")]
+    partial class updateCourse
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1384,22 +1387,11 @@ namespace Infrastructure.Migrations
                         .HasColumnName("FeedbackID");
 
                     b.Property<string>("Comment")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CommunicationSkills")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ContentClarity")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid?>("CourseID")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CourseRelevance")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -1415,10 +1407,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("MaterialsQuality")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<int?>("Rating")
                         .HasColumnType("int");
 
@@ -1427,14 +1415,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<Guid?>("TeacherID")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("TeacherSupportiveness")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("TeachingEffectiveness")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -1448,12 +1428,8 @@ namespace Infrastructure.Migrations
 
                     b.ToTable("COM_Feedback", null, t =>
                         {
-                            t.HasTrigger("TR_COM_Feedback_Audit");
-
                             t.HasCheckConstraint("CK_COM_Feedback_Rating", "[Rating] IS NULL OR ([Rating] BETWEEN 1 AND 5)");
                         });
-
-                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
             modelBuilder.Entity("Domain.Entities.COM_FeedbackRecord", b =>
@@ -1487,6 +1463,32 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CreatedBy");
 
                     b.ToTable("COM_FeedbackRecords");
+                });
+
+            modelBuilder.Entity("Domain.Entities.COM_Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("NotificationID");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)")
+                        .HasDefaultValueSql("(sysutcdatetime())");
+
+                    b.Property<bool>("IsPush")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("COM_Notifications");
                 });
 
             modelBuilder.Entity("Domain.Entities.CORE_LookUp", b =>

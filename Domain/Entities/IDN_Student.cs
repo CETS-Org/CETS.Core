@@ -25,6 +25,9 @@ public partial class IDN_Student : EntityBase, IHasCreationTime, IHasModificatio
 
     public string? AcademicNote { get; set; }
 
+    [Precision(5, 2)]
+    public decimal? PlacementTestGrade { get; set; }
+
     [Precision(0)]
     public DateTime CreatedAt { get; set; }
 
