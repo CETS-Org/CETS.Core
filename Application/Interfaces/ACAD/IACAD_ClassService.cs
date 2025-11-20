@@ -24,6 +24,8 @@ namespace Application.Interfaces.ACAD
         Task<ClassStaffViewResponse?> GetClassByIdStaffView(Guid id);
         Task<List<ClassStaffViewResponse>> GetAllClassStaffView();
 
+        Task<Guid> CreateClassWithScheduleAsync(CreateClassWithScheduleRequest request);
+
         Task SoftDeleteClassAsync(Guid id);
 
         Task<List<FeedbackClassResponse>> GetFeedbackClassesByStudentId(Guid studentId);

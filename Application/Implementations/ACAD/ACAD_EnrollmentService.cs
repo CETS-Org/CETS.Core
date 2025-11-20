@@ -9,6 +9,7 @@ using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_Enrollment.Requests;
 using DTOs.ACAD.ACAD_Enrollment.Responses;
 using DTOs.ACAD.ACAD_Submission.Responses;
+using DTOs.IDN.IDN_Student.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -352,7 +353,49 @@ namespace Application.Implementations.ACAD
         }
 
 
-    }
+        public async Task<WaitingStudentSearchResult> GetStudentWaitListAsync(Guid courseId, string? query, int page, int pageSize)
+        {
+            // 1. Lấy toàn bộ danh sách chờ từ Repo
+            // (Dữ liệu này đã bao gồm Account nhờ lệnh Include trong Repo)
+            var allStudents = await _enrollmentRepo.GetStudentWaitList(courseId);
 
+            // 2. Xử lý tìm kiếm (Filtering)
+            if (!string.IsNullOrEmpty(query))
+            {
+                query = query.ToLower().Trim();
+                allStudents = allStudents.Where(s =>
+                    (s.StudentCode != null && s.StudentCode.ToLower().Contains(query)) ||
+                    (s.Account.FullName != null && s.Account.FullName.ToLower().Contains(query)) ||
+                    (s.Account.PhoneNumber != null && s.Account.PhoneNumber.Contains(query)) ||
+                    (s.Account.Email != null && s.Account.Email.ToLower().Contains(query))
+                );
+            }
+
+            // 3. Tính toán phân trang
+            var totalCount = allStudents.Count();
+
+            // Tránh lỗi page < 1
+            if (page < 1) page = 1;
+
+            var pagedStudents = allStudents
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // 4. Map sang DTO
+            // Đảm bảo MapperProfile đã map từ IDN_Student -> WaitingStudentResponse
+            var items = _mapper.Map<IEnumerable<WaitingStudentResponse>>(pagedStudents);
+
+            // 5. Trả về kết quả đúng format
+            return new WaitingStudentSearchResult
+            {
+                Page = page,
+                PageSize = pageSize,
+                Total = totalCount,
+                HasMore = totalCount > (page * pageSize),
+                Items = items.ToList()
+            };
+        }
+    }
 }
 

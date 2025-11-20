@@ -2,7 +2,9 @@
 using AutoMapper;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Course.Responses;
+using DTOs.ACAD.ACAD_CourseTeacherAssignment.Request;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses;
+using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,6 +82,38 @@ namespace Application.Implementations.ACAD
         {
             var courseAssignments = await _courseAssignmentRepository.GetCoursesByTeacherIdAsync(teacherId);
             return _mapper.Map<IEnumerable<TeachingCourseResponse>>(courseAssignments);
+        }
+
+         public async Task<IEnumerable<TeacherResponse>> GetTeachersByCourseAsync(Guid courseId)
+        {
+            var teachers = await _courseAssignmentRepository.GetTeachersByCourseAsync(courseId);
+            return _mapper.Map<IEnumerable<TeacherResponse>>(teachers);
+        }
+
+        public async Task<IEnumerable<TeacherOptionResponse>> GetAvailableTeachersAsync(GetAvailableTeachersRequest request)
+        {
+            // 1. Lấy danh sách giáo viên có chuyên môn dạy khóa học này
+            var rawTeacherList = await GetTeachersByCourseAsync(request.CourseId);
+
+            // 2. (Optional) BƯỚC QUAN TRỌNG: Lọc giáo viên rảnh (Available)
+            // Tại đây bạn nên lọc bỏ những giáo viên đã có lịch dạy trùng với 
+            // thời gian trong 'request' (nếu request có gửi lên StartTime/EndTime/Schedule).
+            // Ví dụ: rawTeacherList = rawTeacherList.Where(t => !IsTeacherBusy(t.Id, request)).ToList();
+
+            // 3. Map sang TeacherOptionResponse để trả về cho Client
+            var result = rawTeacherList.Select(t => new TeacherOptionResponse
+            {
+                Id = t.AccountId,
+                FullName = t.FullName,
+                Email = t.Email,
+                Phone = t.PhoneNumber,
+                AvatarUrl = t.AvatarUrl,            
+                YearsExperience = t.YearsExperience,      
+                CanTeachOnline = true, 
+                CanTeachOffline = true
+            }).ToList();
+
+            return result;
         }
     }
 }

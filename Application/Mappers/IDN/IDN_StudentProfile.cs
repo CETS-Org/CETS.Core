@@ -19,6 +19,14 @@ namespace Application.Mappers.IDN
                 .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Id))
                 .ReverseMap();
 
+            CreateMap<IDN_Student, WaitingStudentResponse>()
+               .ForMember(dest => dest.StudentId, opt => opt.MapFrom(src => src.Id))
+               .ForMember(dest => dest.StudentCode, opt => opt.MapFrom(src => src.StudentCode))
+               .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Account.FullName))
+               .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Account.PhoneNumber))
+               .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Account.Email))
+               .ReverseMap();
+
             CreateMap<CreateStudentRequest, IDN_Student>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccountId));
 

@@ -19,6 +19,7 @@ namespace Application.Mappers.ACAD
             // Map Entity -> Response
             CreateMap<ACAD_Syllabus, SyllabusResponse>()
                 .ForMember(dest => dest.SyllabusID, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.ACAD_SyllabusItems));
 
             CreateMap<ACAD_SyllabusItem, SyllabusItemResponse>()

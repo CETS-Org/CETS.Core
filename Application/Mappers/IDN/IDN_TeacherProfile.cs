@@ -17,6 +17,10 @@ namespace Application.Mappers.IDN
         {
             CreateMap<IDN_Teacher, TeacherResponse>()
                 .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Account.FullName))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Account.PhoneNumber))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Account.Email))
+                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Account.AvatarUrl))
                 .ReverseMap();
 
             //CreateMap<CreateTeacherRequest, IDN_Teacher>()

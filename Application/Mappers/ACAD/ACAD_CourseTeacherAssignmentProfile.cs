@@ -32,6 +32,9 @@ namespace Application.Mappers.ACAD
             .ForMember(dest => dest.CourseLevelName, opt => opt.MapFrom(src => src.CourseLevel.Name))
             .ForMember(dest => dest.CourseFormatName, opt => opt.MapFrom(src => src.CourseFormat.Name))
             .ForMember(dest => dest.StudentCount, opt => opt.MapFrom(src => src.ACAD_Enrollments.Count));
+
+            
+
         }
     }
 }

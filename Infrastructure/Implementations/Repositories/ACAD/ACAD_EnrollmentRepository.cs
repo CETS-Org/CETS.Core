@@ -76,6 +76,21 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     !e.IsDeleted);
         }
 
+        public async Task<IEnumerable<IDN_Student>> GetStudentWaitList(Guid courseId)
+        {
+            var waitingStatusId = Guid.Parse("2dba3beb-8336-417f-9dc3-fb853604dd2f");
+
+            return await _context.IDN_Students
+                .Where(s => !s.IsDeleted && s.ACAD_Enrollments.Any(e =>
+                    e.CourseID == courseId &&
+                    e.ClassID == null &&
+                    !e.IsDeleted &&
+                    e.EnrollmentStatusID == waitingStatusId 
+                ))
+                .Include(s => s.Account)
+                .ToListAsync();
+        }
+
     }
 }
 
