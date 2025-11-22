@@ -29,7 +29,26 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
             return await _context.ACAD_AcademicRequests
                 .Include(r => r.Student)
+                    .ThenInclude(s => s.Account)
+                .Include(r => r.RequestType)
+                .Include(r => r.AcademicRequestStatus)
+                .Include(r => r.FromClass)
+                .Include(r => r.ToClass)
+                .Include(r => r.ProcessedByNavigation)
                 .Where(r => r.AcademicRequestStatusID == statusId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ACAD_AcademicRequest>> GetAllAsync()
+        {
+            return await _context.ACAD_AcademicRequests
+                .Include(r => r.Student)
+                    .ThenInclude(s => s.Account)
+                .Include(r => r.RequestType)
+                .Include(r => r.AcademicRequestStatus)
+                .Include(r => r.FromClass)
+                .Include(r => r.ToClass)
+                .Include(r => r.ProcessedByNavigation)
                 .ToListAsync();
         }
 

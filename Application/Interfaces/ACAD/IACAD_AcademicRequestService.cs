@@ -18,6 +18,10 @@ namespace Application.Interfaces.ACAD
 
         Task<IEnumerable<AcademicRequestResponse>> GetRequestsByStudentAsync(Guid studentId);
 
+        Task<IEnumerable<AcademicRequestResponse>> GetAllRequestsAsync();
+
+        Task<IEnumerable<AcademicRequestResponse>> GetRequestsByStatusAsync(Guid statusId);
+
         Task<IEnumerable<AcademicRequestHistoryResponse>> GetRequestHistoryAsync(Guid requestId);
         Task<AcademicRequestResponse?> GetDetailsAsync(Guid requestId);
     }
