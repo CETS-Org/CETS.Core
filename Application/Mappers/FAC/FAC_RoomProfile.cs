@@ -9,7 +9,10 @@ namespace Application.Mappers.FAC
 	{
 		public FAC_RoomProfile()
 		{
-			CreateMap<FAC_Room, RoomResponse>().ReverseMap();
+			CreateMap<FAC_Room, RoomResponse>()
+				.ForMember(dest => dest.RoomTypeName, opt => opt.MapFrom(src => src.RoomType.Name))
+				.ForMember(dest => dest.RoomStatusName, opt => opt.MapFrom(src => src.RoomStatus.Name))
+				.ReverseMap();
 			CreateMap<CreateRoomRequest, FAC_Room>();
 			CreateMap<UpdateRoomRequest, FAC_Room>();
 		}

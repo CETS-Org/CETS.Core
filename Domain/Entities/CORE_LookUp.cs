@@ -45,6 +45,8 @@ public partial class CORE_LookUp : AuditedEntity
 
     public virtual ICollection<FAC_Room> FAC_Rooms { get; set; } = new List<FAC_Room>();
 
+    public virtual ICollection<FAC_Room> FAC_RoomRoomStatuses { get; set; } = new List<FAC_Room>();
+
     public virtual ICollection<FIN_Invoice> FIN_InvoiceInvoiceStatuses { get; set; } = new List<FIN_Invoice>();
 
     public virtual ICollection<FIN_Payment> FIN_PaymentGateways { get; set; } = new List<FIN_Payment>();

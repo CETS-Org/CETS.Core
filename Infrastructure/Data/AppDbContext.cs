@@ -694,6 +694,10 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_FAC_Rooms_RoomType");
 
+            entity.HasOne(d => d.RoomStatus).WithMany(p => p.FAC_RoomRoomStatuses)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FAC_Rooms_RoomStatus");
+
             entity.HasOne(d => d.UpdatedByNavigation).WithMany(p => p.FAC_RoomUpdatedByNavigations).HasConstraintName("FK_FAC_Rooms_Updated");
         });
 
@@ -1312,7 +1316,7 @@ public partial class AppDbContext : DbContext
 
         //TODO: Replace with actual system user ID or a dedicated service account ID.
         //Temporary hardcoded admin ID for system processes when no user is logged in.
-        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("BC1D19E1-E706-4618-A6F6-5708C3D1E5FD");
+        var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");
         var now = DateTime.Now;
 
         foreach (var entry in entries)

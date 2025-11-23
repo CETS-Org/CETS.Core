@@ -25,6 +25,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     .ThenInclude(m => m.Slot)
                 .Include(r => r.NewSlot)
                 .Include(r => r.NewRoom)
+                    .ThenInclude(room => room.RoomStatus)
                 .Where(r => r.StudentID == studentId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -77,6 +78,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     .ThenInclude(m => m.CoveredTopic)
                 .Include(r => r.NewSlot)
                 .Include(r => r.NewRoom)
+                    .ThenInclude(room => room.RoomStatus)
                 .Include(r => r.ACAD_AcademicRequestHistories)
                     .ThenInclude(h => h.Status)
                 .FirstOrDefaultAsync(r => r.Id == requestId);

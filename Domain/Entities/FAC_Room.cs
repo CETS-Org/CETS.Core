@@ -17,6 +17,8 @@ public partial class FAC_Room : AuditedEntity
 
     public Guid RoomTypeId { get; set; }
 
+    public Guid RoomStatusId { get; set; }
+
     public string? OnlineMeetingUrl { get; set; }
 
     public bool IsActive { get; set; }
@@ -28,6 +30,9 @@ public partial class FAC_Room : AuditedEntity
 
     [ForeignKey(nameof(RoomTypeId))]
     public virtual CORE_LookUp RoomType { get; set; } = null!;
+
+    [ForeignKey(nameof(RoomStatusId))]
+    public virtual CORE_LookUp RoomStatus { get; set; } = null!;
 
     [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }
