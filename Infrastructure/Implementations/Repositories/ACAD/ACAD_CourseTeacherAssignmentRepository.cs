@@ -4,6 +4,7 @@ using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Request;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses;
+using DTOs.IDN.IDN_Teacher.Responses;
 using Infrastructure.Implementations.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -73,6 +74,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(t => t.Account)
                 .ToListAsync();
         }
+
+
+        public async Task<IEnumerable<ACAD_CourseTeacherAssignment>> GetTeacherAssignmentByCourseAsync(Guid courseId)
+        {
+            return await _context.ACAD_CourseTeacherAssignments
+                .Where(cta => cta.CourseID == courseId)
+                .Include(cta => cta.Teacher)           
+                    .ThenInclude(t => t.Account)      
+                .ToListAsync();
+        }
+
     }
 }
 

@@ -355,45 +355,54 @@ namespace Application.Implementations.ACAD
 
         public async Task<WaitingStudentSearchResult> GetStudentWaitListAsync(Guid courseId, string? query, int page, int pageSize)
         {
-            // 1. Lấy toàn bộ danh sách chờ từ Repo
-            // (Dữ liệu này đã bao gồm Account nhờ lệnh Include trong Repo)
-            var allStudents = await _enrollmentRepo.GetStudentWaitList(courseId);
+            // 1. Lấy danh sách Enrollments từ Repo
+            // Lưu ý: Nếu dữ liệu lớn (>1000 dòng), bạn nên chuyển logic filter/paging vào trong Repo (IQueryable)
+            var allEnrollments = await _enrollmentRepo.GetStudentWaitList(courseId);
 
-            // 2. Xử lý tìm kiếm (Filtering)
-            if (!string.IsNullOrEmpty(query))
+            // 2. Xử lý tìm kiếm (In-Memory Filtering)
+            if (!string.IsNullOrWhiteSpace(query))
             {
-                query = query.ToLower().Trim();
-                allStudents = allStudents.Where(s =>
-                    (s.StudentCode != null && s.StudentCode.ToLower().Contains(query)) ||
-                    (s.Account.FullName != null && s.Account.FullName.ToLower().Contains(query)) ||
-                    (s.Account.PhoneNumber != null && s.Account.PhoneNumber.Contains(query)) ||
-                    (s.Account.Email != null && s.Account.Email.ToLower().Contains(query))
+                query = query.Trim().ToLower();
+
+                // Dùng ?. để tránh null
+                allEnrollments = allEnrollments.Where(e =>
+                    (e.Student?.StudentCode?.ToLower().Contains(query) == true) ||
+                    (e.Student?.Account?.FullName?.ToLower().Contains(query) == true) ||
+                    (e.Student?.Account?.PhoneNumber?.Contains(query) == true) ||
+                    (e.Student?.Account?.Email?.ToLower().Contains(query) == true)
                 );
             }
 
-            // 3. Tính toán phân trang
-            var totalCount = allStudents.Count();
+            // 3. Tính toán số liệu
+            var totalCount = allEnrollments.Count();
 
-            // Tránh lỗi page < 1
+            // Normalize page
             if (page < 1) page = 1;
 
-            var pagedStudents = allStudents
+            // 4. Phân trang & Map sang DTO (Projection)
+            // Thực hiện Select ngay đây để lấy đúng các trường cần thiết
+            var items = allEnrollments
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                .Select(e => new WaitingStudentResponse
+                {
+                    EnrollmentId = e.Id,                 // Lấy trực tiếp ID Enrollment
+                    StudentId = e.StudentID,
+                    StudentCode = e.Student?.StudentCode ?? string.Empty,
+                    FullName = e.Student?.Account?.FullName ?? "Unknown", // Flatten dữ liệu từ Account
+                    Phone = e.Student?.Account?.PhoneNumber,
+                    Email = e.Student?.Account?.Email
+                })
                 .ToList();
 
-            // 4. Map sang DTO
-            // Đảm bảo MapperProfile đã map từ IDN_Student -> WaitingStudentResponse
-            var items = _mapper.Map<IEnumerable<WaitingStudentResponse>>(pagedStudents);
-
-            // 5. Trả về kết quả đúng format
+            // 5. Trả về kết quả
             return new WaitingStudentSearchResult
             {
                 Page = page,
                 PageSize = pageSize,
                 Total = totalCount,
                 HasMore = totalCount > (page * pageSize),
-                Items = items.ToList()
+                Items = items
             };
         }
     }

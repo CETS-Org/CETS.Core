@@ -1,4 +1,4 @@
-using Domain.Data;
+﻿using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using Infrastructure.Implementations.Repositories;
@@ -76,18 +76,23 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     !e.IsDeleted);
         }
 
-        public async Task<IEnumerable<IDN_Student>> GetStudentWaitList(Guid courseId)
+        public async Task<IEnumerable<ACAD_Enrollment>> GetStudentWaitList(Guid courseId)
         {
+            // Nên đưa ra constant file
             var waitingStatusId = Guid.Parse("2dba3beb-8336-417f-9dc3-fb853604dd2f");
 
-            return await _context.IDN_Students
-                .Where(s => !s.IsDeleted && s.ACAD_Enrollments.Any(e =>
+            return await _context.ACAD_Enrollments
+                .AsNoTracking() // Tối ưu tốc độ đọc
+                .Include(e => e.Student)            // Lấy thông tin học sinh
+                    .ThenInclude(s => s.Account)    // Lấy tiếp thông tin tài khoản (Tên, Email...)
+                .Where(e =>
                     e.CourseID == courseId &&
-                    e.ClassID == null &&
-                    !e.IsDeleted &&
-                    e.EnrollmentStatusID == waitingStatusId 
-                ))
-                .Include(s => s.Account)
+                    e.ClassID == null &&            // Chưa xếp lớp
+                    !e.IsDeleted &&                 // Enrollment chưa bị xóa
+                    e.EnrollmentStatusID == waitingStatusId &&
+                    !e.Student.IsDeleted            // Quan trọng: Học sinh cũng phải chưa bị xóa
+                )
+                .OrderBy(e => e.CreatedAt)          // (Tùy chọn) Sắp xếp theo ai đăng ký trước xếp trước
                 .ToListAsync();
         }
 

@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces.ACAD;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Request;
@@ -90,10 +91,17 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<IEnumerable<TeacherResponse>>(teachers);
         }
 
+
+        public async Task<IEnumerable<CourseTeacherAssignmentResponse>> GetTeacherAssignmentByCourseAsync(Guid courseId)
+        {
+            var teacherAssignments = await _courseAssignmentRepository.GetTeacherAssignmentByCourseAsync(courseId);
+            return _mapper.Map<IEnumerable<CourseTeacherAssignmentResponse>>(teacherAssignments);
+        }
+
         public async Task<IEnumerable<TeacherOptionResponse>> GetAvailableTeachersAsync(GetAvailableTeachersRequest request)
         {
             // 1. Lấy danh sách giáo viên có chuyên môn dạy khóa học này
-            var rawTeacherList = await GetTeachersByCourseAsync(request.CourseId);
+            var rawTeacherList = await GetTeacherAssignmentByCourseAsync(request.CourseId);
 
             // 2. (Optional) BƯỚC QUAN TRỌNG: Lọc giáo viên rảnh (Available)
             // Tại đây bạn nên lọc bỏ những giáo viên đã có lịch dạy trùng với 
@@ -103,10 +111,10 @@ namespace Application.Implementations.ACAD
             // 3. Map sang TeacherOptionResponse để trả về cho Client
             var result = rawTeacherList.Select(t => new TeacherOptionResponse
             {
-                Id = t.AccountId,
+                Id = t.Id,
                 FullName = t.FullName,
                 Email = t.Email,
-                Phone = t.PhoneNumber,
+                Phone = t.Phone,
                 AvatarUrl = t.AvatarUrl,            
                 YearsExperience = t.YearsExperience,      
                 CanTeachOnline = true, 

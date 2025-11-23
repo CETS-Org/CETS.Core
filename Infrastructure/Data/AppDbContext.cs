@@ -242,7 +242,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("MeetingID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.IsStudy).HasDefaultValue(false);
+            entity.Property(e => e.IsStudy).HasDefaultValue(true);
 
             entity.HasOne(d => d.Class).WithMany(p => p.ACAD_ClassMeetings)
                 .OnDelete(DeleteBehavior.ClientSetNull)

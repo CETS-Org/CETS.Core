@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DTOs.IDN.IDN_Student.Responses;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ namespace DTOs.ACAD.ACAD_Class.Requests
         public List<ClassMeetingScheduleDto> Schedules { get; set; } = new();
 
         // Danh sách học sinh cần enroll luôn (Tuỳ chọn - nếu bạn muốn gộp cả bước 3)
-        public List<Guid> StudentIds { get; set; } = new();
+        public List<WaitingStudentResponse> Enrollments { get; set; }
     }
 
     public class ClassMeetingScheduleDto

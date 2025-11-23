@@ -2,6 +2,7 @@ using Domain.Entities;
 using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Request;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses;
+using DTOs.IDN.IDN_Teacher.Responses;
 
 namespace Domain.Interfaces.ACAD
 {
@@ -11,6 +12,8 @@ namespace Domain.Interfaces.ACAD
         Task<IEnumerable<ACAD_CourseTeacherAssignment>> GetCourseTeacherAssignmentsByTeacherIdAsync(Guid teacherId);
         Task<IEnumerable<ACAD_CourseTeacherAssignment>> GetCourseTeacherAssignmentsByTeacherIdAndCourseIdAsync(Guid teacherId, Guid courseId);
         Task<IEnumerable<IDN_Teacher>> GetTeachersByCourseAsync(Guid courseId);
+
+        Task<IEnumerable<ACAD_CourseTeacherAssignment>> GetTeacherAssignmentByCourseAsync(Guid courseId);
     }
 }
 

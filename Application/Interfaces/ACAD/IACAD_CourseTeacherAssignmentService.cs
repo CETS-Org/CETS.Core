@@ -18,5 +18,7 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<TeachingCourseResponse>> GetAllTeachingCourses(Guid teacherId);
         Task<IEnumerable<TeacherResponse>> GetTeachersByCourseAsync(Guid courseId);
         Task<IEnumerable<TeacherOptionResponse>> GetAvailableTeachersAsync(GetAvailableTeachersRequest request);
+
+        Task<IEnumerable<CourseTeacherAssignmentResponse>> GetTeacherAssignmentByCourseAsync(Guid courseId);
     }
 }
