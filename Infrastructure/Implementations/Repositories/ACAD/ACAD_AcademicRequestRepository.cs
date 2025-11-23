@@ -21,7 +21,12 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(r => r.FromClass)
                 .Include(r => r.ToClass)
                 .Include(r => r.ProcessedByNavigation)
+                .Include(r => r.ClassMeeting)
+                    .ThenInclude(m => m.Slot)
+                .Include(r => r.NewSlot)
+                .Include(r => r.NewRoom)
                 .Where(r => r.StudentID == studentId)
+                .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
 
@@ -36,6 +41,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(r => r.ToClass)
                 .Include(r => r.ProcessedByNavigation)
                 .Where(r => r.AcademicRequestStatusID == statusId)
+                .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
 
@@ -49,6 +55,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(r => r.FromClass)
                 .Include(r => r.ToClass)
                 .Include(r => r.ProcessedByNavigation)
+                .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
 
@@ -59,6 +66,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     .ThenInclude(s => s.Account)
                 .Include(r => r.RequestType)
                 .Include(r => r.AcademicRequestStatus)
+                .Include(r => r.FromClass)
+                .Include(r => r.ToClass)
+                .Include(r => r.ProcessedByNavigation)
+                .Include(r => r.ClassMeeting)
+                    .ThenInclude(m => m.Slot)
+                .Include(r => r.ClassMeeting)
+                    .ThenInclude(m => m.Room)
+                .Include(r => r.ClassMeeting)
+                    .ThenInclude(m => m.CoveredTopic)
+                .Include(r => r.NewSlot)
+                .Include(r => r.NewRoom)
                 .Include(r => r.ACAD_AcademicRequestHistories)
                     .ThenInclude(h => h.Status)
                 .FirstOrDefaultAsync(r => r.Id == requestId);

@@ -24,5 +24,8 @@ namespace Application.Interfaces.ACAD
 
         Task<IEnumerable<AcademicRequestHistoryResponse>> GetRequestHistoryAsync(Guid requestId);
         Task<AcademicRequestResponse?> GetDetailsAsync(Guid requestId);
+        
+        Task<AcademicRequestUploadResponse> GetAttachmentUploadUrlAsync(string fileName, string contentType);
+        Task<string> GetAttachmentDownloadUrlAsync(string filePath);
     }
 }

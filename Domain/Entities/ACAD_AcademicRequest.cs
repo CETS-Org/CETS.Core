@@ -31,13 +31,33 @@ public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
     [Precision(0)]
     public DateTime? ProcessedAt { get; set; }
 
+    public string? StaffResponse { get; set; }
+
+    // For meeting reschedule requests
+    public Guid? ClassMeetingID { get; set; }
+
+    public DateOnly? NewMeetingDate { get; set; }
+
+    public Guid? NewSlotID { get; set; }
+
+    public Guid? NewRoomID { get; set; }
+
     public virtual ICollection<ACAD_AcademicRequestHistory> ACAD_AcademicRequestHistories { get; set; } = new List<ACAD_AcademicRequestHistory>();
 
     [ForeignKey(nameof(AcademicRequestStatusID))]
     public virtual CORE_LookUp AcademicRequestStatus { get; set; } = null!;
 
+    [ForeignKey(nameof(ClassMeetingID))]
+    public virtual ACAD_ClassMeeting? ClassMeeting { get; set; }
+
     [ForeignKey(nameof(FromClassID))]
     public virtual ACAD_Class? FromClass { get; set; }
+
+    [ForeignKey(nameof(NewRoomID))]
+    public virtual FAC_Room? NewRoom { get; set; }
+
+    [ForeignKey(nameof(NewSlotID))]
+    public virtual CORE_LookUp? NewSlot { get; set; }
 
     [ForeignKey(nameof(ProcessedBy))]
     public virtual IDN_Account? ProcessedByNavigation { get; set; }

@@ -34,5 +34,15 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Responses
         public Guid? ProcessedBy { get; set; }
         public string? ProcessedByName { get; set; }
         public DateTime? ProcessedAt { get; set; }
+        public string? StaffResponse { get; set; }
+
+        // For meeting reschedule requests
+        public Guid? ClassMeetingID { get; set; }
+        public string? MeetingInfo { get; set; } // e.g., "2024-12-15 - Slot1"
+        public DateOnly? NewMeetingDate { get; set; }
+        public Guid? NewSlotID { get; set; }
+        public string? NewSlotName { get; set; }
+        public Guid? NewRoomID { get; set; }
+        public string? NewRoomName { get; set; }
     }
 }

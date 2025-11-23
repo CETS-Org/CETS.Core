@@ -15,6 +15,9 @@ namespace DTOs.FAC.FAC_Room.Requests
 		[Required]
 		public Guid RoomTypeId { get; set; }
 
+		[Required]
+		public Guid RoomStatusId { get; set; }
+
 		[StringLength(2048)]
 		public string? OnlineMeetingUrl { get; set; }
 
