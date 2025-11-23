@@ -2,6 +2,9 @@ using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Course.Responses;
+using DTOs.ACAD.ACAD_CourseTeacherAssignment.Request;
+using DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses;
+using DTOs.IDN.IDN_Teacher.Responses;
 using Infrastructure.Implementations.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,11 +28,11 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     CourseImageUrl = c.CourseImageUrl,
                     CategoryName = c.Category.Name,
                     CourseLevel = c.CourseLevel.Name,
-                    FormatName = c.CourseFormat.Name,                   
+                    FormatName = c.CourseFormat.Name,
                     ActiveClassCount =
                         c.ACAD_CourseTeacherAssignments
                          .Where(cta => cta.TeacherID == teacherId)
-                        
+
                          .SelectMany(cta => cta.ACAD_Classes)
                          .Count(cls => cls.IsActive)
                 })
@@ -57,12 +60,31 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
             return await _context.ACAD_CourseTeacherAssignments
                 .Where(cta => cta.TeacherID == teacherId && cta.CourseID == courseId)
-                .Include (cta => cta.ACAD_Classes)
+                .Include(cta => cta.ACAD_Classes)
                 .ThenInclude(cta => cta.CourseFormat)
                 .Include(cta => cta.ACAD_Classes)
                 .ThenInclude(cta => cta.ClassStatus)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<IDN_Teacher>> GetTeachersByCourseAsync(Guid courseId)
+        {
+            return await _context.IDN_Teachers
+                .Where(t => t.ACAD_CourseTeacherAssignments.Any(cta => cta.CourseID == courseId)) 
+                .Include(t => t.Account)
+                .ToListAsync();
+        }
+
+
+        public async Task<IEnumerable<ACAD_CourseTeacherAssignment>> GetTeacherAssignmentByCourseAsync(Guid courseId)
+        {
+            return await _context.ACAD_CourseTeacherAssignments
+                .Where(cta => cta.CourseID == courseId)
+                .Include(cta => cta.Teacher)           
+                    .ThenInclude(t => t.Account)      
+                .ToListAsync();
+        }
+
     }
 }
 

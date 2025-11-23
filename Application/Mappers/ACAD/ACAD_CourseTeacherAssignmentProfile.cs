@@ -32,6 +32,18 @@ namespace Application.Mappers.ACAD
             .ForMember(dest => dest.CourseLevelName, opt => opt.MapFrom(src => src.CourseLevel.Name))
             .ForMember(dest => dest.CourseFormatName, opt => opt.MapFrom(src => src.CourseFormat.Name))
             .ForMember(dest => dest.StudentCount, opt => opt.MapFrom(src => src.ACAD_Enrollments.Count));
+
+
+            CreateMap<ACAD_CourseTeacherAssignment, CourseTeacherAssignmentResponse>()
+                .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.CourseName))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Teacher.Account.FullName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Teacher.Account.Email))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Teacher.Account.PhoneNumber))
+                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Teacher.Account.AvatarUrl))
+                .ForMember(dest => dest.YearsExperience, opt => opt.MapFrom(src => src.Teacher.YearsExperience));
+
+
+
         }
     }
 }

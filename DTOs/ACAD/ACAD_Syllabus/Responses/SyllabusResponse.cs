@@ -12,6 +12,9 @@ namespace DTOs.ACAD.ACAD_Syllabus.Responses
         public Guid SyllabusID { get; set; }
         public Guid CourseID { get; set; }
         public string Title { get; set; } = string.Empty;
+
+        public bool IsActive { get; set; }
+
         public string? Description { get; set; }
         public IEnumerable<SyllabusItemResponse> Items { get; set; } = new List<SyllabusItemResponse>();
     }
