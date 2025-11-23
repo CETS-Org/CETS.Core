@@ -15,5 +15,11 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Requests
         public Guid? ToClassID { get; set; }
         public DateOnly? EffectiveDate { get; set; }
         public string? AttachmentUrl { get; set; }
+
+        // For meeting reschedule requests
+        public Guid? ClassMeetingID { get; set; }
+        public DateOnly? NewMeetingDate { get; set; }
+        public Guid? NewSlotID { get; set; }
+        public Guid? NewRoomID { get; set; }
     }
 }

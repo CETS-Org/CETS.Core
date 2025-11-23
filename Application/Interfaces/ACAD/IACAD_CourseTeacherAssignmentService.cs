@@ -1,12 +1,10 @@
-﻿using Domain.Entities;
 using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Request;
+using DTOs.ACAD.ACAD_CourseTeacherAssignment.Requests;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Application.Interfaces.ACAD
@@ -18,7 +16,9 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<TeachingCourseResponse>> GetAllTeachingCourses(Guid teacherId);
         Task<IEnumerable<TeacherResponse>> GetTeachersByCourseAsync(Guid courseId);
         Task<IEnumerable<TeacherOptionResponse>> GetAvailableTeachersAsync(GetAvailableTeachersRequest request);
-
         Task<IEnumerable<CourseTeacherAssignmentResponse>> GetTeacherAssignmentByCourseAsync(Guid courseId);
+        Task<IEnumerable<CourseTeacherAssignmentResponse>> GetAssignmentsByCourseIdAsync(Guid courseId);
+        Task<CourseTeacherAssignmentResponse> CreateAssignmentAsync(CreateCourseTeacherAssignmentRequest request);
+        Task DeleteAssignmentAsync(Guid assignmentId);
     }
 }

@@ -16,7 +16,9 @@ namespace Infrastructure.Implementations.Repositories.CORE
         {
             return await _context.CORE_LookUps
                 .AsNoTracking()
-                .FirstOrDefaultAsync(lu => lu.LookUpType.Code.ToString() == lookUpTypeCode
+                .Include(lu => lu.LookUpType)
+                .FirstOrDefaultAsync(lu => lu.LookUpType != null
+                                    && lu.LookUpType.Code == lookUpTypeCode
                                     && lu.Code == code 
                                     && lu.IsActive == true);
         }

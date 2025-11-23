@@ -75,7 +75,6 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .ToListAsync();
         }
 
-
         public async Task<IEnumerable<ACAD_CourseTeacherAssignment>> GetTeacherAssignmentByCourseAsync(Guid courseId)
         {
             return await _context.ACAD_CourseTeacherAssignments
@@ -85,6 +84,24 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<ACAD_CourseTeacherAssignment>> GetCourseTeacherAssignmentsByCourseIdAsync(Guid courseId)
+        {
+            return await _context.ACAD_CourseTeacherAssignments
+                .Where(cta => cta.CourseID == courseId)
+                .Include(cta => cta.Teacher)
+                    .ThenInclude(t => t.Account)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<ACAD_CourseTeacherAssignment?> GetAssignmentWithDetailsAsync(Guid assignmentId)
+        {
+            return await _context.ACAD_CourseTeacherAssignments
+                .Include(cta => cta.Teacher)
+                    .ThenInclude(t => t.Account)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cta => cta.Id == assignmentId);
+        }
     }
 }
 

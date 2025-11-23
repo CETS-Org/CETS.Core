@@ -27,7 +27,13 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.AcademicRequestStatus.Name))
                 .ForMember(dest => dest.FromClassName, opt => opt.MapFrom(src => src.FromClass.ClassName))
                 .ForMember(dest => dest.ToClassName, opt => opt.MapFrom(src => src.ToClass.ClassName))
-                .ForMember(dest => dest.ProcessedByName, opt => opt.MapFrom(src => src.ProcessedByNavigation.FullName));
+                .ForMember(dest => dest.ProcessedByName, opt => opt.MapFrom(src => src.ProcessedByNavigation.FullName))
+                .ForMember(dest => dest.MeetingInfo, opt => opt.MapFrom(src => 
+                    src.ClassMeeting != null 
+                        ? $"{src.ClassMeeting.Date:yyyy-MM-dd} - {src.ClassMeeting.Slot.Name}" 
+                        : null))
+                .ForMember(dest => dest.NewSlotName, opt => opt.MapFrom(src => src.NewSlot != null ? src.NewSlot.Name : null))
+                .ForMember(dest => dest.NewRoomName, opt => opt.MapFrom(src => src.NewRoom != null ? src.NewRoom.RoomCode : null));
 
             CreateMap<ACAD_AcademicRequestHistory, AcademicRequestHistoryResponse>();
         }

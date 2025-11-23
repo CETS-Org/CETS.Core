@@ -4,6 +4,7 @@ using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Request;
+using DTOs.ACAD.ACAD_CourseTeacherAssignment.Requests;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;
 using System;
@@ -19,12 +20,18 @@ namespace Application.Implementations.ACAD
         private readonly IACAD_CourseTeacherAssignmentRepository _courseAssignmentRepository;
         private readonly IACAD_ClassMeetingRepository _classMeetingRepository;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ACAD_CourseTeacherAssignmentService(IACAD_CourseTeacherAssignmentRepository courseAssignmentRepository, IMapper mapper, IACAD_ClassMeetingRepository classMeetingRepository)
+        public ACAD_CourseTeacherAssignmentService(
+            IACAD_CourseTeacherAssignmentRepository courseAssignmentRepository,
+            IMapper mapper,
+            IACAD_ClassMeetingRepository classMeetingRepository,
+            IUnitOfWork unitOfWork)
         {
             _courseAssignmentRepository = courseAssignmentRepository;
             _mapper = mapper;
             _classMeetingRepository = classMeetingRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<CourseListAssignmentResponse>> GetCoursesByTeacherIdAsync(Guid teacherId)
@@ -85,12 +92,11 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<IEnumerable<TeachingCourseResponse>>(courseAssignments);
         }
 
-         public async Task<IEnumerable<TeacherResponse>> GetTeachersByCourseAsync(Guid courseId)
+        public async Task<IEnumerable<TeacherResponse>> GetTeachersByCourseAsync(Guid courseId)
         {
             var teachers = await _courseAssignmentRepository.GetTeachersByCourseAsync(courseId);
             return _mapper.Map<IEnumerable<TeacherResponse>>(teachers);
         }
-
 
         public async Task<IEnumerable<CourseTeacherAssignmentResponse>> GetTeacherAssignmentByCourseAsync(Guid courseId)
         {
@@ -122,6 +128,56 @@ namespace Application.Implementations.ACAD
             }).ToList();
 
             return result;
+        }
+
+        public async Task<IEnumerable<CourseTeacherAssignmentResponse>> GetAssignmentsByCourseIdAsync(Guid courseId)
+        {
+            var assignments = await _courseAssignmentRepository.GetCourseTeacherAssignmentsByCourseIdAsync(courseId);
+            return _mapper.Map<IEnumerable<CourseTeacherAssignmentResponse>>(assignments);
+        }
+
+        public async Task<CourseTeacherAssignmentResponse> CreateAssignmentAsync(CreateCourseTeacherAssignmentRequest request)
+        {
+            return await _unitOfWork.ExecuteInTransactionAsync(async () =>
+            {
+                var exists = await _courseAssignmentRepository.ExistsAsync(cta =>
+                    cta.CourseID == request.CourseID && cta.TeacherID == request.TeacherID);
+
+                if (exists)
+                {
+                    throw new InvalidOperationException("Teacher is already assigned to this course.");
+                }
+
+                var entity = new ACAD_CourseTeacherAssignment
+                {
+                    CourseID = request.CourseID,
+                    TeacherID = request.TeacherID,
+                    AssignedAt = DateTime.UtcNow
+                };
+
+                _courseAssignmentRepository.Add(entity);
+                await _unitOfWork.SaveChangesAsync();
+
+                var createdEntity = await _courseAssignmentRepository.GetAssignmentWithDetailsAsync(entity.Id)
+                    ?? entity;
+
+                return _mapper.Map<CourseTeacherAssignmentResponse>(createdEntity);
+            });
+        }
+
+        public async Task DeleteAssignmentAsync(Guid assignmentId)
+        {
+            await _unitOfWork.ExecuteInTransactionAsync(async () =>
+            {
+                var entity = await _courseAssignmentRepository.GetByIdAsync(assignmentId);
+                if (entity == null)
+                {
+                    throw new KeyNotFoundException("Course teacher assignment not found.");
+                }
+
+                _courseAssignmentRepository.Remove(entity);
+                await _unitOfWork.SaveChangesAsync();
+            });
         }
     }
 }

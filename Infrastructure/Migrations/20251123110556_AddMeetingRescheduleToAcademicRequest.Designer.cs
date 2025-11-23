@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251123110556_AddMeetingRescheduleToAcademicRequest")]
+    partial class AddMeetingRescheduleToAcademicRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1758,9 +1761,6 @@ namespace Infrastructure.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<Guid>("RoomStatusId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("RoomTypeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1774,8 +1774,6 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedBy");
-
-                    b.HasIndex("RoomStatusId");
 
                     b.HasIndex("RoomTypeId");
 
@@ -3560,12 +3558,6 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_FAC_Rooms_Created");
 
-                    b.HasOne("Domain.Entities.CORE_LookUp", "RoomStatus")
-                        .WithMany("FAC_RoomRoomStatuses")
-                        .HasForeignKey("RoomStatusId")
-                        .IsRequired()
-                        .HasConstraintName("FK_FAC_Rooms_RoomStatus");
-
                     b.HasOne("Domain.Entities.CORE_LookUp", "RoomType")
                         .WithMany("FAC_Rooms")
                         .HasForeignKey("RoomTypeId")
@@ -3578,8 +3570,6 @@ namespace Infrastructure.Migrations
                         .HasConstraintName("FK_FAC_Rooms_Updated");
 
                     b.Navigation("CreatedByNavigation");
-
-                    b.Navigation("RoomStatus");
 
                     b.Navigation("RoomType");
 
@@ -4067,8 +4057,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("COM_Feedbacks");
 
                     b.Navigation("EVT_Events");
-
-                    b.Navigation("FAC_RoomRoomStatuses");
 
                     b.Navigation("FAC_Rooms");
 

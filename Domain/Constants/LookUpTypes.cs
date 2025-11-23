@@ -18,6 +18,7 @@ namespace Domain.Constants
         public const string CourseBenefit = "CouurseBenefit";
         public const string CourseRequirement = "CourseRequirement";
         public const string RoomType = "RoomType";
+        public const string RoomStatus = "RoomStatus";
         public const string AcademicRequestType = "AcademicRequestType";
         public const string PlanType = "PlanType";
         public const string ContractStatus = "ContractStatus";
