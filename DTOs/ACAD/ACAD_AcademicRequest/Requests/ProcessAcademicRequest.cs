@@ -13,5 +13,7 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Requests
         public string? Description { get; set; }
         public Guid StaffID { get; set; }
         public string? AttachmentUrl { get; set; }
+        // For meeting reschedule - selected room by staff
+        public Guid? SelectedRoomID { get; set; }
     }
 }

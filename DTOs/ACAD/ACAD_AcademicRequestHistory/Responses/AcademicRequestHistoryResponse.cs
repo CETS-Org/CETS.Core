@@ -11,7 +11,6 @@ namespace DTOs.ACAD.ACAD_AcademicRequestHistory.Responses
         public Guid Id { get; set; }
         public Guid RequestID { get; set; }
         public Guid StatusID { get; set; }
-        public string? Description { get; set; }
         public Guid? UpdatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public string? AttachmentUrl { get; set; }

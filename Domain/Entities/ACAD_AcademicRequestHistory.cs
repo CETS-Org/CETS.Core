@@ -15,8 +15,6 @@ public partial class ACAD_AcademicRequestHistory : EntityBase, IHasModificationT
 
     public Guid StatusID { get; set; }
 
-    public string? Description { get; set; }
-
     public Guid? UpdatedBy { get; set; }
 
     [Precision(0)]

@@ -35,5 +35,6 @@ namespace Domain.Constants
         public const string CourseSkill = "CourseSkill";
         public const string PaymentStatus = "PaymentStatus";
         public const string ReservationStatus = "ReservationStatus";
+        public const string Priority = "Priority";
     }
 }

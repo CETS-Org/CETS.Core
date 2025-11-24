@@ -19,6 +19,9 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Responses
         public Guid AcademicRequestStatusID { get; set; }
         public string? StatusName { get; set; }
 
+        public Guid? PriorityID { get; set; }
+        public string? PriorityName { get; set; }
+
         public string Reason { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
 
@@ -29,6 +32,14 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Responses
         public string? ToClassName { get; set; }
 
         public DateOnly? EffectiveDate { get; set; }
+
+        // For class transfer - specific meeting details
+        public DateOnly? FromMeetingDate { get; set; }
+        public Guid? FromSlotID { get; set; }
+        public string? FromSlotName { get; set; }
+        public DateOnly? ToMeetingDate { get; set; }
+        public Guid? ToSlotID { get; set; }
+        public string? ToSlotName { get; set; }
         public string? AttachmentUrl { get; set; }
 
         public Guid? ProcessedBy { get; set; }
@@ -39,9 +50,7 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Responses
         // For meeting reschedule requests
         public Guid? ClassMeetingID { get; set; }
         public string? MeetingInfo { get; set; } // e.g., "2024-12-15 - Slot1"
-        public DateOnly? NewMeetingDate { get; set; }
-        public Guid? NewSlotID { get; set; }
-        public string? NewSlotName { get; set; }
+        // New meeting details
         public Guid? NewRoomID { get; set; }
         public string? NewRoomName { get; set; }
     }

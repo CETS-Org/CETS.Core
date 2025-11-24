@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces.ACAD;
 using Application.Interfaces.Common.Storage;
+using Application.Interfaces.COM;
 using AutoMapper;
 using Domain.Constants;
 using Domain.Entities;
@@ -9,6 +10,7 @@ using Domain.Interfaces.CORE;
 using DTOs.ACAD.ACAD_AcademicRequest.Requests;
 using DTOs.ACAD.ACAD_AcademicRequest.Responses;
 using DTOs.ACAD.ACAD_AcademicRequestHistory.Responses;
+using DTOs.COM.COM_Notification.Requests;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,6 +26,7 @@ namespace Application.Implementations.ACAD
         private readonly IACAD_ClassMeetingRepository _classMeetingRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICOM_NotificationService _notificationService;
 
         public ACAD_AcademicRequestService(
             IACAD_AcademicRequestRepository requestRepo,
@@ -32,7 +35,8 @@ namespace Application.Implementations.ACAD
             IFileStorageService fileStorageService,
             IACAD_ClassMeetingRepository classMeetingRepo,
             IUnitOfWork unitOfWork,
-            IMapper mapper)
+            IMapper mapper,
+            ICOM_NotificationService notificationService)
         {
             _requestRepo = requestRepo;
             _historyRepo = historyRepo;
@@ -41,10 +45,16 @@ namespace Application.Implementations.ACAD
             _classMeetingRepo = classMeetingRepo;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _notificationService = notificationService;
         }
 
         public async Task<AcademicRequestResponse> SubmitRequestAsync(CreateAcademicRequest requestDto)
         {
+            // TODO: Add proper role-based validation for meeting reschedule requests
+            // Currently, the frontend filters out meeting reschedule for students
+            // For proper backend validation, we need to check the user's role from the authentication context
+            // or pass the user's role in the request DTO
+
             var entity = _mapper.Map<ACAD_AcademicRequest>(requestDto);
             
             var pendingStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AcademicRequestStatus, "Pending");
@@ -55,7 +65,52 @@ namespace Application.Implementations.ACAD
             
             entity.AcademicRequestStatusID = pendingStatus.Id;
 
-            if (entity.FromClassID.HasValue || entity.ToClassID.HasValue)
+            // Get request type once for both priority and effective date determination
+            var requestType = await _lookUpRepository.GetByIdAsync(requestDto.RequestTypeID);
+            if (requestType == null)
+            {
+                throw new KeyNotFoundException("Request type not found. Please ensure the lookup data is properly seeded.");
+            }
+
+            var requestTypeName = (requestType.Name ?? "").ToLower();
+            var requestTypeCode = (requestType.Code ?? "").ToLower();
+
+            // Set default priority based on request type if not provided
+            if (!requestDto.PriorityID.HasValue || requestDto.PriorityID.Value == Guid.Empty)
+            {
+                string priorityCode = "Medium";
+
+                if (requestTypeName.Contains("meeting reschedule") || requestTypeCode.Contains("meetingreschedule") ||
+                    requestTypeName.Contains("class transfer") || requestTypeCode.Contains("classtransfer"))
+                {
+                    priorityCode = "High";
+                }
+                else if (requestTypeName.Contains("enrollment cancellation") || requestTypeCode.Contains("enrollmentcancellation") ||
+                         requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension"))
+                {
+                    priorityCode = "Medium";
+                }
+                else if (requestTypeName.Contains("other") || requestTypeCode.Contains("other"))
+                {
+                    priorityCode = "Low";
+                }
+
+                var defaultPriority = await _lookUpRepository.GetByCodeAsync(LookUpTypes.Priority, priorityCode);
+                if (defaultPriority == null)
+                {
+                    throw new KeyNotFoundException($"Default priority ({priorityCode}) not found for Priority. Please ensure the lookup data is properly seeded.");
+                }
+                entity.PriorityID = defaultPriority.Id;
+            }
+
+            // Set EffectiveDate based on request type:
+            // - 3 days for meeting reschedule
+            // - 7 days for all other requests
+            if (requestTypeName.Contains("meeting reschedule") || requestTypeCode.Contains("meetingreschedule"))
+            {
+                entity.EffectiveDate = DateOnly.FromDateTime(DateTime.Now.AddDays(3));
+            }
+            else
             {
                 entity.EffectiveDate = DateOnly.FromDateTime(DateTime.Now.AddDays(7));
             }
@@ -68,7 +123,6 @@ namespace Application.Implementations.ACAD
             {
                 RequestID = entity.Id,
                 StatusID = pendingStatus.Id,
-                Description = "Request submitted",
                 AttachmentUrl = requestDto.AttachmentUrl
             };
 
@@ -95,6 +149,11 @@ namespace Application.Implementations.ACAD
             var approvedStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AcademicRequestStatus, "Approved");
             if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && entity.ClassMeetingID.HasValue)
             {
+                // Use staff-selected room if provided, otherwise use the room from the request
+                if (requestDto.SelectedRoomID.HasValue)
+                {
+                    entity.NewRoomID = requestDto.SelectedRoomID.Value;
+                }
                 await HandleMeetingRescheduleAsync(entity);
             }
 
@@ -109,11 +168,14 @@ namespace Application.Implementations.ACAD
 
             _historyRepo.Add(history);
             await _unitOfWork.SaveChangesAsync();
+
+            // Send notification to the student about the request status change
+            await SendRequestStatusNotificationAsync(entity, status);
         }
 
         private async Task HandleMeetingRescheduleAsync(ACAD_AcademicRequest request)
         {
-            if (!request.ClassMeetingID.HasValue || !request.NewMeetingDate.HasValue)
+            if (!request.ClassMeetingID.HasValue || !request.ToMeetingDate.HasValue)
                 return;
 
             var meeting = await _classMeetingRepo.GetByIdAsync(request.ClassMeetingID.Value);
@@ -131,9 +193,10 @@ namespace Application.Implementations.ACAD
                 .ToList();
 
             // Update the rescheduled meeting's date, slot, and room
-            meeting.Date = request.NewMeetingDate.Value;
-            if (request.NewSlotID.HasValue)
-                meeting.SlotID = request.NewSlotID.Value;
+            // Using ToMeetingDate and ToSlotID for the new meeting details
+            meeting.Date = request.ToMeetingDate.Value;
+            if (request.ToSlotID.HasValue)
+                meeting.SlotID = request.ToSlotID.Value;
             if (request.NewRoomID.HasValue)
                 meeting.RoomID = request.NewRoomID.Value;
 
@@ -141,11 +204,11 @@ namespace Application.Implementations.ACAD
 
             // Now handle syllabus item shifting
             // If the meeting is moved to a later date, shift syllabus items forward
-            if (request.NewMeetingDate.Value > originalDate)
+            if (request.ToMeetingDate.Value > originalDate)
             {
                 // Get the meetings between original date and new date (excluding the rescheduled one)
                 var meetingsBetween = futureMeetings
-                    .Where(m => m.Id != meeting.Id && m.Date > originalDate && m.Date <= request.NewMeetingDate.Value)
+                    .Where(m => m.Id != meeting.Id && m.Date > originalDate && m.Date <= request.ToMeetingDate.Value)
                     .OrderBy(m => m.Date)
                     .ToList();
 
@@ -169,11 +232,11 @@ namespace Application.Implementations.ACAD
                 }
             }
             // If the meeting is moved to an earlier date, shift syllabus items backward
-            else if (request.NewMeetingDate.Value < originalDate)
+            else if (request.ToMeetingDate.Value < originalDate)
             {
                 // Get meetings between new date and original date (excluding the rescheduled one)
                 var meetingsBetween = futureMeetings
-                    .Where(m => m.Id != meeting.Id && m.Date >= request.NewMeetingDate.Value && m.Date < originalDate)
+                    .Where(m => m.Id != meeting.Id && m.Date >= request.ToMeetingDate.Value && m.Date < originalDate)
                     .OrderByDescending(m => m.Date)
                     .ToList();
 
@@ -289,6 +352,59 @@ namespace Application.Implementations.ACAD
         {
             // Get presigned download URL for the attachment
             return await _fileStorageService.GetPresignedGetUrlAsync(filePath);
+        }
+
+        private async Task SendRequestStatusNotificationAsync(ACAD_AcademicRequest request, CORE_LookUp status)
+        {
+            try
+            {
+                var requestType = await _lookUpRepository.GetByIdAsync(request.RequestTypeID);
+                var requestTypeName = requestType?.Name ?? "Academic Request";
+                
+                var statusName = status.Name?.ToLower();
+                var isApproved = statusName == "approved";
+                var isRejected = statusName == "rejected";
+
+                if (!isApproved && !isRejected)
+                    return; // Only send notifications for approved/rejected status
+
+                var title = isApproved 
+                    ? $"✅ {requestTypeName} Request Approved"
+                    : $"❌ {requestTypeName} Request Rejected";
+
+                var message = isApproved
+                    ? $"Great news! Your {requestTypeName.ToLower()} request has been approved by staff. "
+                    : $"Your {requestTypeName.ToLower()} request has been rejected by staff. ";
+
+                // Add staff response if available
+                if (!string.IsNullOrEmpty(request.StaffResponse))
+                {
+                    message += $"Staff comment: {request.StaffResponse}";
+                }
+                else
+                {
+                    message += isApproved 
+                        ? "The changes will be processed accordingly."
+                        : "Please review the requirements and submit a new request if needed.";
+                }
+
+                var notificationRequest = new CreateNotificationRequest
+                {
+                    UserId = request.StudentID.ToString().ToUpperInvariant(),
+                    Title = title,
+                    Message = message,
+                    Type = isApproved ? "info" : "warning",
+                    IsRead = false
+                };
+
+                await _notificationService.CreateAsync(notificationRequest);
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the request processing
+                // In a real application, you would use a proper logging framework
+                Console.WriteLine($"Failed to send notification for request {request.Id}: {ex.Message}");
+            }
         }
     }
 }
