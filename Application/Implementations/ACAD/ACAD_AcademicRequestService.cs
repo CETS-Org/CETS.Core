@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces.ACAD;
 using Application.Interfaces.Common.Storage;
+using Application.Interfaces.COM;
 using AutoMapper;
 using Domain.Constants;
 using Domain.Entities;
@@ -9,6 +10,7 @@ using Domain.Interfaces.CORE;
 using DTOs.ACAD.ACAD_AcademicRequest.Requests;
 using DTOs.ACAD.ACAD_AcademicRequest.Responses;
 using DTOs.ACAD.ACAD_AcademicRequestHistory.Responses;
+using DTOs.COM.COM_Notification.Requests;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,6 +26,7 @@ namespace Application.Implementations.ACAD
         private readonly IACAD_ClassMeetingRepository _classMeetingRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICOM_NotificationService _notificationService;
 
         public ACAD_AcademicRequestService(
             IACAD_AcademicRequestRepository requestRepo,
@@ -32,7 +35,8 @@ namespace Application.Implementations.ACAD
             IFileStorageService fileStorageService,
             IACAD_ClassMeetingRepository classMeetingRepo,
             IUnitOfWork unitOfWork,
-            IMapper mapper)
+            IMapper mapper,
+            ICOM_NotificationService notificationService)
         {
             _requestRepo = requestRepo;
             _historyRepo = historyRepo;
@@ -41,6 +45,7 @@ namespace Application.Implementations.ACAD
             _classMeetingRepo = classMeetingRepo;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _notificationService = notificationService;
         }
 
         public async Task<AcademicRequestResponse> SubmitRequestAsync(CreateAcademicRequest requestDto)
@@ -163,6 +168,9 @@ namespace Application.Implementations.ACAD
 
             _historyRepo.Add(history);
             await _unitOfWork.SaveChangesAsync();
+
+            // Send notification to the student about the request status change
+            await SendRequestStatusNotificationAsync(entity, status);
         }
 
         private async Task HandleMeetingRescheduleAsync(ACAD_AcademicRequest request)
@@ -344,6 +352,59 @@ namespace Application.Implementations.ACAD
         {
             // Get presigned download URL for the attachment
             return await _fileStorageService.GetPresignedGetUrlAsync(filePath);
+        }
+
+        private async Task SendRequestStatusNotificationAsync(ACAD_AcademicRequest request, CORE_LookUp status)
+        {
+            try
+            {
+                var requestType = await _lookUpRepository.GetByIdAsync(request.RequestTypeID);
+                var requestTypeName = requestType?.Name ?? "Academic Request";
+                
+                var statusName = status.Name?.ToLower();
+                var isApproved = statusName == "approved";
+                var isRejected = statusName == "rejected";
+
+                if (!isApproved && !isRejected)
+                    return; // Only send notifications for approved/rejected status
+
+                var title = isApproved 
+                    ? $"✅ {requestTypeName} Request Approved"
+                    : $"❌ {requestTypeName} Request Rejected";
+
+                var message = isApproved
+                    ? $"Great news! Your {requestTypeName.ToLower()} request has been approved by staff. "
+                    : $"Your {requestTypeName.ToLower()} request has been rejected by staff. ";
+
+                // Add staff response if available
+                if (!string.IsNullOrEmpty(request.StaffResponse))
+                {
+                    message += $"Staff comment: {request.StaffResponse}";
+                }
+                else
+                {
+                    message += isApproved 
+                        ? "The changes will be processed accordingly."
+                        : "Please review the requirements and submit a new request if needed.";
+                }
+
+                var notificationRequest = new CreateNotificationRequest
+                {
+                    UserId = request.StudentID.ToString().ToUpperInvariant(),
+                    Title = title,
+                    Message = message,
+                    Type = isApproved ? "info" : "warning",
+                    IsRead = false
+                };
+
+                await _notificationService.CreateAsync(notificationRequest);
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the request processing
+                // In a real application, you would use a proper logging framework
+                Console.WriteLine($"Failed to send notification for request {request.Id}: {ex.Message}");
+            }
         }
     }
 }
