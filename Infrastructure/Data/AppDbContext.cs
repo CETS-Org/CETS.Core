@@ -147,6 +147,10 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ACAD_AcReq_Status");
 
+            entity.HasOne(d => d.Priority).WithMany(p => p.ACAD_AcademicRequestPriorities)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_ACAD_AcReq_Priority");
+
             entity.HasOne(d => d.FromClass).WithMany(p => p.ACAD_AcademicRequestFromClasses).HasConstraintName("FK_ACAD_AcReq_FromClass");
 
             entity.HasOne(d => d.ProcessedByNavigation).WithMany(p => p.ACAD_AcademicRequests).HasConstraintName("FK_ACAD_AcReq_Processed");
@@ -160,6 +164,25 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK_ACAD_AcReq_Student");
 
             entity.HasOne(d => d.ToClass).WithMany(p => p.ACAD_AcademicRequestToClasses).HasConstraintName("FK_ACAD_AcReq_ToClass");
+
+            entity.HasOne(d => d.ClassMeeting).WithMany().HasForeignKey(d => d.ClassMeetingID)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_ACAD_AcReq_ClassMeeting");
+
+            entity.HasOne(d => d.FromSlot).WithMany(p => p.ACAD_AcademicRequestFromSlots)
+                .HasForeignKey(d => d.FromSlotID)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_ACAD_AcReq_FromSlot");
+
+            entity.HasOne(d => d.ToSlot).WithMany(p => p.ACAD_AcademicRequestToSlots)
+                .HasForeignKey(d => d.ToSlotID)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_ACAD_AcReq_ToSlot");
+
+            entity.HasOne(d => d.NewRoom).WithMany()
+                .HasForeignKey(d => d.NewRoomID)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_ACAD_AcReq_NewRoom");
         });
 
         modelBuilder.Entity<ACAD_AcademicRequestHistory>(entity =>

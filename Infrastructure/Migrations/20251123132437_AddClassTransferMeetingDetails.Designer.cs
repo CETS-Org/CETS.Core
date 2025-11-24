@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251123132437_AddClassTransferMeetingDetails")]
+    partial class AddClassTransferMeetingDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,7 +66,13 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("FromSlotID")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateOnly?>("NewMeetingDate")
+                        .HasColumnType("date");
+
                     b.Property<Guid?>("NewRoomID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("NewSlotID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("PriorityID")
@@ -109,6 +118,8 @@ namespace Infrastructure.Migrations
                     b.HasIndex("FromSlotID");
 
                     b.HasIndex("NewRoomID");
+
+                    b.HasIndex("NewSlotID");
 
                     b.HasIndex("PriorityID");
 
@@ -2659,6 +2670,12 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("FK_ACAD_AcReq_NewRoom");
 
+                    b.HasOne("Domain.Entities.CORE_LookUp", "NewSlot")
+                        .WithMany("ACAD_AcademicRequestNewSlots")
+                        .HasForeignKey("NewSlotID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("FK_ACAD_AcReq_NewSlot");
+
                     b.HasOne("Domain.Entities.CORE_LookUp", "Priority")
                         .WithMany("ACAD_AcademicRequestPriorities")
                         .HasForeignKey("PriorityID")
@@ -2702,6 +2719,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("FromSlot");
 
                     b.Navigation("NewRoom");
+
+                    b.Navigation("NewSlot");
 
                     b.Navigation("Priority");
 
@@ -4067,6 +4086,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("ACAD_AcademicRequestFromSlots");
 
                     b.Navigation("ACAD_AcademicRequestHistories");
+
+                    b.Navigation("ACAD_AcademicRequestNewSlots");
 
                     b.Navigation("ACAD_AcademicRequestPriorities");
 

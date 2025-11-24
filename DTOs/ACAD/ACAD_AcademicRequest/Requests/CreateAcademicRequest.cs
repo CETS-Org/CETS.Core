@@ -10,16 +10,20 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Requests
     {
         public Guid StudentID { get; set; }
         public Guid RequestTypeID { get; set; }
+        public Guid? PriorityID { get; set; }
         public string Reason { get; set; } = null!;
         public Guid? FromClassID { get; set; }
         public Guid? ToClassID { get; set; }
         public DateOnly? EffectiveDate { get; set; }
+        // For class transfer - specific meeting details
+        public DateOnly? FromMeetingDate { get; set; }
+        public Guid? FromSlotID { get; set; }
+        public DateOnly? ToMeetingDate { get; set; }
+        public Guid? ToSlotID { get; set; }
         public string? AttachmentUrl { get; set; }
 
         // For meeting reschedule requests
         public Guid? ClassMeetingID { get; set; }
-        public DateOnly? NewMeetingDate { get; set; }
-        public Guid? NewSlotID { get; set; }
         public Guid? NewRoomID { get; set; }
     }
 }

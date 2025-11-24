@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251123124648_AddPriorityInAcademicRequest")]
+    partial class AddPriorityInAcademicRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,13 +60,13 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("FromClassID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateOnly?>("FromMeetingDate")
+                    b.Property<DateOnly?>("NewMeetingDate")
                         .HasColumnType("date");
 
-                    b.Property<Guid?>("FromSlotID")
+                    b.Property<Guid?>("NewRoomID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("NewRoomID")
+                    b.Property<Guid?>("NewSlotID")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("PriorityID")
@@ -92,12 +95,6 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("ToClassID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateOnly?>("ToMeetingDate")
-                        .HasColumnType("date");
-
-                    b.Property<Guid?>("ToSlotID")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AcademicRequestStatusID");
@@ -106,9 +103,9 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("FromClassID");
 
-                    b.HasIndex("FromSlotID");
-
                     b.HasIndex("NewRoomID");
+
+                    b.HasIndex("NewSlotID");
 
                     b.HasIndex("PriorityID");
 
@@ -119,8 +116,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("StudentID");
 
                     b.HasIndex("ToClassID");
-
-                    b.HasIndex("ToSlotID");
 
                     b.ToTable("ACAD_AcademicRequests");
                 });
@@ -2638,26 +2633,20 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Entities.ACAD_ClassMeeting", "ClassMeeting")
                         .WithMany()
-                        .HasForeignKey("ClassMeetingID")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("FK_ACAD_AcReq_ClassMeeting");
+                        .HasForeignKey("ClassMeetingID");
 
                     b.HasOne("Domain.Entities.ACAD_Class", "FromClass")
                         .WithMany("ACAD_AcademicRequestFromClasses")
                         .HasForeignKey("FromClassID")
                         .HasConstraintName("FK_ACAD_AcReq_FromClass");
 
-                    b.HasOne("Domain.Entities.CORE_LookUp", "FromSlot")
-                        .WithMany("ACAD_AcademicRequestFromSlots")
-                        .HasForeignKey("FromSlotID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("FK_ACAD_AcReq_FromSlot");
-
                     b.HasOne("Domain.Entities.FAC_Room", "NewRoom")
                         .WithMany()
-                        .HasForeignKey("NewRoomID")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("FK_ACAD_AcReq_NewRoom");
+                        .HasForeignKey("NewRoomID");
+
+                    b.HasOne("Domain.Entities.CORE_LookUp", "NewSlot")
+                        .WithMany()
+                        .HasForeignKey("NewSlotID");
 
                     b.HasOne("Domain.Entities.CORE_LookUp", "Priority")
                         .WithMany("ACAD_AcademicRequestPriorities")
@@ -2687,21 +2676,15 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("ToClassID")
                         .HasConstraintName("FK_ACAD_AcReq_ToClass");
 
-                    b.HasOne("Domain.Entities.CORE_LookUp", "ToSlot")
-                        .WithMany("ACAD_AcademicRequestToSlots")
-                        .HasForeignKey("ToSlotID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("FK_ACAD_AcReq_ToSlot");
-
                     b.Navigation("AcademicRequestStatus");
 
                     b.Navigation("ClassMeeting");
 
                     b.Navigation("FromClass");
 
-                    b.Navigation("FromSlot");
-
                     b.Navigation("NewRoom");
+
+                    b.Navigation("NewSlot");
 
                     b.Navigation("Priority");
 
@@ -2712,8 +2695,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Student");
 
                     b.Navigation("ToClass");
-
-                    b.Navigation("ToSlot");
                 });
 
             modelBuilder.Entity("Domain.Entities.ACAD_AcademicRequestHistory", b =>
@@ -4064,15 +4045,11 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("ACAD_AcademicRequestAcademicRequestStatuses");
 
-                    b.Navigation("ACAD_AcademicRequestFromSlots");
-
                     b.Navigation("ACAD_AcademicRequestHistories");
 
                     b.Navigation("ACAD_AcademicRequestPriorities");
 
                     b.Navigation("ACAD_AcademicRequestRequestTypes");
-
-                    b.Navigation("ACAD_AcademicRequestToSlots");
 
                     b.Navigation("ACAD_Assignments");
 

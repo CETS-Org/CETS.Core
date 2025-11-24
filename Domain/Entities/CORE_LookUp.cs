@@ -25,6 +25,12 @@ public partial class CORE_LookUp : AuditedEntity
 
     public virtual ICollection<ACAD_AcademicRequest> ACAD_AcademicRequestRequestTypes { get; set; } = new List<ACAD_AcademicRequest>();
 
+    public virtual ICollection<ACAD_AcademicRequest> ACAD_AcademicRequestPriorities { get; set; } = new List<ACAD_AcademicRequest>();
+
+    public virtual ICollection<ACAD_AcademicRequest> ACAD_AcademicRequestFromSlots { get; set; } = new List<ACAD_AcademicRequest>();
+
+    public virtual ICollection<ACAD_AcademicRequest> ACAD_AcademicRequestToSlots { get; set; } = new List<ACAD_AcademicRequest>();
+
     public virtual ICollection<ACAD_Assignment> ACAD_Assignments { get; set; } = new List<ACAD_Assignment>();
 
     public virtual ICollection<ACAD_Attendance> ACAD_Attendances { get; set; } = new List<ACAD_Attendance>();

@@ -45,6 +45,11 @@ namespace Application.Implementations.ACAD
 
         public async Task<AcademicRequestResponse> SubmitRequestAsync(CreateAcademicRequest requestDto)
         {
+            // TODO: Add proper role-based validation for meeting reschedule requests
+            // Currently, the frontend filters out meeting reschedule for students
+            // For proper backend validation, we need to check the user's role from the authentication context
+            // or pass the user's role in the request DTO
+
             var entity = _mapper.Map<ACAD_AcademicRequest>(requestDto);
             
             var pendingStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AcademicRequestStatus, "Pending");
@@ -55,7 +60,52 @@ namespace Application.Implementations.ACAD
             
             entity.AcademicRequestStatusID = pendingStatus.Id;
 
-            if (entity.FromClassID.HasValue || entity.ToClassID.HasValue)
+            // Get request type once for both priority and effective date determination
+            var requestType = await _lookUpRepository.GetByIdAsync(requestDto.RequestTypeID);
+            if (requestType == null)
+            {
+                throw new KeyNotFoundException("Request type not found. Please ensure the lookup data is properly seeded.");
+            }
+
+            var requestTypeName = (requestType.Name ?? "").ToLower();
+            var requestTypeCode = (requestType.Code ?? "").ToLower();
+
+            // Set default priority based on request type if not provided
+            if (!requestDto.PriorityID.HasValue || requestDto.PriorityID.Value == Guid.Empty)
+            {
+                string priorityCode = "Medium";
+
+                if (requestTypeName.Contains("meeting reschedule") || requestTypeCode.Contains("meetingreschedule") ||
+                    requestTypeName.Contains("class transfer") || requestTypeCode.Contains("classtransfer"))
+                {
+                    priorityCode = "High";
+                }
+                else if (requestTypeName.Contains("enrollment cancellation") || requestTypeCode.Contains("enrollmentcancellation") ||
+                         requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension"))
+                {
+                    priorityCode = "Medium";
+                }
+                else if (requestTypeName.Contains("other") || requestTypeCode.Contains("other"))
+                {
+                    priorityCode = "Low";
+                }
+
+                var defaultPriority = await _lookUpRepository.GetByCodeAsync(LookUpTypes.Priority, priorityCode);
+                if (defaultPriority == null)
+                {
+                    throw new KeyNotFoundException($"Default priority ({priorityCode}) not found for Priority. Please ensure the lookup data is properly seeded.");
+                }
+                entity.PriorityID = defaultPriority.Id;
+            }
+
+            // Set EffectiveDate based on request type:
+            // - 3 days for meeting reschedule
+            // - 7 days for all other requests
+            if (requestTypeName.Contains("meeting reschedule") || requestTypeCode.Contains("meetingreschedule"))
+            {
+                entity.EffectiveDate = DateOnly.FromDateTime(DateTime.Now.AddDays(3));
+            }
+            else
             {
                 entity.EffectiveDate = DateOnly.FromDateTime(DateTime.Now.AddDays(7));
             }
@@ -68,7 +118,6 @@ namespace Application.Implementations.ACAD
             {
                 RequestID = entity.Id,
                 StatusID = pendingStatus.Id,
-                Description = "Request submitted",
                 AttachmentUrl = requestDto.AttachmentUrl
             };
 
@@ -95,6 +144,11 @@ namespace Application.Implementations.ACAD
             var approvedStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AcademicRequestStatus, "Approved");
             if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && entity.ClassMeetingID.HasValue)
             {
+                // Use staff-selected room if provided, otherwise use the room from the request
+                if (requestDto.SelectedRoomID.HasValue)
+                {
+                    entity.NewRoomID = requestDto.SelectedRoomID.Value;
+                }
                 await HandleMeetingRescheduleAsync(entity);
             }
 
@@ -113,7 +167,7 @@ namespace Application.Implementations.ACAD
 
         private async Task HandleMeetingRescheduleAsync(ACAD_AcademicRequest request)
         {
-            if (!request.ClassMeetingID.HasValue || !request.NewMeetingDate.HasValue)
+            if (!request.ClassMeetingID.HasValue || !request.ToMeetingDate.HasValue)
                 return;
 
             var meeting = await _classMeetingRepo.GetByIdAsync(request.ClassMeetingID.Value);
@@ -131,9 +185,10 @@ namespace Application.Implementations.ACAD
                 .ToList();
 
             // Update the rescheduled meeting's date, slot, and room
-            meeting.Date = request.NewMeetingDate.Value;
-            if (request.NewSlotID.HasValue)
-                meeting.SlotID = request.NewSlotID.Value;
+            // Using ToMeetingDate and ToSlotID for the new meeting details
+            meeting.Date = request.ToMeetingDate.Value;
+            if (request.ToSlotID.HasValue)
+                meeting.SlotID = request.ToSlotID.Value;
             if (request.NewRoomID.HasValue)
                 meeting.RoomID = request.NewRoomID.Value;
 
@@ -141,11 +196,11 @@ namespace Application.Implementations.ACAD
 
             // Now handle syllabus item shifting
             // If the meeting is moved to a later date, shift syllabus items forward
-            if (request.NewMeetingDate.Value > originalDate)
+            if (request.ToMeetingDate.Value > originalDate)
             {
                 // Get the meetings between original date and new date (excluding the rescheduled one)
                 var meetingsBetween = futureMeetings
-                    .Where(m => m.Id != meeting.Id && m.Date > originalDate && m.Date <= request.NewMeetingDate.Value)
+                    .Where(m => m.Id != meeting.Id && m.Date > originalDate && m.Date <= request.ToMeetingDate.Value)
                     .OrderBy(m => m.Date)
                     .ToList();
 
@@ -169,11 +224,11 @@ namespace Application.Implementations.ACAD
                 }
             }
             // If the meeting is moved to an earlier date, shift syllabus items backward
-            else if (request.NewMeetingDate.Value < originalDate)
+            else if (request.ToMeetingDate.Value < originalDate)
             {
                 // Get meetings between new date and original date (excluding the rescheduled one)
                 var meetingsBetween = futureMeetings
-                    .Where(m => m.Id != meeting.Id && m.Date >= request.NewMeetingDate.Value && m.Date < originalDate)
+                    .Where(m => m.Id != meeting.Id && m.Date >= request.ToMeetingDate.Value && m.Date < originalDate)
                     .OrderByDescending(m => m.Date)
                     .ToList();
 

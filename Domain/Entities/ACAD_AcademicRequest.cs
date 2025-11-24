@@ -13,6 +13,8 @@ public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
 
     public Guid AcademicRequestStatusID { get; set; }
 
+    public Guid? PriorityID { get; set; }
+
     public string Reason { get; set; } = null!;
 
     [Precision(0)]
@@ -23,6 +25,12 @@ public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
     public Guid? ToClassID { get; set; }
 
     public DateOnly? EffectiveDate { get; set; }
+
+    // For class transfer - specific meeting details
+    public DateOnly? FromMeetingDate { get; set; }
+    public Guid? FromSlotID { get; set; }
+    public DateOnly? ToMeetingDate { get; set; }
+    public Guid? ToSlotID { get; set; }
 
     public string? AttachmentUrl { get; set; }
 
@@ -36,16 +44,15 @@ public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
     // For meeting reschedule requests
     public Guid? ClassMeetingID { get; set; }
 
-    public DateOnly? NewMeetingDate { get; set; }
-
-    public Guid? NewSlotID { get; set; }
-
     public Guid? NewRoomID { get; set; }
 
     public virtual ICollection<ACAD_AcademicRequestHistory> ACAD_AcademicRequestHistories { get; set; } = new List<ACAD_AcademicRequestHistory>();
 
     [ForeignKey(nameof(AcademicRequestStatusID))]
     public virtual CORE_LookUp AcademicRequestStatus { get; set; } = null!;
+
+    [ForeignKey(nameof(PriorityID))]
+    public virtual CORE_LookUp? Priority { get; set; }
 
     [ForeignKey(nameof(ClassMeetingID))]
     public virtual ACAD_ClassMeeting? ClassMeeting { get; set; }
@@ -56,8 +63,11 @@ public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
     [ForeignKey(nameof(NewRoomID))]
     public virtual FAC_Room? NewRoom { get; set; }
 
-    [ForeignKey(nameof(NewSlotID))]
-    public virtual CORE_LookUp? NewSlot { get; set; }
+    [ForeignKey(nameof(FromSlotID))]
+    public virtual CORE_LookUp? FromSlot { get; set; }
+
+    [ForeignKey(nameof(ToSlotID))]
+    public virtual CORE_LookUp? ToSlot { get; set; }
 
     [ForeignKey(nameof(ProcessedBy))]
     public virtual IDN_Account? ProcessedByNavigation { get; set; }
