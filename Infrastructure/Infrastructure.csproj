@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Implementations\Repositories\Analytics\" />
     <Folder Include="Implementations\Services\" />
   </ItemGroup>
 

@@ -10,7 +10,7 @@ namespace Domain.Interfaces.ACAD
         Task<IEnumerable<ACAD_Course>> FilterAsync(Guid? levelId, Guid? formatId, Guid? teacherId);
         Task<ACAD_Course?> GetDetailAsync(Guid courseId);
         IQueryable<ACAD_Course> GetAllCoursesForListAsync();
-
+        Task<IEnumerable<ACAD_Course>> GetAllCourse();
         Task<CourseSearchResult> SearchBasicAsync(CourseSearchQuery query, CancellationToken ct);
        
     }
