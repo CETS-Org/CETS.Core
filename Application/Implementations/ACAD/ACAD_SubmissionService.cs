@@ -521,7 +521,7 @@ namespace Application.Implementations.ACAD
 
             var prompt = $@"You are an IELTS Writing examiner.
                         Read the following essay and provide:
-                        1. A band score (0–9)
+                        1. A band score (0–10)
                         2. Short feedback (3–5 sentences)
                         Output ONLY valid JSON in this exact format: {{""score"": number, ""feedback"": string}}
 

@@ -11,6 +11,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         public ACAD_EnrollmentRepository(AppDbContext context) : base(context)
         {
         }
+        public async Task<IEnumerable<ACAD_Enrollment>> GetAllEnrollment()
+        {
+            return await _context.ACAD_Enrollments
+                .Include(e => e.Class)
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.ACAD_CourseTeacherAssignments)
+                        .ThenInclude(cta => cta.Teacher)
+                        .ThenInclude(t => t.Account)
+                .Include(e => e.EnrollmentStatus)
+                .ToListAsync();
+        }
         public async Task<IEnumerable<ACAD_Enrollment>> GetByStudentAsync(Guid studentId)
         {
             return await _context.ACAD_Enrollments

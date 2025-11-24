@@ -14,6 +14,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
         }
 
+        public async Task<List<ACAD_Class>> GetAllClass()
+        {
+            return await _context.ACAD_Classes
+                .Include(c => c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Teacher)
+                        .ThenInclude(t => t.Account)
+                .Include(c => c.ClassStatus)
+                .Where(c => !c.IsDeleted)              
+                .ToListAsync();
+        }
+
         public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);

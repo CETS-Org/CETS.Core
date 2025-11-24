@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Implementations\Analytics\" />
     <Folder Include="Implementations\CORE\" />
     <Folder Include="Implementations\EVT\" />
     <Folder Include="Implementations\FAC\" />

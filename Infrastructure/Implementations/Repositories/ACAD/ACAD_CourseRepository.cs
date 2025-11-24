@@ -75,6 +75,16 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .FirstOrDefaultAsync(c => c.Id == courseId);
         }
 
+        public async Task<IEnumerable<ACAD_Course>> GetAllCourse()
+        {
+            return await _context.ACAD_Courses
+                .Include(c => c.Category)
+                .Include(c => c.ACAD_Enrollments)
+                .Include(c => c.CreatedByNavigation)
+                .Include(c => c.UpdatedByNavigation)
+                .ToListAsync();
+        }
+
 
         public IQueryable<ACAD_Course> GetAllCoursesForListAsync()
         {
