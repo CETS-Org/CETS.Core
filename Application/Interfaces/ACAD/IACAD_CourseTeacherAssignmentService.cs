@@ -1,5 +1,4 @@
 using DTOs.ACAD.ACAD_Course.Responses;
-using DTOs.ACAD.ACAD_CourseTeacherAssignment.Request;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Requests;
 using DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;

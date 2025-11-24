@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DTOs.ACAD.ACAD_CourseTeacherAssignment.Request
+namespace DTOs.ACAD.ACAD_CourseTeacherAssignment.Requests
 {
     public class GetAvailableTeachersRequest
     {
