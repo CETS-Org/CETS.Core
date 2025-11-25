@@ -48,7 +48,9 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.Account.FullName : null))
                 .ForMember(dest => dest.TeacherEmail, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.Account.Email : null))
                 .ForMember(dest => dest.TeacherAvatarUrl, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.Account.AvatarUrl : null))
-                .ForMember(dest => dest.TeacherCode, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.TeacherCode : null));
+                .ForMember(dest => dest.TeacherCode, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.TeacherCode : null));             
+
+
         }
     }
 }

@@ -147,9 +147,9 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<ClassStaffViewResponse?>(entity);
         }
 
-        public async Task<List<ClassStaffViewResponse>> GetAllClassStaffView()
+        public async Task<List<ClassStaffViewResponse>> GetClassByCourseStaffView(Guid courseId )
         {
-            var entities = await _classRepo.GetAllClassStaffView();
+            var entities = await _classRepo.GetClassByCourseStaffView(courseId);
             return _mapper.Map<List<ClassStaffViewResponse>>(entities);
         }
 

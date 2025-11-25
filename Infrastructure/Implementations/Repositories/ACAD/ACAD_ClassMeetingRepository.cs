@@ -19,11 +19,16 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         public async Task<IEnumerable<ACAD_ClassMeeting>> GetAllClassMeetingByClassId(Guid classId)
         {
             return await _context.ACAD_ClassMeetings
-                 .Where(cta => cta.ClassID == classId)
+                 .Where(cta => cta.ClassID == classId && cta.IsDeleted == false)
                  .Include(c => c.Room)
                  .Include(c => c.Slot)
-                    .Include(c => c.CoveredTopic)
-
+                 .Include(c => c.CoveredTopic)
+                 .Include(c => c.Class)                                 
+                .Include(c=> c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Teacher)
+                            .ThenInclude(t => t.Account)
+                .Include(c => c.TeacherAssignment)                 
+                        .ThenInclude(ta => ta.Course)
                  .ToListAsync();
         }
 

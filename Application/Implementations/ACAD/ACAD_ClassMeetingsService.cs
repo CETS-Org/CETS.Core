@@ -28,10 +28,10 @@ namespace Application.Implementations.ACAD
             _uow = uow;
         }
 
-        public async Task<IEnumerable<ClassMeetingResponse>> GetAllClassMeetingByClassId(Guid classId)
+        public async Task<IEnumerable<ClassMeetingStaffViewResponse>> GetAllClassMeetingByClassId(Guid classId)
         {
             var result = await _classMeetingRepository.GetAllClassMeetingByClassId(classId);
-            return _mapper.Map<IEnumerable<ClassMeetingResponse>>(result);
+            return _mapper.Map<IEnumerable<ClassMeetingStaffViewResponse>>(result);
         }
 
         public async Task<ACAD_ClassMeeting?> GetClassMeetingTodayByClassId(Guid classId)
@@ -60,7 +60,6 @@ namespace Application.Implementations.ACAD
             return await _uow.ExecuteInTransactionAsync(async () =>
             {
                 var entity = _mapper.Map<ACAD_ClassMeeting>(request);
-                entity.Id = Guid.NewGuid();
                 entity.ClassID = request.ClassID;
                 entity.SlotID = request.SlotID;
                 entity.Date = request.Date;
@@ -68,7 +67,9 @@ namespace Application.Implementations.ACAD
                 entity.TeacherAssignmentID = request.TeacherAssignmentID;
                 entity.OnlineMeetingUrl = request.OnlineMeetingUrl;
                 entity.Passcode = request.Passcode;
-                entity.CoveredTopicID = request.CoveredTopicID;                           
+                entity.CoveredTopicID = request.CoveredTopicID;    
+                entity.IsActive = true;
+                entity.IsStudy = true;
 
                 _classMeetingRepository.Add(entity);
                 await _uow.SaveChangesAsync();
