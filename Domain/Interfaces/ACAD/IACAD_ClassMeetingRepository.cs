@@ -11,6 +11,7 @@ namespace Domain.Interfaces.ACAD
         Task<IEnumerable<TeacherWeeklyScheduleResponse>> WeeklyScheduleGetByTeacherAsync(Guid teacherId, CancellationToken ct);
         Task<IEnumerable<ACAD_ClassMeeting>> GetAllClassMeetingByClassId(Guid classId);
         Task<ACAD_SyllabusItem> GetCoveredTopicByClassMeetingId(Guid classMeetingId);
+        Task<ACAD_ClassMeeting?> GetMeetingDetailAsync(Guid roomId, DateOnly date, Guid slotId);
     }
 }
 
