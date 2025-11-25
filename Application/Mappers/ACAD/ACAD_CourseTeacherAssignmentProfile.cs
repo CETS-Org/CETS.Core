@@ -48,15 +48,7 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.Account.FullName : null))
                 .ForMember(dest => dest.TeacherEmail, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.Account.Email : null))
                 .ForMember(dest => dest.TeacherAvatarUrl, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.Account.AvatarUrl : null))
-                .ForMember(dest => dest.TeacherCode, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.TeacherCode : null));
-                .ForMember(dest => dest.CourseId, opt => opt.MapFrom(src => src.Course.Id))
-                .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.CourseName))
-                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Teacher.Account.FullName))
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Teacher.Account.Email))
-                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Teacher.Account.PhoneNumber))
-                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Teacher.Account.AvatarUrl))
-                .ForMember(dest => dest.YearsExperience, opt => opt.MapFrom(src => src.Teacher.YearsExperience));
-
+                .ForMember(dest => dest.TeacherCode, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.TeacherCode : null));             
 
 
         }

@@ -27,9 +27,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .ToListAsync();
         }
 
-        public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
-        {
-            var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+     
         /* public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
          {
              var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
