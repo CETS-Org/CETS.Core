@@ -15,7 +15,7 @@ public partial class ACAD_ClassMeeting : AuditedEntity
 
     public DateOnly Date { get; set; }
 
-    public bool IsStudy { get; set; }
+    
 
     public Guid? RoomID { get; set; }
 
@@ -32,7 +32,8 @@ public partial class ACAD_ClassMeeting : AuditedEntity
 
     public Guid CoveredTopicID { get; set; }
 
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
+    public bool IsStudy { get; set; } = true;
 
     public bool IsDeleted { get; set; }
 

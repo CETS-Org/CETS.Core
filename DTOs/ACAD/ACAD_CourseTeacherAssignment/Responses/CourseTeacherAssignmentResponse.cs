@@ -12,6 +12,7 @@ namespace DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses
 
         // Properties from HEAD branch
         public string? CourseName { get; set; }
+        public string? CourseId { get; set; }
         public string? FullName { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }

@@ -1,27 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DTOs.ACAD.ACAD_Assignment.Responses;
-using DTOs.ACAD.ACAD_SyllabusItem.Responses;
 
 namespace DTOs.ACAD.ACAD_ClassMeetings.Responses
 {
-    public class ClassMeetingResponse
+    public class ClassMeetingStaffViewResponse
     {
-        public Guid Id { get; set; }    
+        public Guid Id { get; set; }
         public Guid ClassID { get; set; }
 
         public DateOnly Date { get; set; }
 
         public bool IsStudy { get; set; }
 
-        public string? RoomID { get; set; }
+        public Guid? teacherAssignmentID { get; set; }
+        public Guid? RoomID { get; set; }
 
         public string? RoomCode { get; set; }
+
+        public string? CoveredTopic { get; set; }
+
+        public string? CourseName { get; set; }
+        public Guid? CourseId { get; set; }
+
+        public string? TeacherName { get; set; }
 
         public string? OnlineMeetingUrl { get; set; }
 
@@ -37,8 +42,5 @@ namespace DTOs.ACAD.ACAD_ClassMeetings.Responses
         public bool IsDeleted { get; set; }
 
         public string slot { get; set; }
-
-        public string? coveredTopic { get; set; }
-
     }
 }

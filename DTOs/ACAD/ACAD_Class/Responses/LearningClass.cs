@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DTOs.ACAD.ACAD_ClassMeetings.Responses;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,5 +21,6 @@ namespace DTOs.ACAD.ACAD_Class.Responses
         public string? TimeSlot {  get; set; }
         public string? RoomCode { get; set; }
         public bool IsActive { get; set; }
+        public ClassMeetingResponse? nextMeeting { get;set;}
     }
 }

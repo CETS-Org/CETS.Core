@@ -30,8 +30,6 @@ namespace DTOs.ACAD.ACAD_ClassMeetings.Requests
 
         public string? ProgressNote { get; set; }
 
-        public Guid CoveredTopicID { get; set; }
-
         public bool IsActive { get; set; }
 
         public bool IsDeleted { get; set; }

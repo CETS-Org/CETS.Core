@@ -1,7 +1,9 @@
-﻿using Domain.Data;
+﻿using DocumentFormat.OpenXml.Office.CoverPageProps;
+using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Class.Responses;
+using DTOs.ACAD.ACAD_ClassMeetings.Responses;
 using Infrastructure.Implementations.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -28,61 +30,165 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        /* public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
+         {
+             var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
 
-            var items = await (
-                from enroll in _context.ACAD_Enrollments
-                where enroll.StudentID == studentId && !enroll.IsDeleted
-                join cls in _context.ACAD_Classes on enroll.ClassID equals cls.Id
-                where !cls.IsDeleted
-                join course in _context.ACAD_Courses on enroll.CourseID equals course.Id
-                join statusLookup in _context.CORE_LookUps on cls.ClassStatusID equals statusLookup.Id
-                join assignOpt in _context.ACAD_CourseTeacherAssignments on cls.TeacherAssignmentID equals assignOpt.Id into assignLeft
-                from assign in assignLeft.DefaultIfEmpty()
-                select new
-                {
-                    Class = cls,
-                    Course = course,
-                    StatusLookup = statusLookup,
-                    TeacherId = assign != null ? assign.TeacherID : (Guid?)null,
-                    TeacherName = assign != null ? assign.Teacher.Account.FullName : null,
-                    NextMeeting = _context.ACAD_ClassMeetings
-                        .Where(m => m.ClassID == cls.Id && !m.IsDeleted && m.IsActive && m.Date >= today)
-                        .OrderBy(m => m.Date)
-                        .FirstOrDefault(),
-                }
-            ).ToListAsync();
+             var items = await (
+                 from enroll in _context.ACAD_Enrollments
+                 where enroll.StudentID == studentId && !enroll.IsDeleted
+                 join cls in _context.ACAD_Classes on enroll.ClassID equals cls.Id
+                 where !cls.IsDeleted
+                 join course in _context.ACAD_Courses on enroll.CourseID equals course.Id
+                 join statusLookup in _context.CORE_LookUps on cls.ClassStatusID equals statusLookup.Id
+                 join assignOpt in _context.ACAD_CourseTeacherAssignments on cls.TeacherAssignmentID equals assignOpt.Id into assignLeft
+                 from assign in assignLeft.DefaultIfEmpty()
+                 select new
+                 {
+                     Class = cls,
+                     Course = course,
+                     StatusLookup = statusLookup,
+                     TeacherId = assign != null ? assign.TeacherID : (Guid?)null,
+                     TeacherName = assign != null ? assign.Teacher.Account.FullName : null,
+                     NextMeeting = _context.ACAD_ClassMeetings
+                         .Where(m => m.ClassID == cls.Id && !m.IsDeleted && m.IsActive && m.Date >= today)
+                         .OrderBy(m => m.Date)
+                         .FirstOrDefault(),
+                 }
+             ).ToListAsync();
 
-            var responses = new List<LearningClassResponse>();
+             var responses = new List<LearningClassResponse>();
 
-            foreach (var e in items)
+             foreach (var e in items)
+             {
+                 var timeSlotName = e.NextMeeting != null
+                     ? _context.CORE_LookUps.Where(l => l.Id == e.NextMeeting.SlotID).Select(l => l.Name).FirstOrDefault()
+                     : null;
+
+                 var roomCode = e.NextMeeting != null && e.NextMeeting.RoomID != null
+                     ? _context.FAC_Rooms.Where(r => r.Id == e.NextMeeting.RoomID).Select(r => r.RoomCode).FirstOrDefault()
+                     : null;
+
+                 responses.Add(new LearningClassResponse
+                 {
+                     Id = e.Class.Id,
+                     StatusName = e.StatusLookup.Name,
+                     CourseName = e.Course.CourseName,
+                     CourseCode = e.Course.CourseCode,
+                     ClassName = e.Class.ClassName,
+                     TeacherId = e.TeacherId,
+                     TeacherName = e.TeacherName,
+                     StartDate = e.Class.StartDate,
+                     EndDate = e.Class.EndDate,
+                     TimeSlot = timeSlotName,
+                     RoomCode = roomCode,
+                     IsActive = e.Class.IsActive
+                 });
+             }
+
+             return responses;
+         }*/
+
+       public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
             {
-                var timeSlotName = e.NextMeeting != null
-                    ? _context.CORE_LookUps.Where(l => l.Id == e.NextMeeting.SlotID).Select(l => l.Name).FirstOrDefault()
-                    : null;
+                var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
 
-                var roomCode = e.NextMeeting != null && e.NextMeeting.RoomID != null
-                    ? _context.FAC_Rooms.Where(r => r.Id == e.NextMeeting.RoomID).Select(r => r.RoomCode).FirstOrDefault()
-                    : null;
+                // 1 QUERY duy nhất, mọi thứ đều nằm trong projection
+                var items = await (
+                    from enroll in _context.ACAD_Enrollments
+                    where enroll.StudentID == studentId && !enroll.IsDeleted
 
-                responses.Add(new LearningClassResponse
+                    join cls in _context.ACAD_Classes on enroll.ClassID equals cls.Id
+                    where !cls.IsDeleted
+
+                    join course in _context.ACAD_Courses on enroll.CourseID equals course.Id
+                    join statusLookup in _context.CORE_LookUps on cls.ClassStatusID equals statusLookup.Id
+
+                    join assignOpt in _context.ACAD_CourseTeacherAssignments
+                        on cls.TeacherAssignmentID equals assignOpt.Id into assignLeft
+                    from assign in assignLeft.DefaultIfEmpty()
+
+                    // Subquery: tìm buổi học sắp tới nhất của từng class + lấy luôn RoomCode, SlotName
+                    select new
+                    {
+                        Class = cls,
+                        Course = course,
+                        StatusLookup = statusLookup,
+                        TeacherId = assign != null ? assign.TeacherID : (Guid?)null,
+                        TeacherName = assign != null ? assign.Teacher.Account.FullName : null,
+
+                        NextMeeting = (
+                            from m in _context.ACAD_ClassMeetings
+                            where m.ClassID == cls.Id
+                                  && !m.IsDeleted
+                                  && m.IsActive
+                                  && m.Date >= today
+                            orderby m.Date
+                            select new
+                            {
+                                m.Id,
+                                m.ClassID,
+                                m.Date,
+                                m.IsStudy,
+                                m.RoomID,
+                                m.OnlineMeetingUrl,
+                                m.Passcode,
+                                m.RecordingUrl,
+                                m.IsActive,
+                                SlotName = m.Slot != null ? m.Slot.Name : null,
+                                RoomCode = m.Room != null ? m.Room.RoomCode : null,
+                                CoveredTopic = m.CoveredTopic != null ? m.CoveredTopic.TopicTitle : null
+                            }
+                        ).FirstOrDefault()
+                    }
+                ).ToListAsync();
+
+                var responses = new List<LearningClassResponse>();
+
+                foreach (var e in items)
                 {
-                    Id = e.Class.Id,
-                    StatusName = e.StatusLookup.Name,
-                    CourseName = e.Course.CourseName,
-                    CourseCode = e.Course.CourseCode,
-                    ClassName = e.Class.ClassName,
-                    TeacherId = e.TeacherId,
-                    TeacherName = e.TeacherName,
-                    StartDate = e.Class.StartDate,
-                    EndDate = e.Class.EndDate,
-                    TimeSlot = timeSlotName,
-                    RoomCode = roomCode,
-                    IsActive = e.Class.IsActive
-                });
+                    ClassMeetingResponse? nextMeetingDto = null;
+
+                    if (e.NextMeeting != null)
+                    {
+                        nextMeetingDto = new ClassMeetingResponse
+                        {
+                            Id = e.NextMeeting.Id,
+                            ClassID = e.NextMeeting.ClassID,
+                            Date = e.NextMeeting.Date,
+                            IsStudy = e.NextMeeting.IsStudy,
+                            RoomID = e.NextMeeting.RoomID.ToString(),          // Guid? trong DTO
+                            RoomCode = e.NextMeeting.RoomCode,
+                            OnlineMeetingUrl = e.NextMeeting.OnlineMeetingUrl,
+                            Passcode = e.NextMeeting.Passcode,
+                            RecordingUrl = e.NextMeeting.RecordingUrl,
+                            IsActive = e.NextMeeting.IsActive,
+                            slot = e.NextMeeting.SlotName  ,
+                            coveredTopic = e.NextMeeting.CoveredTopic// tên ca học
+                        };
+                    }
+
+                    responses.Add(new LearningClassResponse
+                    {
+                        Id = e.Class.Id,
+                        StatusName = e.StatusLookup.Name,
+                        CourseName = e.Course.CourseName,
+                        CourseCode = e.Course.CourseCode,
+                        ClassName = e.Class.ClassName,
+                        TeacherId = e.TeacherId,
+                        TeacherName = e.TeacherName,
+                        StartDate = e.Class.StartDate,
+                        EndDate = e.Class.EndDate,
+                        TimeSlot = e.NextMeeting?.SlotName,       // dùng dữ liệu từ subquery
+                        RoomCode = e.NextMeeting?.RoomCode,
+                        IsActive = e.Class.IsActive,
+                        nextMeeting = nextMeetingDto
+                    });
+                }
+
+                return responses;
             }
 
-            return responses;
-        }
 
         public async Task<List<FeedbackClassResponse>> GetFeedbackClassesByStudentId(Guid studentId)
         {
@@ -272,11 +378,16 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     .ThenInclude(ta => ta.Course)              
                 .Include(c => c.CourseFormat)
                 .Include(c => c.ClassStatus)
-                .Where(c => !c.IsDeleted); 
+              
+                .Where(c => !c.IsDeleted);
 
-        public async Task<List<ACAD_Class>> GetAllClassStaffView()
+        public async Task<List<ACAD_Class>> GetClassByCourseStaffView(Guid courseId)
         {
-            return await StaffViewQuery().ToListAsync();
+            return await StaffViewQuery()
+               
+                .Where(c => c.TeacherAssignment.Course.Id == courseId)
+                .OrderByDescending(c => c.StartDate)
+                .ToListAsync();
         }
 
         public async Task<ACAD_Class?> GetClassStaffViewById(Guid id)
