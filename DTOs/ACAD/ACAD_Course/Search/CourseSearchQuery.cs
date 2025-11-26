@@ -9,7 +9,7 @@ namespace DTOs.ACAD.ACAD_Course.Search
     public sealed class CourseSearchQuery
     {
         public string? Q { get; set; }                 // từ khoá
-        public string? Sort { get; set; } = "Relevance"; // Relevance | Created.desc | Price.asc | Price.desc
+        public string? Sort { get; set; } = "Relevance"; // Relevance | Created.desc | Price.asc | Price.desc | StandardScore.asc | StandardScore.desc
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 18;
 

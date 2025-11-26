@@ -330,6 +330,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 "Created.desc" => query.OrderByDescending(c => c.CreatedAt),
                 "Price.asc" => query.OrderBy(c => c.StandardPrice),
                 "Price.desc" => query.OrderByDescending(c => c.StandardPrice),
+                "StandardScore.asc" => query.OrderBy(c => c.StandardScore),
+                "StandardScore.desc" => query.OrderByDescending(c => c.StandardScore),
                 _ => query.OrderByDescending(c => c.AverageRating ?? 0)
                           .ThenByDescending(c => c.ACAD_Enrollments.Count())
             };
