@@ -35,11 +35,15 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         public async Task<ACAD_ClassMeeting?> GetClassMeetingTodayByClassId(Guid classId)
         {
             var today = DateOnly.FromDateTime(DateTime.Today);
+
             return await _context.ACAD_ClassMeetings
-                .Where(cta => cta.ClassID == classId && cta.Date == today)
-                .Include(c => c.Slot)
-                .Include(c => c.Room)
-                .Include(c => c.CoveredTopic)
+                .Where(m => m.ClassID == classId
+                            && m.Date >= today
+                            && m.IsActive)
+                .OrderBy(m => m.Date)
+                .Include(m => m.Slot)
+                .Include(m => m.Room)
+                .Include(m => m.CoveredTopic)
                 .FirstOrDefaultAsync();
         }
 
