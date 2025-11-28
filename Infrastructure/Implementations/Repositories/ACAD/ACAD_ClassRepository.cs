@@ -391,7 +391,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                         where !cls.IsDeleted
                         join assignOpt in _context.ACAD_CourseTeacherAssignments on cls.TeacherAssignmentID equals assignOpt.Id into assignLeft
                         from assign in assignLeft.DefaultIfEmpty()
-                        where assign != null && assign.CourseID == courseId
+                            //where assign != null && assign.CourseID == courseId
+                        where assign == null || assign.CourseID == courseId
                         join statusOpt in _context.CORE_LookUps on cls.ClassStatusID equals statusOpt.Id into statusLeft
                         from status in statusLeft.DefaultIfEmpty()
                         select new ClassResponse
@@ -408,6 +409,44 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
             return await query.ToListAsync();
         }
+
+        public async Task<List<ClassResponse>> GetClassesByCourseIdAsync2(Guid courseId)
+        {
+            var classes = await _context.ACAD_Classes
+                .AsNoTracking()
+                .Where(c => !c.IsDeleted)
+
+                // Join TeacherAssignment (optional)
+                .Include(c => c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Course)
+
+                // Join Status lookup
+                .Include(c => c.ClassStatus)
+
+                // Chỉ lấy class có TeacherAssignment đúng course
+                .Where(c => c.TeacherAssignment != null &&
+                            c.TeacherAssignment.CourseID == courseId)
+
+                .ToListAsync();
+
+            // Map sang DTO
+            return classes.Select(c => new ClassResponse
+            {
+                Id = c.Id,
+                ClassName = c.ClassName ?? string.Empty,
+
+                StatusName = c.ClassStatus?.Name ?? string.Empty,
+
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
+
+                Capacity = c.Capacity,
+                EnrolledCount = c.EnrolledCount,
+
+                IsActive = c.IsActive
+            }).ToList();
+        }
+
 
         /*private async Task<string?> GetRoomByClassIdAsync(Guid? classId)
         {

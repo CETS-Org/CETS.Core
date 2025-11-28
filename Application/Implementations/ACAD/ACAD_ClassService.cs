@@ -130,6 +130,11 @@ namespace Application.Implementations.ACAD
             return await _classRepo.GetClassesByCourseIdAsync(courseId);
         }
 
+        public async Task<IEnumerable<ClassResponse>> GetClassesByCourseIdAsync2(Guid courseId)
+        {
+            return await _classRepo.GetClassesByCourseIdAsync2(courseId);
+        }
+
         public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
         {
             return await _classRepo.GetLearningClassByStudentId(studentId);

@@ -188,6 +188,20 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             });
             return result.ToList();
         }
+        public async Task<ACAD_ClassMeeting?> GetMeetingDetailAsync(Guid roomId, DateOnly date, Guid slotId)
+        {
+            return await _context.ACAD_ClassMeetings
+                .Include(m => m.Class)
+                .Include(m => m.TeacherAssignment)
+                    .ThenInclude(ta => ta.Teacher)
+                        .ThenInclude(t => t.Account)
+                .Include(m => m.TeacherAssignment)
+                    .ThenInclude(ta => ta.Course)
+                .FirstOrDefaultAsync(m =>
+                    m.RoomID == roomId &&
+                    m.Date == date &&
+                    m.SlotID == slotId);
+        }
 
     }
 }

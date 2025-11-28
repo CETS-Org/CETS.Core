@@ -16,9 +16,32 @@ namespace Infrastructure.Implementations.Common.Notifications
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
+        //public RedisNotificationEventPublisher(IConfiguration configuration)
+        //{
+        //    var redisConnection = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+        //    var connection = ConnectionMultiplexer.Connect(redisConnection);
+        //    _subscriber = connection.GetSubscriber();
+        //}
+
         public RedisNotificationEventPublisher(IConfiguration configuration)
         {
-            var redisConnection = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+            var enabledRaw = configuration["Redis:Enabled"];
+            bool enabled = false;
+
+            if (!string.IsNullOrEmpty(enabledRaw))
+            {
+                enabled = enabledRaw.Equals("true", StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (!enabled)
+            {
+                _subscriber = null!;
+                return;
+            }
+
+            var redisConnection = configuration["Redis:ConnectionString"]
+                                  ?? "localhost:6379,abortConnect=false";
+
             var connection = ConnectionMultiplexer.Connect(redisConnection);
             _subscriber = connection.GetSubscriber();
         }
