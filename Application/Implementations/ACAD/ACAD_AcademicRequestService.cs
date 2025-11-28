@@ -27,6 +27,7 @@ namespace Application.Implementations.ACAD
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICOM_NotificationService _notificationService;
+        private readonly IACAD_SuspensionValidationService? _suspensionValidationService;
 
         public ACAD_AcademicRequestService(
             IACAD_AcademicRequestRepository requestRepo,
@@ -36,7 +37,8 @@ namespace Application.Implementations.ACAD
             IACAD_ClassMeetingRepository classMeetingRepo,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ICOM_NotificationService notificationService)
+            ICOM_NotificationService notificationService,
+            IACAD_SuspensionValidationService? suspensionValidationService = null)
         {
             _requestRepo = requestRepo;
             _historyRepo = historyRepo;
@@ -46,6 +48,7 @@ namespace Application.Implementations.ACAD
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _notificationService = notificationService;
+            _suspensionValidationService = suspensionValidationService;
         }
 
         public async Task<AcademicRequestResponse> SubmitRequestAsync(CreateAcademicRequest requestDto)
@@ -54,6 +57,27 @@ namespace Application.Implementations.ACAD
             // Currently, the frontend filters out meeting reschedule for students
             // For proper backend validation, we need to check the user's role from the authentication context
             // or pass the user's role in the request DTO
+
+            // Get request type to check if it's a suspension request
+            var requestType = await _lookUpRepository.GetByIdAsync(requestDto.RequestTypeID);
+            if (requestType == null)
+            {
+                throw new KeyNotFoundException("Request type not found. Please ensure the lookup data is properly seeded.");
+            }
+
+            var requestTypeName = (requestType.Name ?? "").ToLower();
+            var requestTypeCode = (requestType.Code ?? "").ToLower();
+            var isSuspension = requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension");
+
+            // Validate suspension requests
+            if (isSuspension && _suspensionValidationService != null)
+            {
+                var validationResult = await _suspensionValidationService.ValidateSuspensionRequestAsync(requestDto);
+                if (!validationResult.IsValid)
+                {
+                    throw new InvalidOperationException($"Suspension request validation failed: {string.Join("; ", validationResult.Errors)}");
+                }
+            }
 
             var entity = _mapper.Map<ACAD_AcademicRequest>(requestDto);
             
@@ -64,16 +88,6 @@ namespace Application.Implementations.ACAD
             }
             
             entity.AcademicRequestStatusID = pendingStatus.Id;
-
-            // Get request type once for both priority and effective date determination
-            var requestType = await _lookUpRepository.GetByIdAsync(requestDto.RequestTypeID);
-            if (requestType == null)
-            {
-                throw new KeyNotFoundException("Request type not found. Please ensure the lookup data is properly seeded.");
-            }
-
-            var requestTypeName = (requestType.Name ?? "").ToLower();
-            var requestTypeCode = (requestType.Code ?? "").ToLower();
 
             // Set default priority based on request type if not provided
             if (!requestDto.PriorityID.HasValue || requestDto.PriorityID.Value == Guid.Empty)
@@ -105,14 +119,25 @@ namespace Application.Implementations.ACAD
 
             // Set EffectiveDate based on request type:
             // - 3 days for meeting reschedule
+            // - 7 days for suspension (from SuspensionStartDate)
             // - 7 days for all other requests
             if (requestTypeName.Contains("meeting reschedule") || requestTypeCode.Contains("meetingreschedule"))
             {
                 entity.EffectiveDate = DateOnly.FromDateTime(DateTime.Now.AddDays(3));
             }
+            else if (isSuspension && requestDto.SuspensionStartDate.HasValue)
+            {
+                entity.EffectiveDate = requestDto.SuspensionStartDate.Value;
+            }
             else
             {
                 entity.EffectiveDate = DateOnly.FromDateTime(DateTime.Now.AddDays(7));
+            }
+
+            // For suspension requests, set ExpectedReturnDate
+            if (isSuspension && requestDto.SuspensionEndDate.HasValue)
+            {
+                entity.ExpectedReturnDate = requestDto.SuspensionEndDate.Value.AddDays(1);
             }
 
             _requestRepo.Add(entity);
@@ -155,6 +180,17 @@ namespace Application.Implementations.ACAD
                     entity.NewRoomID = requestDto.SelectedRoomID.Value;
                 }
                 await HandleMeetingRescheduleAsync(entity);
+            }
+
+            // If this is an approved suspension request, handle suspension
+            var requestType = await _lookUpRepository.GetByIdAsync(entity.RequestTypeID);
+            var requestTypeName = (requestType?.Name ?? "").ToLower();
+            var requestTypeCode = (requestType?.Code ?? "").ToLower();
+            var isSuspension = requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension");
+            
+            if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isSuspension)
+            {
+                await HandleSuspensionApprovalAsync(entity);
             }
 
             entity.AcademicRequestStatusID = requestDto.StatusID;
@@ -260,6 +296,34 @@ namespace Application.Implementations.ACAD
                 }
             }
             // If same date but different slot, no syllabus shift needed
+        }
+
+        private async Task HandleSuspensionApprovalAsync(ACAD_AcademicRequest request)
+        {
+            // When a suspension request is approved, we need to:
+            // 1. Update the student's account status to "Suspended" on the start date (handled by background job/scheduler)
+            // 2. Set the expected return date
+            // 3. Schedule reminders (handled by notification service/background job)
+            
+            // Note: The actual status change happens on the SuspensionStartDate
+            // This method just validates and prepares the suspension
+
+            if (!request.SuspensionStartDate.HasValue || !request.SuspensionEndDate.HasValue)
+            {
+                throw new InvalidOperationException("Suspension dates are required for suspension approval.");
+            }
+
+            // Set ExpectedReturnDate if not already set
+            if (!request.ExpectedReturnDate.HasValue)
+            {
+                request.ExpectedReturnDate = request.SuspensionEndDate.Value.AddDays(1);
+            }
+
+            // Note: A background job should:
+            // - On SuspensionStartDate: Set account status to "Suspended" and request status to "Suspended"
+            // - 3 days before ExpectedReturnDate: Send reminder notification
+            // - On ExpectedReturnDate: Send return notification and set status to "AwaitingReturn"
+            // - After AwaitingReturnGraceDays: Optionally set to "AutoDroppedOut"
         }
 
         public async Task<IEnumerable<AcademicRequestResponse>> GetRequestsByStudentAsync(Guid studentId)

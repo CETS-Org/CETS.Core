@@ -46,6 +46,12 @@ public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
 
     public Guid? NewRoomID { get; set; }
 
+    // For suspension requests
+    public DateOnly? SuspensionStartDate { get; set; }
+    public DateOnly? SuspensionEndDate { get; set; }
+    public string? ReasonCategory { get; set; }
+    public DateOnly? ExpectedReturnDate { get; set; }
+
     public virtual ICollection<ACAD_AcademicRequestHistory> ACAD_AcademicRequestHistories { get; set; } = new List<ACAD_AcademicRequestHistory>();
 
     [ForeignKey(nameof(AcademicRequestStatusID))]

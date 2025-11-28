@@ -53,5 +53,11 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Responses
         // New meeting details
         public Guid? NewRoomID { get; set; }
         public string? NewRoomName { get; set; }
+
+        // For suspension requests
+        public DateOnly? SuspensionStartDate { get; set; }
+        public DateOnly? SuspensionEndDate { get; set; }
+        public string? ReasonCategory { get; set; }
+        public DateOnly? ExpectedReturnDate { get; set; }
     }
 }

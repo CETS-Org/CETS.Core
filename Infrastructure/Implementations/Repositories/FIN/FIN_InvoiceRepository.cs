@@ -18,6 +18,15 @@ namespace Infrastructure.Implementations.Repositories.FIN
                     .Select(i => i.InvoiceSequence)
                     .FirstOrDefaultAsync() + 1);
         }
+
+        public async Task<IEnumerable<FIN_Invoice>> GetUnpaidInvoicesByStudentAsync(Guid studentId)
+        {
+            return await _context.FIN_Invoices
+                .Include(i => i.InvoiceStatus)
+                .Where(i => i.StudentID == studentId && 
+                       (i.InvoiceStatus.Code == "Pending" || i.InvoiceStatus.Code == "Expired"))
+                .ToListAsync();
+        }
     }
 }
 

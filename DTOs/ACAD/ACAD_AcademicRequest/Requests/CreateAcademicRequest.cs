@@ -25,5 +25,10 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Requests
         // For meeting reschedule requests
         public Guid? ClassMeetingID { get; set; }
         public Guid? NewRoomID { get; set; }
+
+        // For suspension requests
+        public DateOnly? SuspensionStartDate { get; set; }
+        public DateOnly? SuspensionEndDate { get; set; }
+        public string? ReasonCategory { get; set; }
     }
 }
