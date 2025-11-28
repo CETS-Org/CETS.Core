@@ -150,7 +150,7 @@ namespace Application.Implementations.FIN
                     var firstStatus = invoiceStatusForUpdate?.Where(x => x.Code == "1stPaid").FirstOrDefault();
                     await _invoiceService.updateInvoiceStatus(invoice.Id, firstStatus.LookUpId);
                     var ReservationStatusLookup = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.ReservationStatus);
-                    var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "Completed").FirstOrDefault();
+                    var reservationStatus = ReservationStatusLookup?.Where(x => x.Code == "2ndPaid").FirstOrDefault();
                     await _classReservationService.UpdateReservationStatusAsync(reservationItem.ClassReservationId, reservationStatus.LookUpId);
                     
                     //Create enrollment record only when first payment is made

@@ -25,7 +25,7 @@ namespace Application.Implementations.FIN
 			_InvoiceRepository = invoiceRepository;
 			_invoiceItemRepository = invoiceItemRepository;
         }
-		public async Task<InvoiceResponse?> CreateInvolcesToMonthlyPay(Guid reservationItemId,Guid studentId)
+		public async Task<InvoiceResponse?> CreateInvolcesToMonthlyPay(Guid reservationItemId,Guid studentId,decimal amount)
 		{
 			var reservationItems = await _reservationItemRepository.GetByReservationIdAsync(reservationItemId);
 			if (reservationItems == null)
@@ -39,7 +39,7 @@ namespace Application.Implementations.FIN
             // Format InvoiceNumber: YYYY + padded sequence (6 digit)
             string invoiceNumber = $"{DateTime.Now.Year}{nextSequence.ToString("D6")}";
 
-                var amount = reservationItems.Course.StandardPrice / 2;
+                
                 var invoice = new FIN_Invoice
                 {
                     Id = Guid.NewGuid(),
@@ -65,7 +65,8 @@ namespace Application.Implementations.FIN
 					UnitPrice = amount,
 					Subtotal = amount,
 					Total = amount,
-					DueDate = DateOnly.FromDateTime(DateTime.Now.AddDays(1)),
+					PaymentSequence = 1,
+                    DueDate = DateOnly.FromDateTime(DateTime.Now.AddDays(1)),
                 };
 				_invoiceItemRepository.Add(invoiceItemFirst);
                 var invoiceItemSecond = new FIN_InvoiceItem
@@ -77,6 +78,7 @@ namespace Application.Implementations.FIN
                     UnitPrice = amount,
                     Subtotal = amount,
                     Total = amount,
+					PaymentSequence = 2,
                 };
 				_invoiceItemRepository.Add(invoiceItemSecond);
                 
@@ -88,7 +90,7 @@ namespace Application.Implementations.FIN
                 return _mapper.Map<InvoiceResponse>(invoice);
         }
 		
-		public async Task<InvoiceResponse?> CreateInvoiceForFullPayment(Guid reservationItemId, Guid studentId)
+		public async Task<InvoiceResponse?> CreateInvoiceForFullPayment(Guid reservationItemId, Guid studentId, decimal amount)
 		{
 			var reservationItems = await _reservationItemRepository.GetByReservationIdAsync(reservationItemId);
 			if (reservationItems == null)
@@ -111,7 +113,7 @@ namespace Application.Implementations.FIN
             // Format InvoiceNumber: YYYY + padded sequence (6 digit)
             string invoiceNumber = $"{DateTime.Now.Year}{nextSequence.ToString("D6")}";
 
-            var amount = reservationItems.Course.StandardPrice; // Full amount, not divided by 2
+            
             var invoice = new FIN_Invoice
             {
                 Id = Guid.NewGuid(),

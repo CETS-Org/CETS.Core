@@ -13,6 +13,8 @@ using DTOs.ACAD.ACAD_ReservationItem.Responses;
 using AutoMapper.QueryableExtensions;
 using Domain.Entities;
 using DTOs.ACAD.ACAD_ReservationItem.Requests;
+using Domain.Interfaces.FIN;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Implementations.ACAD
 {
@@ -20,16 +22,20 @@ namespace Application.Implementations.ACAD
     {
         private readonly IACAD_ReservationItemRepository _reservationItemRepo;
         private readonly IACAD_ClassReservationRepository _classReservationRepo;
+        private readonly IFIN_InvoiceRepository _invoiceRepo;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
         public ACAD_ReservationItemService(
             IACAD_ReservationItemRepository reservationItemRepo,
             IACAD_ClassReservationRepository classReservationRepo,
+            IFIN_InvoiceRepository invoiceRepo,
             IUnitOfWork uow,
             IMapper mapper)
         {
             _reservationItemRepo = reservationItemRepo;
+            _classReservationRepo = classReservationRepo;
+            _invoiceRepo = invoiceRepo;
             _uow = uow;
             _mapper = mapper;
         }
@@ -47,10 +53,51 @@ namespace Application.Implementations.ACAD
             return _mapper.Map<ReservationItemResponse>(reservation);
         }
         
-        public  IQueryable<ReservationItemResponse?> GetReservationItemByReservationId(Guid id)
+        public async Task<List<ReservationItemResponse>> GetReservationItemByReservationId(Guid id)
         {
-            return _reservationItemRepo.GetReservationItemByReservationId(id)
-                    .ProjectTo<ReservationItemResponse>(_mapper.ConfigurationProvider);
+            var reservationItems = await _reservationItemRepo.GetReservationItemByReservationId(id)
+                    .ProjectTo<ReservationItemResponse>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
+
+            // Process each item to check for second payment
+            foreach (var item in reservationItems)
+            {
+                if (item != null && item.InvoiceId.HasValue && item.InvoiceStatusCode == "1stPaid")
+                {
+                    // For two-time payment: 1 invoice with 2 invoice items
+                    // When status is "1stPaid", skip the first invoice item and get the second one
+                    var invoice = await _invoiceRepo.GetAll()
+                        .Include(i => i.InvoiceStatus)
+                        .Include(i => i.FIN_InvoiceItems)
+                        .FirstOrDefaultAsync(i => i.Id == item.InvoiceId.Value);
+                    
+                    if (invoice != null && invoice.IsInstallment)
+                    {
+                        // Get all invoice items for this course, ordered by ID
+                        var invoiceItems = invoice.FIN_InvoiceItems
+                            .Where(ii => ii.CourseID == item.CourseId)
+                            .OrderBy(ii => ii.Id)
+                            .ToList();
+                        
+                        // Skip the first invoice item (already paid) and get the second one
+                        if (invoiceItems.Count >= 2)
+                        {
+                            var secondInvoiceItem = invoiceItems[1]; // Index 1 = second item
+                            
+                            item.SecondPayment = new SecondPaymentInfo
+                            {
+                                InvoiceId = invoice.Id,
+                                InvoiceStatus = invoice.InvoiceStatus.Name,
+                                InvoiceStatusCode = invoice.InvoiceStatus.Code,
+                                Amount = secondInvoiceItem.Total,
+                                DueDate = secondInvoiceItem.DueDate
+                            };
+                        }
+                    }
+                }
+            }
+
+            return reservationItems;
         }
         public async Task<ReservationItemResponse> CreateReservationItemAsync(CreateReservationItemRequests request)
         {

@@ -249,6 +249,7 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
                 MonthlyTrend = CalculateMonthlyEnrollmentTrend(enrollments, 12),
                 QuarterlyTrend = CalculateQuarterlyEnrollmentTrend(enrollments, 4),
                 TopGrowingCourses = await CalculateTopGrowingCoursesAsync(enrollments),
+                EnrollmentByClass = await CalculateEnrollmentByClassAsync(),
                 Insights = GenerateEnrollmentInsights(enrollments)
             };
 
@@ -815,6 +816,43 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
         }
 
         return dropoutByClass.OrderByDescending(d => d.DropoutRate).ToList();
+    }
+
+    private async Task<List<EnrollmentByClass>> CalculateEnrollmentByClassAsync()
+    {
+        var allClasses = await _classRepository.GetAllClass();
+        var classes = allClasses.Where(c => !c.IsDeleted).ToList();
+        
+        var allEnrollments = await _enrollmentRepository.GetAllEnrollment();
+        var enrollments = allEnrollments.ToList();
+
+        var enrollmentByClass = new List<EnrollmentByClass>();
+
+        foreach (var cls in classes)
+        {
+            var classEnrollments = enrollments.Where(e => e.ClassID == cls.Id).ToList();
+            if (!classEnrollments.Any()) continue;
+
+            var activeEnrollments = classEnrollments.Count(e => e.EnrollmentStatus.Code == "Active");
+            var completedEnrollments = classEnrollments.Count(e => e.EnrollmentStatus.Code == "Completed");
+
+            // Get course name from first enrollment in the class
+            var courseName = classEnrollments.FirstOrDefault()?.Course?.CourseName ?? "N/A";
+
+            enrollmentByClass.Add(new EnrollmentByClass
+            {
+                ClassId = cls.Id.ToString(),
+                ClassName = cls.ClassName ?? "N/A",
+                CourseName = courseName,
+                TotalEnrollments = classEnrollments.Count,
+                ActiveEnrollments = activeEnrollments,
+                CompletedEnrollments = completedEnrollments,
+                StartDate = cls.StartDate,
+                Status = cls.ClassStatus.Code ?? "N/A"
+            });
+        }
+
+        return enrollmentByClass.OrderByDescending(e => e.TotalEnrollments).ToList();
     }
 
     private List<string> GenerateDropoutRecommendations(StudentDropoutAnalyticsResponse data)
