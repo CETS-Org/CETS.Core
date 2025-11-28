@@ -1,4 +1,5 @@
-﻿using DTOs.IDN.IDN_Account.Requests;
+﻿using DTOs.COM.COM_Chat.Responses;
+using DTOs.IDN.IDN_Account.Requests;
 using DTOs.IDN.IDN_Account.Responses;
 using DTOs.IDN.IDN_Teacher.Requests;
 using DTOs.IDN.IDN_Teacher.Responses;
@@ -39,5 +40,6 @@ namespace Application.Interfaces.IDN
 
         Task<bool> CheckEmailExist(string email);
         Task<bool> CheckCIDExist(string cid);
+        Task<List<UserBasicInfo>> GetUsersByIdsAsync(List<Guid> userIds);
     }
 }
