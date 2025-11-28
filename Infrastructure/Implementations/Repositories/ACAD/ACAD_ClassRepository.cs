@@ -230,23 +230,159 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
         public async Task<ClassDetailResponse?> GetClassDetailAsync(Guid classId)
         {
-            var query = from cls in _context.ACAD_Classes
-                        where cls.Id == classId && !cls.IsDeleted
-                        join assignOpt in _context.ACAD_CourseTeacherAssignments on cls.TeacherAssignmentID equals assignOpt.Id into assignLeft
-                        from assign in assignLeft.DefaultIfEmpty()
-                        join courseOpt in _context.ACAD_Courses on assign.CourseID equals courseOpt.Id into courseLeft
-                        from course in courseLeft.DefaultIfEmpty()
-                        select new ClassDetailResponse
-                        {
-                            Id = cls.Id,
-                            ClassName = cls.ClassName.ToString(),
-                            CourseName = course != null ? course.CourseName : string.Empty,
-                            CourseId = course != null ? course.Id : Guid.Empty,
-                            Capacity = cls.Capacity,
-                            EnrolledCount = cls.EnrolledCount
-                        };
+            // Main class query with all related entities
+            var classEntity = await _context.ACAD_Classes
+                .AsNoTracking()
+                .Include(c => c.ClassStatus)
+                .Include(c => c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Course)
+                .Include(c => c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Teacher)
+                        .ThenInclude(t => t.Account)
+                .Where(c => c.Id == classId && !c.IsDeleted)
+                .FirstOrDefaultAsync();
 
-            return await query.FirstOrDefaultAsync();
+            if (classEntity == null)
+                return null;
+
+            // Get meetings for schedule, room, and session count
+            var meetings = await _context.ACAD_ClassMeetings
+                .AsNoTracking()
+                .Where(m => m.ClassID == classId && !m.IsDeleted && m.IsActive)
+                .Include(m => m.Room)
+                .Include(m => m.Slot)
+                .OrderBy(m => m.Date)
+                .ToListAsync();
+
+            // Calculate schedule string (e.g., "Mon, Wed, Fri - 8:00 AM")
+            var scheduleGroups = meetings
+                .GroupBy(m => m.Slot.Name)
+                .Select(g => new
+                {
+                    SlotName = g.Key,
+                    Days = g.Select(m => m.Date.DayOfWeek.ToString().Substring(0, 3)).Distinct()
+                })
+                .ToList();
+
+            var scheduleString = scheduleGroups.Any()
+                ? string.Join(", ", scheduleGroups.Select(g => $"{string.Join(", ", g.Days)} - {g.SlotName}"))
+                : string.Empty;
+
+            // Get most common room
+            var room = meetings
+                .Where(m => m.Room != null)
+                .GroupBy(m => m.Room!.RoomCode)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault() ?? string.Empty;
+
+            // Calculate completed sessions (meetings in the past with IsStudy = true)
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var completedSessions = meetings.Count(m => m.Date < today && m.IsStudy);
+            var totalSessions = meetings.Count();
+
+            // Get students enrolled in this class with attendance and progress
+            var enrollments = await _context.ACAD_Enrollments
+                .AsNoTracking()
+                .Where(e => e.ClassID == classId && !e.IsDeleted)
+                .Include(e => e.Student)
+                    .ThenInclude(s => s.Account)
+                .ToListAsync();
+
+            var studentResponses = new List<StudentInClassResponse>();
+
+            foreach (var enrollment in enrollments)
+            {
+                var student = enrollment.Student;
+                var account = student.Account;
+
+                // Calculate attendance rate (only for past meetings)
+                var totalPastMeetings = meetings.Count(m => m.Date < today && m.IsStudy);
+                var attendedPastMeetings = 0;
+
+                if (totalPastMeetings > 0)
+                {
+                    attendedPastMeetings = await _context.ACAD_Attendances
+                        .Where(a => a.StudentID == student.Id &&
+                                    a.Meeting.ClassID == classId &&
+                                    a.Meeting.Date < today &&
+                                    a.Meeting.IsStudy &&
+                                    a.AttendanceStatus.Code == "Present")
+                        .CountAsync();
+                }
+
+                var attendanceRate = totalPastMeetings > 0 ? (decimal)attendedPastMeetings / totalPastMeetings * 100 : 0;
+
+                // Calculate progress percentage based on attended meetings vs total study meetings
+                var totalStudyMeetings = meetings.Count(m => m.IsStudy);
+                var attendedStudyMeetings = 0;
+
+                if (totalStudyMeetings > 0)
+                {
+                    attendedStudyMeetings = await _context.ACAD_Attendances
+                        .Where(a => a.StudentID == student.Id &&
+                                    a.Meeting.ClassID == classId &&
+                                    a.Meeting.IsStudy &&
+                                    a.AttendanceStatus.Code == "Present")
+                        .CountAsync();
+                }
+
+                var progressPercentage = totalStudyMeetings > 0 ? (decimal)attendedStudyMeetings / totalStudyMeetings * 100 : 0;
+
+                studentResponses.Add(new StudentInClassResponse
+                {
+                    Id = account.Id,
+                    StudentCode = student.StudentCode ?? string.Empty,
+                    Name = account.FullName ?? string.Empty,
+                    Email = account.Email ?? string.Empty,
+                    Phone = account.PhoneNumber ?? string.Empty,
+                    JoinDate = enrollment.CreatedAt.ToString("yyyy-MM-dd"),
+                    AttendanceRate = Math.Round(attendanceRate, 0),
+                    ProgressPercentage = Math.Round(progressPercentage, 0)
+                });
+            }
+
+            // Determine status
+            string statusForDisplay;
+            if (classEntity.EnrolledCount >= classEntity.Capacity)
+            {
+                statusForDisplay = "full";
+            }
+            else if (classEntity.IsActive)
+            {
+                statusForDisplay = "active";
+            }
+            else
+            {
+                statusForDisplay = "inactive";
+            }
+
+            // Extract related data
+            var course = classEntity.TeacherAssignment?.Course;
+            var teacher = classEntity.TeacherAssignment?.Teacher;
+            var teacherAccount = teacher?.Account;
+
+            return new ClassDetailResponse
+            {
+                Id = classEntity.Id,
+                ClassName = classEntity.ClassName ?? string.Empty,
+                CourseName = course?.CourseName ?? string.Empty,
+                CourseId = course?.Id ?? Guid.Empty,
+                Capacity = classEntity.Capacity,
+                EnrolledCount = classEntity.EnrolledCount,
+                TeacherId = teacher?.Id,
+                TeacherName = teacherAccount?.FullName ?? string.Empty,
+                Schedule = scheduleString,
+                Room = room,
+                StartDate = classEntity.StartDate.ToString("yyyy-MM-dd"),
+                EndDate = classEntity.EndDate.ToString("yyyy-MM-dd"),
+                Status = statusForDisplay,
+                StatusCode = classEntity.ClassStatus?.Code ?? string.Empty,
+                Description = course?.Description,
+                TotalSessions = totalSessions,
+                CompletedSessions = completedSessions,
+                Students = studentResponses
+            };
         }
 
         public async Task<List<ClassResponse>> GetClassesByCourseIdAsync(Guid courseId)
