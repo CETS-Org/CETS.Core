@@ -7,6 +7,7 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.CORE;
 using Domain.Interfaces.IDN;
+using DTOs.COM.COM_Chat.Responses;
 using DTOs.IDN.IDN_Account.Requests;
 using DTOs.IDN.IDN_Account.Responses;
 using Microsoft.EntityFrameworkCore;
@@ -710,5 +711,35 @@ namespace Application.Implementations.IDN
             return await _accountRepository.IsCIDUniqueAsync(cid);
         }
         #endregion
+
+        public async Task<List<UserBasicInfo>> GetUsersByIdsAsync(List<Guid> userIds)
+        {
+            if (userIds == null || !userIds.Any())
+            {
+                return new List<UserBasicInfo>();
+            }
+
+            var distinctIds = userIds.Distinct().ToList();
+
+            // Sử dụng QueryWithRoles() hoặc phương thức query có sẵn trong repository
+            // Để lấy danh sách Account theo ID
+            // Lưu ý: Repository của bạn nên có phương thức trả về IQueryable<IDN_Account> để tối ưu
+
+            // Giả sử _accountRepository có method FindAllAsync(predicate) hoặc trả về IQueryable
+            // Nếu dùng QueryWithRoles() trả về IQueryable:
+            var query = _accountRepository.QueryWithRoles();
+
+            var users = await query
+                .Where(a => distinctIds.Contains(a.Id))
+                .Select(a => new UserBasicInfo
+                {
+                    Id = a.Id,
+                    FullName = a.FullName,
+                    AvatarUrl = a.AvatarUrl
+                })
+                .ToListAsync();
+
+            return users;
+        }
     }
 }
