@@ -22,6 +22,11 @@ namespace Infrastructure.Implementations.Repositories
             return await _dbSet.FindAsync(id);
         }
 
+        public virtual IQueryable<TEntity> GetAll()
+        {
+            return _dbSet.AsNoTracking();
+        }
+
         public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync()
         {
             return await _dbSet.AsNoTracking().ToListAsync();

@@ -4,6 +4,7 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using Domain.Interfaces.FIN;
 using DTOs.ACAD.ACAD_Class.Requests;
 using DTOs.ACAD.ACAD_Class.Responses;
 using DTOs.COM.COM_Notification.Requests;
@@ -22,6 +23,7 @@ namespace Application.Implementations.ACAD
         private readonly IACAD_SyllabusItemRepository _sysllabusItemRepo;
         private readonly ICOM_NotificationService _notificationService;
         private readonly IACAD_CourseTeacherAssignmentRepository _courseTeacherAssignmentService;
+        private readonly IFIN_InvoiceItemRepository _invoiceItemRepository;
         private readonly IACAD_EnrollmentRepository _enrollmentRepo;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
@@ -33,7 +35,8 @@ namespace Application.Implementations.ACAD
             ICOM_NotificationService notificationService,
             IACAD_CourseTeacherAssignmentRepository courseTeacherAssignmentService,
             IACAD_EnrollmentRepository enrollmentRepo,
-        IUnitOfWork uow,
+            IFIN_InvoiceItemRepository invoiceItemRepository,
+            IUnitOfWork uow,
             IMapper mapper)
         {
             _classRepo = classRepo;
@@ -44,6 +47,7 @@ namespace Application.Implementations.ACAD
             _notificationService = notificationService;
             _courseTeacherAssignmentService = courseTeacherAssignmentService;
             _enrollmentRepo = enrollmentRepo;
+            _invoiceItemRepository = invoiceItemRepository;
         }
 
         public async Task<Guid> CreateClassAsync(CreateClassRequest request)
@@ -216,7 +220,14 @@ namespace Application.Implementations.ACAD
                             enrollment.UpdatedBy = request.CreatedBy;
 
                             _enrollmentRepo.Update(enrollment);
-                        }
+                            var invoiceItems = await _invoiceItemRepository.GetByInvoiceIdAsync(enrollment.InvoiceID.Value); 
+                            var invoiceItem = invoiceItems.Where(x => x.PaymentSequence == 2).FirstOrDefault();
+                            if (invoiceItem != null)
+                            {
+                                invoiceItem.DueDate = classEntity.StartDate.AddDays(30); 
+                                _invoiceItemRepository.Update(invoiceItem);
+                            }
+                        }                      
                     }
                 }
 

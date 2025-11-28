@@ -29,6 +29,21 @@ public class EnrollmentByCourse
 }
 
 /// <summary>
+/// Enrollment by class analysis
+/// </summary>
+public class EnrollmentByClass
+{
+    public string ClassId { get; set; } = null!;
+    public string ClassName { get; set; } = null!;
+    public string CourseName { get; set; } = null!;
+    public int TotalEnrollments { get; set; }
+    public int ActiveEnrollments { get; set; }
+    public int CompletedEnrollments { get; set; }
+    public DateOnly StartDate { get; set; }
+    public string Status { get; set; } = null!;
+}
+
+/// <summary>
 /// Complete student enrollment analytics response
 /// </summary>
 public class StudentEnrollmentAnalyticsResponse
@@ -42,6 +57,7 @@ public class StudentEnrollmentAnalyticsResponse
     public List<EnrollmentTrendPoint> MonthlyTrend { get; set; } = new();
     public List<EnrollmentTrendPoint> QuarterlyTrend { get; set; } = new();
     public List<EnrollmentByCourse> TopGrowingCourses { get; set; } = new();
+    public List<EnrollmentByClass> EnrollmentByClass { get; set; } = new();
     public List<string> Insights { get; set; } = new();
 }
 

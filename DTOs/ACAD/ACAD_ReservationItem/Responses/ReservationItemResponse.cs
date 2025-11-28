@@ -24,7 +24,20 @@ namespace DTOs.ACAD.ACAD_ReservationItem.Responses
         //---------//
         public Guid? InvoiceId { get; set; }
         public string? InvoiceStatus { get; set; }
+        public string? InvoiceStatusCode { get; set; }
         public string? PlanType { get; set; }
         public Guid ClassReservationId { get; set; }
+        
+        // Second payment information (for 1stPaid status)
+        public SecondPaymentInfo? SecondPayment { get; set; }
+    }
+    
+    public class SecondPaymentInfo
+    {
+        public Guid? InvoiceId { get; set; }
+        public string? InvoiceStatus { get; set; }
+        public string? InvoiceStatusCode { get; set; }
+        public decimal Amount { get; set; }
+        public DateOnly? DueDate { get; set; }
     }
 }

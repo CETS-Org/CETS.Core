@@ -31,8 +31,10 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.StandardPrice, opt => opt.MapFrom(src => src.Course.StandardPrice))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Course.Category.Name))
                 .ForMember(dest => dest.InvoiceStatus, opt => opt.MapFrom(src => src.Invoice.InvoiceStatus.Name))
+                .ForMember(dest => dest.InvoiceStatusCode, opt => opt.MapFrom(src => src.Invoice.InvoiceStatus.Code))
                 .ForMember(dest => dest.ClassReservationId, opt => opt.MapFrom(src => src.ClassReservationID))
-                .ForMember(dest => dest.PlanType, opt => opt.MapFrom(src => src.PlanType.Name));
+                .ForMember(dest => dest.PlanType, opt => opt.MapFrom(src => src.PlanType.Name))
+                .ForMember(dest => dest.SecondPayment, opt => opt.Ignore());
         }
     }
 }

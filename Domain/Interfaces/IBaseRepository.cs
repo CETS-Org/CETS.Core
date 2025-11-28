@@ -11,6 +11,7 @@ namespace Domain.Interfaces
     {
         // Read operations
         Task<T?> GetByIdAsync(Guid id);
+        IQueryable<T> GetAll();
         Task<IReadOnlyList<T>> GetAllAsync();
         Task<IReadOnlyList<T>> FindAsync(Expression<Func<T, bool>> predicate);
         Task<T?> FindFirstAsync(Expression<Func<T, bool>> predicate);

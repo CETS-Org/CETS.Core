@@ -115,14 +115,14 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<RPT_Report> RPT_Reports { get; set; }
 
     #endregion
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        var builder = new ConfigurationBuilder()
-           .SetBasePath(Directory.GetCurrentDirectory())
-           .AddJsonFile("appsettings.json", true, true);
-        var configuration = builder.Build();
-        optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
-    }
+    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //{
+    //    var builder = new ConfigurationBuilder()
+    //       .SetBasePath(Directory.GetCurrentDirectory())
+    //       .AddJsonFile("appsettings.json", true, true);
+    //    var configuration = builder.Build();
+    //    optionsBuilder.UseSqlServer(configuration.GetConnectionString("SqlServerDb"));
+    //}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
