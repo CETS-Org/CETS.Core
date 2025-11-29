@@ -1,4 +1,5 @@
-﻿using Domain.Entities.EntityBases;
+﻿using Domain.Constants;
+using Domain.Entities.EntityBases;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -21,6 +22,9 @@ public partial class ACAD_Enrollment : AuditedEntity
 
     [Column(TypeName = "decimal(5, 2)")]
     public decimal? FinalGrade { get; set; }
+    public EmailDecisionStatus EmailDecisionStatus { get; set; }
+    = EmailDecisionStatus.None;
+
 
 
     [ForeignKey(nameof(ClassID))]
