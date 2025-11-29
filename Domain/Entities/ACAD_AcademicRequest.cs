@@ -54,7 +54,7 @@ public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
 
     // For dropout requests
     public bool? CompletedExitSurvey { get; set; }
-    public string? ExitSurveyUrl { get; set; }
+    public string? ExitSurveyId { get; set; }
 
     public virtual ICollection<ACAD_AcademicRequestHistory> ACAD_AcademicRequestHistories { get; set; } = new List<ACAD_AcademicRequestHistory>();
 

@@ -33,6 +33,6 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Requests
 
         // For dropout requests
         public bool? CompletedExitSurvey { get; set; }
-        public string? ExitSurveyUrl { get; set; }
+        public string? ExitSurveyId { get; set; }
     }
 }

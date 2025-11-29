@@ -52,7 +52,7 @@ namespace Application.Implementations.ACAD
             await ValidateStudentEligibilityAsync(request.StudentID, result);
 
             // Validate exit survey completion
-            ValidateExitSurvey(request.CompletedExitSurvey, request.ExitSurveyUrl, result);
+            ValidateExitSurvey(request.CompletedExitSurvey, request.ExitSurveyId, result);
 
             result.IsValid = result.Errors.Count == 0;
             return result;
@@ -81,7 +81,7 @@ namespace Application.Implementations.ACAD
             await ValidateStudentEligibilityAsync(request.StudentID, result);
 
             // Validate exit survey completion
-            ValidateExitSurvey(request.CompletedExitSurvey ?? false, request.ExitSurveyUrl, result);
+            ValidateExitSurvey(request.CompletedExitSurvey ?? false, request.ExitSurveyId, result);
 
             result.IsValid = result.Errors.Count == 0;
             return result;
@@ -227,21 +227,21 @@ namespace Application.Implementations.ACAD
             }
         }
 
-        private void ValidateExitSurvey(bool completedExitSurvey, string? exitSurveyUrl, DropoutValidationResult result)
+        private void ValidateExitSurvey(bool completedExitSurvey, string? exitSurveyId, DropoutValidationResult result)
         {
             if (!completedExitSurvey)
             {
                 result.Errors.Add("Exit survey must be completed before submitting a dropout request.");
             }
-
-            if (completedExitSurvey && string.IsNullOrWhiteSpace(exitSurveyUrl))
+            
+            if (completedExitSurvey && string.IsNullOrWhiteSpace(exitSurveyId))
             {
-                result.Errors.Add("Exit survey URL is required when survey is marked as completed.");
+                result.Errors.Add("Exit survey ID is required when survey is marked as completed.");
             }
 
-            if (!string.IsNullOrWhiteSpace(exitSurveyUrl) && !completedExitSurvey)
+            if (!string.IsNullOrWhiteSpace(exitSurveyId) && !completedExitSurvey)
             {
-                result.Warnings.Add("Exit survey URL is provided but survey is not marked as completed.");
+                result.Warnings.Add("Exit survey ID is provided but survey is not marked as completed.");
             }
         }
     }

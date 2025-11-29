@@ -61,6 +61,6 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Responses
         public DateOnly? ExpectedReturnDate { get; set; }
         // For dropout requests
         public bool? CompletedExitSurvey { get; set; }
-        public string? ExitSurveyUrl { get; set; }
+        public string? ExitSurveyId { get; set; }
     }
 }

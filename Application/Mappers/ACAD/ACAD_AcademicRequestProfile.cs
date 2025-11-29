@@ -40,7 +40,7 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.NewRoomName, opt => opt.MapFrom(src => src.NewRoom != null ? src.NewRoom.RoomCode : null))
                 // Dropout-specific fields
                 .ForMember(dest => dest.CompletedExitSurvey, opt => opt.MapFrom(src => src.CompletedExitSurvey))
-                .ForMember(dest => dest.ExitSurveyUrl, opt => opt.MapFrom(src => src.ExitSurveyUrl));
+                .ForMember(dest => dest.ExitSurveyId, opt => opt.MapFrom(src => src.ExitSurveyId));
 
             CreateMap<ACAD_AcademicRequestHistory, AcademicRequestHistoryResponse>();
         }

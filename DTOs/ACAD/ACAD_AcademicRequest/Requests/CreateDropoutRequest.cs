@@ -31,8 +31,8 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Requests
 
         public bool CompletedExitSurvey { get; set; }
 
-        [StringLength(500)]
-        public string? ExitSurveyUrl { get; set; }
+        [StringLength(100)]
+        public string? ExitSurveyId { get; set; }
     }
 }
 
