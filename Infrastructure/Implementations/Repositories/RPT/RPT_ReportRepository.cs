@@ -12,6 +12,28 @@ namespace Infrastructure.Implementations.Repositories.RPT
         {
         }
 
+        public override async Task<RPT_Report?> GetByIdAsync(Guid id)
+        {
+            return await _context.RPT_Reports
+                .Include(r => r.ReportType)
+                .Include(r => r.ReportStatus)
+                .Include(r => r.SubmittedByNavigation)
+                .Include(r => r.ResolvedByNavigation)
+                .FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        public new async Task<IReadOnlyList<RPT_Report>> GetAllAsync()
+        {
+            var data = await _context.RPT_Reports
+                .Include(r => r.ReportType)
+                .Include(r => r.ReportStatus)
+                .Include(r => r.SubmittedByNavigation)
+                .Include(r => r.ResolvedByNavigation)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+            return data;
+        }
+
         public async Task<IReadOnlyList<RPT_Report>> GetAcademicRequestsBySubmitterAsync(Guid submitterId)
         {
             return await _context.RPT_Reports
@@ -62,6 +84,45 @@ namespace Infrastructure.Implementations.Repositories.RPT
                 .Include(r => r.ResolvedByNavigation)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
+
+        public async Task<IReadOnlyList<RPT_Report>> GetSystemComplaintsByReportTypeAsync(Guid reportTypeId)
+        {
+            return await _context.RPT_Reports
+                .Include(r => r.ReportType)
+                .Include(r => r.ReportStatus)
+                .Include(r => r.SubmittedByNavigation)
+                .Include(r => r.ResolvedByNavigation)
+                .Where(r => r.ReportTypeID == reportTypeId)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<RPT_Report>> GetSystemComplaintsByStatusAsync(Guid reportTypeId, Guid statusId)
+        {
+            return await _context.RPT_Reports
+                .Include(r => r.ReportType)
+                .Include(r => r.ReportStatus)
+                .Include(r => r.SubmittedByNavigation)
+                .Include(r => r.ResolvedByNavigation)
+                .Where(r => r.ReportTypeID == reportTypeId && r.ReportStatusID == statusId)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<RPT_Report?> GetSystemComplaintWithDetailsAsync(Guid id)
+        {
+            return await _context.RPT_Reports
+                .Include(r => r.ReportType)
+                .Include(r => r.ReportStatus)
+                .Include(r => r.SubmittedByNavigation)
+                    .ThenInclude(a => a.IDN_StudentAccount)
+                .Include(r => r.SubmittedByNavigation)
+                    .ThenInclude(a => a.IDN_TeacherAccount)
+                .Include(r => r.ResolvedByNavigation)
+                .FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        
     }
 }
 

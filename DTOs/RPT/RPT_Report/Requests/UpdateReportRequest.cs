@@ -24,11 +24,16 @@ namespace DTOs.RPT.RPT_Report.Requests
 		[Required]
 		public Guid ReportStatusID { get; set; }
 
+		[StringLength(50)]
+		public string? Priority { get; set; }
+
 		[StringLength(2048)]
 		public string? ReportUrl { get; set; }
 
 		public DateTime? ResolvedAt { get; set; }
 		public Guid? ResolvedBy { get; set; }
+
+		public string? AdminResponse { get; set; }
 	}
 }
 
