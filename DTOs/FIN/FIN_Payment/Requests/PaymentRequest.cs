@@ -14,5 +14,6 @@ namespace DTOs.FIN.FIN_Payment.Requests
         public string Email { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public string Note { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
     }
 }

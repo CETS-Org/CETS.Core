@@ -21,6 +21,8 @@ public partial class FIN_InvoiceItem : EntityBase
     public decimal Total { get; set; }
     public DateOnly? DueDate { get; set; }
 
+    public int? PaymentSequence { get; set; }
+
     public Guid? PromotionID { get; set; }
 
     [ForeignKey(nameof(CourseID))]

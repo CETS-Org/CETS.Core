@@ -1,11 +1,14 @@
 ﻿using Application.Interfaces.ACAD;
 using Application.Interfaces.COM;
+using Application.Interfaces.IDN;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using Domain.Interfaces.FIN;
 using DTOs.ACAD.ACAD_Class.Requests;
 using DTOs.ACAD.ACAD_Class.Responses;
+using DTOs.COM.COM_Chat.Requests;
 using DTOs.COM.COM_Notification.Requests;
 using System;
 using System.Collections.Generic;
@@ -22,18 +25,24 @@ namespace Application.Implementations.ACAD
         private readonly IACAD_SyllabusItemRepository _sysllabusItemRepo;
         private readonly ICOM_NotificationService _notificationService;
         private readonly IACAD_CourseTeacherAssignmentRepository _courseTeacherAssignmentService;
+        private readonly IFIN_InvoiceItemRepository _invoiceItemRepository;
         private readonly IACAD_EnrollmentRepository _enrollmentRepo;
+        private readonly IIDN_AccountService _accountService;
+        private readonly ICOM_ChatService _chatService;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
         public ACAD_ClassService(
             IACAD_ClassRepository classRepo,
             IACAD_ClassMeetingRepository classMeetingRepo,
+            ICOM_ChatService chatService,
             IACAD_SyllabusItemRepository sysllabusItemRepo,
             ICOM_NotificationService notificationService,
             IACAD_CourseTeacherAssignmentRepository courseTeacherAssignmentService,
             IACAD_EnrollmentRepository enrollmentRepo,
-        IUnitOfWork uow,
+            IFIN_InvoiceItemRepository invoiceItemRepository,
+            IIDN_AccountService accountService,
+            IUnitOfWork uow,
             IMapper mapper)
         {
             _classRepo = classRepo;
@@ -44,6 +53,9 @@ namespace Application.Implementations.ACAD
             _notificationService = notificationService;
             _courseTeacherAssignmentService = courseTeacherAssignmentService;
             _enrollmentRepo = enrollmentRepo;
+            _invoiceItemRepository = invoiceItemRepository;
+            _chatService = chatService;
+            _accountService = accountService;
         }
 
         public async Task<Guid> CreateClassAsync(CreateClassRequest request)
@@ -126,6 +138,11 @@ namespace Application.Implementations.ACAD
             return await _classRepo.GetClassesByCourseIdAsync(courseId);
         }
 
+        public async Task<IEnumerable<ClassResponse>> GetClassesByCourseIdAsync2(Guid courseId)
+        {
+            return await _classRepo.GetClassesByCourseIdAsync2(courseId);
+        }
+
         public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
         {
             return await _classRepo.GetLearningClassByStudentId(studentId);
@@ -160,8 +177,7 @@ namespace Application.Implementations.ACAD
 
         public async Task<Guid> CreateClassWithScheduleAsync(CreateClassWithScheduleRequest request)
         {
-            // [CONSTANTS] ID của trạng thái "Enrolled / Đã xếp lớp"
-            // Tốt nhất nên đưa vào file Constant chung (VD: EnrollmentStatus.Enrolled)
+            // [CONSTANTS]
             var STATUS_ENROLLED = Guid.Parse("148fdc3d-fecc-457d-a539-cc28fd5df900");
 
             return await _uow.ExecuteInTransactionAsync(async () =>
@@ -169,12 +185,11 @@ namespace Application.Implementations.ACAD
                 // ==================================================================
                 // 1. TẠO CLASS (LỚP HỌC)
                 // ==================================================================
-                var classEntity = _mapper.Map<ACAD_Class>(request);            
-                // Cập nhật sĩ số hiện tại dựa trên danh sách học sinh gửi lên
+                var classEntity = _mapper.Map<ACAD_Class>(request);
                 classEntity.EnrolledCount = request.Enrollments?.Count ?? 0;
                 classEntity.IsActive = true;
                 classEntity.IsDeleted = false;
-                classEntity.CreatedAt = DateTime.UtcNow;        
+                classEntity.CreatedAt = DateTime.UtcNow;
                 _classRepo.Add(classEntity);
 
                 // ==================================================================
@@ -183,8 +198,8 @@ namespace Application.Implementations.ACAD
                 if (request.Schedules != null && request.Schedules.Any())
                 {
                     var meetings = request.Schedules.Select(item => new ACAD_ClassMeeting
-                    {                      
-                        ClassID = classEntity.Id, // Link với Class vừa tạo
+                    {
+                        ClassID = classEntity.Id,
                         SlotID = item.SlotID,
                         Date = item.Date,
                         RoomID = item.RoomID ?? Guid.Empty,
@@ -205,79 +220,128 @@ namespace Application.Implementations.ACAD
                 {
                     foreach (var studentItem in request.Enrollments)
                     {
-                        // Tìm Enrollment cũ (đang ở trạng thái Waiting) bằng EnrollmentId
                         var enrollment = await _enrollmentRepo.GetByIdAsync(studentItem.EnrollmentId);
 
                         if (enrollment != null)
                         {
-                            enrollment.ClassID = classEntity.Id;          // Gán vào lớp mới
-                            enrollment.EnrollmentStatusID = STATUS_ENROLLED; // Đổi trạng thái
+                            enrollment.ClassID = classEntity.Id;
+                            enrollment.EnrollmentStatusID = STATUS_ENROLLED;
                             enrollment.UpdatedAt = DateTime.UtcNow;
                             enrollment.UpdatedBy = request.CreatedBy;
 
                             _enrollmentRepo.Update(enrollment);
+
+                            // Cập nhật Invoice (Payment Sequence 2)
+                            var invoiceItems = await _invoiceItemRepository.GetByInvoiceIdAsync(enrollment.InvoiceID.Value);
+                            var invoiceItem = invoiceItems.Where(x => x.PaymentSequence == 2).FirstOrDefault();
+                            if (invoiceItem != null)
+                            {
+                                invoiceItem.DueDate = classEntity.StartDate.AddDays(30);
+                                _invoiceItemRepository.Update(invoiceItem);
+                            }
                         }
                     }
                 }
 
                 // ==================================================================
-                // 4. COMMIT DATABASE (Lưu tất cả thay đổi vào DB)
+                // 4. COMMIT DATABASE
                 // ==================================================================
                 await _uow.SaveChangesAsync();
 
-                // ---> Dữ liệu đã an toàn. Các bước sau là side-effect (Notification) <---
+                // ------------------------------------------------------------------
+                // CÁC TÁC VỤ SIDE-EFFECT (Notification & Chat)
+                // Thực hiện sau khi commit để không block transaction chính
+                // ------------------------------------------------------------------
 
-                // ==================================================================
-                // 5. GỬI THÔNG BÁO (Fire-and-forget)
-                // ==================================================================
                 try
                 {
-                    var notifications = new List<CreateNotificationRequest>();
-
-                    // --- 5.1 Thông báo cho GIÁO VIÊN ---
+                    // Lấy thông tin Giáo viên để dùng chung cho Notif và Chat
+                    string? teacherAccountId = null;
                     if (request.TeacherAssignmentID.HasValue)
                     {
-                        var teacherAssign = await _courseTeacherAssignmentService.GetByIdAsync(request.TeacherAssignmentID.Value);
-                        // Giả sử cấu trúc: TeacherAssignment -> Teacher -> Account
-                        if (teacherAssign?.Teacher?.Account != null)
+                        var teacherId = await _courseTeacherAssignmentService.GetByIdAsync(request.TeacherAssignmentID.Value);
+                        var teacherAssign = await _accountService.GetAccountByIdAsync(teacherId.TeacherID);
+                        if (teacherAssign?.AccountId != null)
                         {
-                            notifications.Add(new CreateNotificationRequest
-                            {
-                                UserId = teacherAssign.Teacher.Account.Id.ToString().ToUpperInvariant(),
-                                Title = "New Class Assignment",
-                                Message = $"You have been assigned to teach class: {classEntity.ClassName} starting from {classEntity.StartDate:dd/MM/yyyy}.",
-                                Type = "system",
-                                IsRead = false
-                            });
+                            teacherAccountId = teacherAssign.AccountId.ToString().ToUpperInvariant();
                         }
                     }
 
-                    // --- 5.2 Thông báo cho HỌC SINH (TỐI ƯU: KHÔNG QUERY DB) ---
+                    // ==================================================================
+                    // 5. GỬI THÔNG BÁO (NOTIFICATION)
+                    // ==================================================================
+                    var notifications = new List<CreateNotificationRequest>();
+
+                    // 5.1 Thông báo cho GIÁO VIÊN
+                    if (!string.IsNullOrEmpty(teacherAccountId))
+                    {
+                        notifications.Add(new CreateNotificationRequest
+                        {
+                            UserId = teacherAccountId,
+                            Title = "New Class Assignment",
+                            Message = $"You have been assigned to teach class: {classEntity.ClassName} starting from {classEntity.StartDate:dd/MM/yyyy}.",
+                            Type = "system",
+                            IsRead = false
+                        });
+                    }
+
+                    // 5.2 Thông báo cho HỌC SINH
                     if (request.Enrollments != null && request.Enrollments.Any())
                     {
-                        // Vì StudentId == AccountId, ta map trực tiếp luôn
                         var studentNotifs = request.Enrollments.Select(item => new CreateNotificationRequest
                         {
-                            UserId = item.StudentId.ToString().ToUpperInvariant(), // Dùng luôn StudentId làm UserId
+                            UserId = item.StudentId.ToString().ToUpperInvariant(),
                             Title = "Class Placement Success",
                             Message = $"You have been placed in class {classEntity.ClassName}. Please check your schedule!",
                             Type = "system",
                             IsRead = false
                         });
-
                         notifications.AddRange(studentNotifs);
                     }
 
-                    // --- 5.3 Gửi tất cả thông báo cùng lúc ---
                     if (notifications.Any())
                     {
                         await _notificationService.CreateManyAsync(notifications);
                     }
+
+                    // ==================================================================
+                    // 6. TẠO GROUP CHAT CHO LỚP HỌC [NEW]
+                    // ==================================================================
+
+                    // 6.1 Tổng hợp thành viên: Giáo viên + Học sinh
+                    var chatMemberIds = new List<string>();
+
+                    // Thêm giáo viên (nếu có)
+                    if (!string.IsNullOrEmpty(teacherAccountId))
+                    {
+                        chatMemberIds.Add(teacherAccountId);
+                    }
+
+                    // Thêm học sinh
+                    if (request.Enrollments != null)
+                    {
+                        chatMemberIds.AddRange(request.Enrollments.Select(e => e.StudentId.ToString()));
+                    }
+
+                    // 6.2 Gọi Service tạo phòng chat
+                    // Chỉ tạo nếu có ít nhất 1 thành viên (hoặc tùy logic business của bạn)
+                    if (chatMemberIds.Any())
+                    {
+                        var createChatRequest = new CreateChatRoomRequest
+                        {
+                            Name = classEntity.ClassName, // Tên nhóm chat = Tên lớp
+                            Type = "group",
+                            MemberIds = chatMemberIds.Distinct().ToList() // Loại bỏ ID trùng lặp nếu có
+                        };
+
+                        await _chatService.CreateRoomAsync(createChatRequest);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // Chỉ log lỗi, không throw exception để tránh rollback transaction đã thành công
-                    Console.WriteLine($"Warning: Failed to send notifications. ClassID: {classEntity.Id}. Error: {ex.Message}");
+                    // Log lỗi nhưng không throw exception để transaction tạo lớp vẫn thành công
+                    // (Vì Chat và Notif là tính năng phụ trợ)
+                    Console.WriteLine($"[Warning] Failed to handle side-effects (Notif/Chat) for ClassID: {classEntity.Id}. Error: {ex.Message}");
                 }
 
                 return classEntity.Id;

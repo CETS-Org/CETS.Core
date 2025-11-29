@@ -1916,6 +1916,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("InvoiceID")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("PaymentSequence")
+                        .HasColumnType("int");
+
                     b.Property<Guid?>("PromotionID")
                         .HasColumnType("uniqueidentifier");
 
