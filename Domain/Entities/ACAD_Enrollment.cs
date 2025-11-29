@@ -19,6 +19,9 @@ public partial class ACAD_Enrollment : AuditedEntity
     public Guid EnrollmentStatusID { get; set; }
     public bool IsDeleted { get; set; }
 
+    [Column(TypeName = "decimal(5, 2)")]
+    public decimal? FinalGrade { get; set; }
+
 
     [ForeignKey(nameof(ClassID))]
     public virtual ACAD_Class? Class { get; set; }
