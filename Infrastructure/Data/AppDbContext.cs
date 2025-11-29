@@ -454,6 +454,7 @@ public partial class AppDbContext : DbContext
         {
             entity.Property(e => e.Id).HasColumnName("EnrollmentID").ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.FinalGrade).HasColumnType("decimal(5, 2)");
 
             entity.HasOne(d => d.Class).WithMany(p => p.ACAD_Enrollments).HasConstraintName("FK_ACAD_Enrollments_Class");
 

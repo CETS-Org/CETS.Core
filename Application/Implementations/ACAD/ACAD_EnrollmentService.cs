@@ -405,6 +405,73 @@ namespace Application.Implementations.ACAD
                 Items = items
             };
         }
+
+        public async Task<BulkUpdateFinalGradesResponse> BulkUpdateFinalGradesAsync(BulkUpdateFinalGradesRequest request)
+        {
+            var response = new BulkUpdateFinalGradesResponse
+            {
+                Success = true,
+                Data = new BulkUpdateFinalGradesData
+                {
+                    Results = new List<FinalGradeUpdateResult>()
+                }
+            };
+
+            // Process each final grade update
+            foreach (var gradeUpdate in request.FinalGrades)
+            {
+                try
+                {
+                    // Retrieve the enrollment from database
+                    var enrollment = await _enrollmentRepo.GetByIdAsync(gradeUpdate.EnrollmentId);
+
+                    if (enrollment == null)
+                    {
+                        // Enrollment not found
+                        response.Data.Results.Add(new FinalGradeUpdateResult
+                        {
+                            EnrollmentId = gradeUpdate.EnrollmentId,
+                            Status = "failed",
+                            Error = "Enrollment not found"
+                        });
+                        response.Data.FailedCount++;
+                        continue;
+                    }
+
+                    // Update final grade
+                    enrollment.FinalGrade = gradeUpdate.FinalGrade;
+                    enrollment.UpdatedAt = DateTime.UtcNow;
+
+                    _enrollmentRepo.Update(enrollment);
+
+                    response.Data.Results.Add(new FinalGradeUpdateResult
+                    {
+                        EnrollmentId = gradeUpdate.EnrollmentId,
+                        Status = "success"
+                    });
+                    response.Data.UpdatedCount++;
+                }
+                catch (Exception ex)
+                {
+                    response.Data.Results.Add(new FinalGradeUpdateResult
+                    {
+                        EnrollmentId = gradeUpdate.EnrollmentId,
+                        Status = "failed",
+                        Error = ex.Message
+                    });
+                    response.Data.FailedCount++;
+                }
+            }
+
+            // Save all changes to database
+            await _unitOfWork.SaveChangesAsync();
+
+            response.Message = response.Data.FailedCount > 0
+                ? $"Updated {response.Data.UpdatedCount} record(s). {response.Data.FailedCount} failed."
+                : $"Successfully updated {response.Data.UpdatedCount} record(s)!";
+
+            return response;
+        }
     }
 }
 

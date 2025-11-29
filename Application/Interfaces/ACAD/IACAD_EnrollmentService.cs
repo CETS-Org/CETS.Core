@@ -22,6 +22,7 @@ namespace Application.Interfaces.ACAD
         Task<StudentCourseDetailResponse?> GetStudentCourseDetailAsync(Guid studentId, Guid courseId);
         Task<LearningPathOverviewResponse?> GetLearningPathOverviewAsync(Guid studentId);
         Task<WaitingStudentSearchResult> GetStudentWaitListAsync(Guid courseId, string? query, int page, int pageSize);
+        Task<BulkUpdateFinalGradesResponse> BulkUpdateFinalGradesAsync(BulkUpdateFinalGradesRequest request);
 
     }
 }

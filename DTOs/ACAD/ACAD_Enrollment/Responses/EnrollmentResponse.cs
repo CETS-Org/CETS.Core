@@ -16,5 +16,6 @@ namespace DTOs.ACAD.ACAD_Enrollment.Responses
         public DateTime CreatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public decimal? FinalGrade { get; set; }
     }
 }
