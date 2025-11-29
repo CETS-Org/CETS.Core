@@ -9,6 +9,11 @@ namespace Application.Interfaces.RPT
 		Task<IReadOnlyList<ReportResponse>> GetByStatusIdAsync(Guid statusId);
 		Task<IReadOnlyList<ReportResponse>> GetBySubmitterAsync(Guid submitterId);
 		Task<string> GetDownloadUrlAsync(Guid id);
+		
+		// System Complaint methods - using ReportType to filter
+		Task<IReadOnlyList<ReportResponse>> GetSystemComplaintsAsync();
+		Task<IReadOnlyList<ReportResponse>> GetSystemComplaintsByStatusAsync(Guid reportTypeId, Guid statusId);
+		Task<IReadOnlyList<ReportResponse>> GetSystemComplaintsByReportTypeAsync(Guid reportTypeId);
 	}
 }
 

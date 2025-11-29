@@ -22,6 +22,9 @@ public partial class RPT_Report : EntityBase, IHasCreationTime
 
     public Guid ReportStatusID { get; set; }
 
+    [StringLength(50)]
+    public string? Priority { get; set; }
+
     public string? ReportUrl { get; set; }
 
     [Precision(0)]
@@ -31,6 +34,8 @@ public partial class RPT_Report : EntityBase, IHasCreationTime
     public DateTime? ResolvedAt { get; set; }
 
     public Guid? ResolvedBy { get; set; }
+
+    public string? AdminResponse { get; set; }
 
     [ForeignKey(nameof(ReportStatusID))]
     public virtual CORE_LookUp ReportStatus { get; set; } = null!;

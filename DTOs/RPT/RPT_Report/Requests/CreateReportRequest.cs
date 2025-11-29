@@ -24,6 +24,9 @@ namespace DTOs.RPT.RPT_Report.Requests
 		[Required]
 		public Guid ReportStatusID { get; set; }
 
+		[StringLength(50)]
+		public string? Priority { get; set; }
+
 		[StringLength(2048)]
 		public string? ReportUrl { get; set; }
 	}
