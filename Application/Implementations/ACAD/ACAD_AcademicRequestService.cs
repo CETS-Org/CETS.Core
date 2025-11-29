@@ -512,6 +512,51 @@ namespace Application.Implementations.ACAD
             return await _fileStorageService.GetPresignedGetUrlAsync(filePath);
         }
 
+        public async Task UpdateAttachmentAsync(UpdateAcademicRequestAttachment requestDto)
+        {
+            var entity = await _requestRepo.GetByIdAsync(requestDto.RequestID);
+            if (entity == null)
+                throw new KeyNotFoundException("Request not found");
+
+            // Check if request status allows updates (only NeedInfo status)
+            var status = await _lookUpRepository.GetByIdAsync(entity.AcademicRequestStatusID);
+            var statusName = (status?.Name ?? "").ToLower();
+            
+            if (statusName != "needinfo" && statusName != "need info")
+            {
+                throw new InvalidOperationException("Attachment can only be updated when request status is 'Need Info'");
+            }
+
+            // Get Pending status to change back to
+            var pendingStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AcademicRequestStatus, "Pending");
+            if (pendingStatus == null)
+            {
+                throw new KeyNotFoundException("Pending status not found. Please ensure the lookup data is properly seeded.");
+            }
+
+            // Update attachment URL
+            entity.AttachmentUrl = requestDto.AttachmentUrl;
+            
+            // Change status back to Pending so staff knows to review
+            entity.AcademicRequestStatusID = pendingStatus.Id;
+            
+            // Create history entry
+            var historyDescription = !string.IsNullOrEmpty(requestDto.AdditionalNotes)
+                ? $"Student updated attachment: {requestDto.AdditionalNotes}"
+                : "Student updated attachment";
+            
+            var history = new ACAD_AcademicRequestHistory
+            {
+                RequestID = entity.Id,
+                StatusID = pendingStatus.Id,
+                AttachmentUrl = requestDto.AttachmentUrl
+            };
+            _historyRepo.Add(history);
+
+            _requestRepo.Update(entity);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         private async Task SendRequestStatusNotificationAsync(ACAD_AcademicRequest request, CORE_LookUp status)
         {
             try

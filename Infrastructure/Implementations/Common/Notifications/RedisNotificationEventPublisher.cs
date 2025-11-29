@@ -48,12 +48,22 @@ namespace Infrastructure.Implementations.Common.Notifications
 
         public Task PublishNotificationAsync(NotificationResponse notification)
         {
+            if (_subscriber == null)
+            {
+                return Task.CompletedTask;
+            }
+
             var payload = JsonSerializer.Serialize(notification, SerializerOptions);
             return _subscriber.PublishAsync(ChannelName, payload);
         }
 
         public Task PublishNotificationsAsync(IEnumerable<NotificationResponse> notifications)
         {
+            if (_subscriber == null)
+            {
+                return Task.CompletedTask;
+            }
+
             var tasks = notifications.Select(PublishNotificationAsync);
             return Task.WhenAll(tasks);
         }

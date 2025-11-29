@@ -27,5 +27,6 @@ namespace Application.Interfaces.ACAD
         
         Task<AcademicRequestUploadResponse> GetAttachmentUploadUrlAsync(string fileName, string contentType);
         Task<string> GetAttachmentDownloadUrlAsync(string filePath);
+        Task UpdateAttachmentAsync(UpdateAcademicRequestAttachment requestDto);
     }
 }
