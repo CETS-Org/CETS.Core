@@ -30,5 +30,9 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Requests
         public DateOnly? SuspensionStartDate { get; set; }
         public DateOnly? SuspensionEndDate { get; set; }
         public string? ReasonCategory { get; set; }
+
+        // For dropout requests
+        public bool? CompletedExitSurvey { get; set; }
+        public string? ExitSurveyUrl { get; set; }
     }
 }

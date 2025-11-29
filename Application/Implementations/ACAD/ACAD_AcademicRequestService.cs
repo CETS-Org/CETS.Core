@@ -7,6 +7,7 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
 using Domain.Interfaces.CORE;
+using Domain.Interfaces.IDN;
 using DTOs.ACAD.ACAD_AcademicRequest.Requests;
 using DTOs.ACAD.ACAD_AcademicRequest.Responses;
 using DTOs.ACAD.ACAD_AcademicRequestHistory.Responses;
@@ -24,10 +25,12 @@ namespace Application.Implementations.ACAD
         private readonly ICORE_LookUpRepository _lookUpRepository;
         private readonly IFileStorageService _fileStorageService;
         private readonly IACAD_ClassMeetingRepository _classMeetingRepo;
+        private readonly IIDN_AccountRepository _accountRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICOM_NotificationService _notificationService;
         private readonly IACAD_SuspensionValidationService? _suspensionValidationService;
+        private readonly IACAD_DropoutValidationService? _dropoutValidationService;
 
         public ACAD_AcademicRequestService(
             IACAD_AcademicRequestRepository requestRepo,
@@ -35,20 +38,24 @@ namespace Application.Implementations.ACAD
             ICORE_LookUpRepository lookUpRepository,
             IFileStorageService fileStorageService,
             IACAD_ClassMeetingRepository classMeetingRepo,
+            IIDN_AccountRepository accountRepo,
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ICOM_NotificationService notificationService,
-            IACAD_SuspensionValidationService? suspensionValidationService = null)
+            IACAD_SuspensionValidationService? suspensionValidationService = null,
+            IACAD_DropoutValidationService? dropoutValidationService = null)
         {
             _requestRepo = requestRepo;
             _historyRepo = historyRepo;
             _lookUpRepository = lookUpRepository;
             _fileStorageService = fileStorageService;
             _classMeetingRepo = classMeetingRepo;
+            _accountRepo = accountRepo;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _notificationService = notificationService;
             _suspensionValidationService = suspensionValidationService;
+            _dropoutValidationService = dropoutValidationService;
         }
 
         public async Task<AcademicRequestResponse> SubmitRequestAsync(CreateAcademicRequest requestDto)
@@ -68,6 +75,8 @@ namespace Application.Implementations.ACAD
             var requestTypeName = (requestType.Name ?? "").ToLower();
             var requestTypeCode = (requestType.Code ?? "").ToLower();
             var isSuspension = requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension");
+            var isDropout = requestTypeName.Contains("dropout") || requestTypeCode.Contains("dropout") || 
+                           requestTypeName.Contains("dropping out") || requestTypeCode.Contains("droppingout");
 
             // Validate suspension requests
             if (isSuspension && _suspensionValidationService != null)
@@ -76,6 +85,16 @@ namespace Application.Implementations.ACAD
                 if (!validationResult.IsValid)
                 {
                     throw new InvalidOperationException($"Suspension request validation failed: {string.Join("; ", validationResult.Errors)}");
+                }
+            }
+
+            // Validate dropout requests
+            if (isDropout && _dropoutValidationService != null)
+            {
+                var validationResult = await _dropoutValidationService.ValidateDropoutRequestAsync(requestDto);
+                if (!validationResult.IsValid)
+                {
+                    throw new InvalidOperationException($"Dropout request validation failed: {string.Join("; ", validationResult.Errors)}");
                 }
             }
 
@@ -100,7 +119,8 @@ namespace Application.Implementations.ACAD
                     priorityCode = "High";
                 }
                 else if (requestTypeName.Contains("enrollment cancellation") || requestTypeCode.Contains("enrollmentcancellation") ||
-                         requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension"))
+                         requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension") ||
+                         requestTypeName.Contains("dropout") || requestTypeCode.Contains("dropout"))
                 {
                     priorityCode = "Medium";
                 }
@@ -118,20 +138,27 @@ namespace Application.Implementations.ACAD
             }
 
             // Set EffectiveDate based on request type:
-            // - 3 days for meeting reschedule
-            // - 7 days for suspension (from SuspensionStartDate)
-            // - 7 days for all other requests
+            // - 3 days for meeting reschedule (if not provided)
+            // - Use SuspensionStartDate for suspension
+            // - Use provided EffectiveDate for dropout (or default to 7 days if not provided)
+            // - 7 days for all other requests (if not provided)
             if (requestTypeName.Contains("meeting reschedule") || requestTypeCode.Contains("meetingreschedule"))
             {
-                entity.EffectiveDate = DateOnly.FromDateTime(DateTime.Now.AddDays(3));
+                entity.EffectiveDate = requestDto.EffectiveDate ?? DateOnly.FromDateTime(DateTime.Now.AddDays(3));
             }
             else if (isSuspension && requestDto.SuspensionStartDate.HasValue)
             {
                 entity.EffectiveDate = requestDto.SuspensionStartDate.Value;
             }
+            else if (isDropout)
+            {
+                // For dropout, use provided EffectiveDate from frontend (required for dropout)
+                // Only default to 7 days if not provided (for backwards compatibility)
+                entity.EffectiveDate = requestDto.EffectiveDate ?? DateOnly.FromDateTime(DateTime.Now.AddDays(7));
+            }
             else
             {
-                entity.EffectiveDate = DateOnly.FromDateTime(DateTime.Now.AddDays(7));
+                entity.EffectiveDate = requestDto.EffectiveDate ?? DateOnly.FromDateTime(DateTime.Now.AddDays(7));
             }
 
             // For suspension requests, set ExpectedReturnDate
@@ -187,10 +214,18 @@ namespace Application.Implementations.ACAD
             var requestTypeName = (requestType?.Name ?? "").ToLower();
             var requestTypeCode = (requestType?.Code ?? "").ToLower();
             var isSuspension = requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension");
+            var isDropout = requestTypeName.Contains("dropout") || requestTypeCode.Contains("dropout") ;
             
             if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isSuspension)
             {
                 await HandleSuspensionApprovalAsync(entity);
+            }
+
+            // If this is a completed dropout request, handle dropout finalization
+            var completedStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AcademicRequestStatus, "Completed");
+            if (completedStatus != null && requestDto.StatusID == completedStatus.Id && isDropout)
+            {
+                await HandleDropoutCompletionAsync(entity);
             }
 
             entity.AcademicRequestStatusID = requestDto.StatusID;
@@ -324,6 +359,46 @@ namespace Application.Implementations.ACAD
             // - 3 days before ExpectedReturnDate: Send reminder notification
             // - On ExpectedReturnDate: Send return notification and set status to "AwaitingReturn"
             // - After AwaitingReturnGraceDays: Optionally set to "AutoDroppedOut"
+        }
+
+        private async Task HandleDropoutCompletionAsync(ACAD_AcademicRequest request)
+        {
+            // When a dropout request is completed (final step), we need to:
+            // 1. Update the student's account status to "DroppedOut"
+            // 2. Clear class assignments (if any)
+            // 3. Stop attendance tracking
+            // 4. Apply refund policy if applicable (handled separately by finance module)
+            
+            // Note: This is a permanent action and cannot be undone
+            // Student must re-enroll as a new student if they want to return
+
+            // Get the student account
+            var account = await _accountRepo.GetDetailByIdAsync(request.StudentID);
+            if (account == null)
+            {
+                throw new KeyNotFoundException("Student account not found.");
+            }
+
+            // Get the DroppedOut status
+            var droppedOutStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, "Dropped");
+            if (droppedOutStatus == null)
+            {
+                throw new KeyNotFoundException("Dropped status not found in lookup data.");
+            }
+
+            // Update student account status to DroppedOut
+            account.AccountStatusID = droppedOutStatus.Id;
+            _accountRepo.Update(account);
+
+            // Note: Additional actions should be handled by background jobs or separate services:
+            // - Remove student from class roster
+            // - Cancel upcoming sessions/enrollments
+            // - Freeze tuition calculations
+            // - Process refunds if applicable based on refund policy
+            // - Deactivate LMS access (optional)
+            // - Send final confirmation email
+
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<AcademicRequestResponse>> GetRequestsByStudentAsync(Guid studentId)

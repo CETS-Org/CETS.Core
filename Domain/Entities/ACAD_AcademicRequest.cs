@@ -52,6 +52,10 @@ public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
     public string? ReasonCategory { get; set; }
     public DateOnly? ExpectedReturnDate { get; set; }
 
+    // For dropout requests
+    public bool? CompletedExitSurvey { get; set; }
+    public string? ExitSurveyUrl { get; set; }
+
     public virtual ICollection<ACAD_AcademicRequestHistory> ACAD_AcademicRequestHistories { get; set; } = new List<ACAD_AcademicRequestHistory>();
 
     [ForeignKey(nameof(AcademicRequestStatusID))]

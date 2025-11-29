@@ -37,7 +37,10 @@ namespace Application.Mappers.ACAD
                           (src.ClassMeeting.Slot != null ? $" - {src.ClassMeeting.Slot.Name}" : "") +
                           (src.ClassMeeting.Room != null ? $" ({src.ClassMeeting.Room.RoomCode})" : "")
                         : null))
-                .ForMember(dest => dest.NewRoomName, opt => opt.MapFrom(src => src.NewRoom != null ? src.NewRoom.RoomCode : null));
+                .ForMember(dest => dest.NewRoomName, opt => opt.MapFrom(src => src.NewRoom != null ? src.NewRoom.RoomCode : null))
+                // Dropout-specific fields
+                .ForMember(dest => dest.CompletedExitSurvey, opt => opt.MapFrom(src => src.CompletedExitSurvey))
+                .ForMember(dest => dest.ExitSurveyUrl, opt => opt.MapFrom(src => src.ExitSurveyUrl));
 
             CreateMap<ACAD_AcademicRequestHistory, AcademicRequestHistoryResponse>();
         }
