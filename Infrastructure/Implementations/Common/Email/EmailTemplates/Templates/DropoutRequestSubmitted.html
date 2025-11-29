@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Dropout Request Submitted</title>
+</head>
+
+<body style="font-family: Arial, sans-serif; background:#f5f7fa;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:30px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0"
+                       style="background:#fff;border-radius:12px;overflow:hidden;">
+
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);padding:30px;">
+                            <h1 style="color:#fff;margin:0;font-size:28px;">📝 Dropout Request Submitted</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding:30px;">
+                            <p style="font-size:15px;color:#444;line-height:1.6;margin-top:0;">
+                                Dear <strong>{{StudentName}}</strong>,
+                            </p>
+                            <p style="font-size:15px;color:#444;line-height:1.6;">
+                                Your dropout request has been successfully submitted and is now under review by our academic staff.
+                            </p>
+
+                            <!-- Request Details Box -->
+                            <table width="100%" style="background:#f8f9fa;border-left:4px solid #667eea;padding:20px;border-radius:8px;margin:20px 0;">
+                                <tr>
+                                    <td>
+                                        <h3 style="color:#667eea;margin-top:0;">Request Details</h3>
+                                        <p style="font-size:14px;color:#333;margin:8px 0;">
+                                            <strong>Request Type:</strong> {{RequestType}}
+                                        </p>
+                                        <p style="font-size:14px;color:#333;margin:8px 0;">
+                                            <strong>Effective Date:</strong> {{EffectiveDate}}
+                                        </p>
+                                        <p style="font-size:14px;color:#333;margin:8px 0;">
+                                            <strong>Submission Date:</strong> {{SubmissionDate}}
+                                        </p>
+                                        <p style="font-size:14px;color:#333;margin:8px 0;">
+                                            <strong>Status:</strong> Pending Review
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Warning Box -->
+                            <table width="100%" style="background:#fff3cd;border-left:4px solid #ffc107;padding:15px;border-radius:8px;margin:20px 0;">
+                                <tr>
+                                    <td style="font-size:14px;color:#856404;">
+                                        <strong>⚠️ Important:</strong> This is a permanent decision. Once approved and processed, you will no longer be enrolled in the program.
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- What Happens Next -->
+                            <h3 style="color:#333;margin-top:25px;">What Happens Next?</h3>
+                            <ul style="font-size:14px;color:#444;line-height:1.8;">
+                                <li>Our staff will review your request within 3-5 business days</li>
+                                <li>You will receive an email notification once a decision is made</li>
+                                <li>If approved, the dropout will be effective on {{EffectiveDate}}</li>
+                                <li>You can track your request status in your student portal</li>
+                            </ul>
+
+                            <p style="font-size:15px;color:#444;line-height:1.6;">
+                                If you have any questions or wish to withdraw your request, please contact our academic office immediately.
+                            </p>
+
+                            <p style="font-size:15px;color:#444;line-height:1.6;margin-bottom:0;">
+                                Best regards,<br>
+                                <strong>CETS Academic Team</strong>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="padding:20px;border-top:1px solid #e0e0e0;font-size:12px;color:#999;">
+                            <p style="margin:5px 0;">This is an automated email. Please do not reply directly to this message.</p>
+                            <p style="margin:5px 0;">&copy; {{Year}} CETS - Centre for English Training Services</p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+

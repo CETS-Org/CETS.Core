@@ -1,6 +1,6 @@
 ﻿using Application.Interfaces.ACAD;
 using Application.Interfaces.CORE;
-using Application.Interfaces.ExternalServices.Email;
+using Application.Interfaces.Common.Email;
 using Application.Interfaces.FIN;
 using Application.Interfaces.IDN;
 using AutoMapper;

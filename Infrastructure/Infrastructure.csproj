@@ -39,6 +39,15 @@
     <None Update="Implementations\Common\Email\EmailTemplates\Templates\RefundConfirmation.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Implementations\Common\Email\EmailTemplates\Templates\DropoutRequestSubmitted.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Implementations\Common\Email\EmailTemplates\Templates\DropoutRequestApproved.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Implementations\Common\Email\EmailTemplates\Templates\DropoutRequestCompleted.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

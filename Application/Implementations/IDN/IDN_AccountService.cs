@@ -1,4 +1,4 @@
-﻿using Application.Interfaces.ExternalServices.Email;
+﻿using Application.Interfaces.Common.Email;
 using Application.Interfaces.ExternalServices.Security;
 using Application.Interfaces.IDN;
 using AutoMapper;

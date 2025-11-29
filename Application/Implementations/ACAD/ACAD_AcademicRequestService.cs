@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces.ACAD;
 using Application.Interfaces.Common.Storage;
 using Application.Interfaces.COM;
+using Application.Interfaces.Common.Email;
 using AutoMapper;
 using Domain.Constants;
 using Domain.Entities;
@@ -31,6 +32,8 @@ namespace Application.Implementations.ACAD
         private readonly ICOM_NotificationService _notificationService;
         private readonly IACAD_SuspensionValidationService? _suspensionValidationService;
         private readonly IACAD_DropoutValidationService? _dropoutValidationService;
+        private readonly IMailService _mailService;
+        private readonly IEmailTemplateBuilder _emailTemplateBuilder;
 
         public ACAD_AcademicRequestService(
             IACAD_AcademicRequestRepository requestRepo,
@@ -42,6 +45,8 @@ namespace Application.Implementations.ACAD
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ICOM_NotificationService notificationService,
+            IMailService mailService,
+            IEmailTemplateBuilder emailTemplateBuilder,
             IACAD_SuspensionValidationService? suspensionValidationService = null,
             IACAD_DropoutValidationService? dropoutValidationService = null)
         {
@@ -54,6 +59,8 @@ namespace Application.Implementations.ACAD
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _notificationService = notificationService;
+            _mailService = mailService;
+            _emailTemplateBuilder = emailTemplateBuilder;
             _suspensionValidationService = suspensionValidationService;
             _dropoutValidationService = dropoutValidationService;
         }
@@ -181,6 +188,12 @@ namespace Application.Implementations.ACAD
             _historyRepo.Add(history);
             await _unitOfWork.SaveChangesAsync();
 
+            // Send email notification for dropout request submission
+            if (isDropout)
+            {
+                await SendDropoutRequestSubmittedEmailAsync(entity, requestType);
+            }
+
             return _mapper.Map<AcademicRequestResponse>(entity);
         }
 
@@ -242,6 +255,12 @@ namespace Application.Implementations.ACAD
 
             // Send notification to the student about the request status change
             await SendRequestStatusNotificationAsync(entity, status);
+            
+            // Send email notification for dropout request status change
+            if (isDropout && (requestDto.StatusID == approvedStatus?.Id || requestDto.StatusID == completedStatus?.Id))
+            {
+                await SendDropoutRequestStatusEmailAsync(entity, status);
+            }
         }
 
         private async Task HandleMeetingRescheduleAsync(ACAD_AcademicRequest request)
@@ -543,6 +562,92 @@ namespace Application.Implementations.ACAD
                 // Log the error but don't fail the request processing
                 // In a real application, you would use a proper logging framework
                 Console.WriteLine($"Failed to send notification for request {request.Id}: {ex.Message}");
+            }
+        }
+
+        private async Task SendDropoutRequestSubmittedEmailAsync(ACAD_AcademicRequest request, CORE_LookUp requestType)
+        {
+            try
+            {
+                var student = await _accountRepo.GetByIdAsync(request.StudentID);
+                if (student == null || string.IsNullOrEmpty(student.Email))
+                    return;
+
+                var subject = "Dropout Request Submitted - CETS";
+                var effectiveDate = request.EffectiveDate?.ToString("MMMM dd, yyyy") ?? "Not specified";
+                var submissionDate = DateTime.Now.ToString("MMMM dd, yyyy");
+
+                var body = _emailTemplateBuilder.BuildDropoutRequestSubmittedEmail(
+                    studentName: student.FullName ?? "Student",
+                    requestType: requestType?.Name ?? "Dropout Request",
+                    effectiveDate: effectiveDate,
+                    submissionDate: submissionDate
+                );
+
+                await _mailService.SendEmailAsync(student.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send dropout submission email for request {request.Id}: {ex.Message}");
+            }
+        }
+
+        private async Task SendDropoutRequestStatusEmailAsync(ACAD_AcademicRequest request, CORE_LookUp status)
+        {
+            try
+            {
+                var student = await _accountRepo.GetByIdAsync(request.StudentID);
+                if (student == null || string.IsNullOrEmpty(student.Email))
+                    return;
+
+                var requestType = await _lookUpRepository.GetByIdAsync(request.RequestTypeID);
+                var statusName = status.Name?.ToLower();
+                var isApproved = statusName == "approved";
+                var isCompleted = statusName == "completed";
+                
+                var subject = isApproved 
+                    ? "Dropout Request Approved - CETS"
+                    : isCompleted 
+                        ? "Dropout Request Completed - CETS"
+                        : $"Dropout Request {status.Name} - CETS";
+
+                var effectiveDate = request.EffectiveDate?.ToString("MMMM dd, yyyy") ?? "Not specified";
+                var processedDate = DateTime.Now.ToString("MMMM dd, yyyy");
+
+                string body;
+                if (isApproved)
+                {
+                    body = _emailTemplateBuilder.BuildDropoutRequestApprovedEmail(
+                        studentName: student.FullName ?? "Student",
+                        requestType: requestType?.Name ?? "Dropout Request",
+                        effectiveDate: effectiveDate,
+                        status: status.Name ?? "Approved",
+                        processedDate: processedDate,
+                        staffComment: request.StaffResponse
+                    );
+                }
+                else if (isCompleted)
+                {
+                    body = _emailTemplateBuilder.BuildDropoutRequestCompletedEmail(
+                        studentName: student.FullName ?? "Student",
+                        requestType: requestType?.Name ?? "Dropout Request",
+                        effectiveDate: effectiveDate,
+                        status: status.Name ?? "Completed",
+                        processedDate: processedDate,
+                        staffComment: request.StaffResponse
+                    );
+                }
+                else
+                {
+                    // For other statuses, skip email
+                    return;
+                }
+
+                await _mailService.SendEmailAsync(student.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send dropout status email for request {request.Id}: {ex.Message}");
             }
         }
     }

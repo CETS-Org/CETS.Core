@@ -1,12 +1,14 @@
-﻿using System;
+﻿using Application.Interfaces.Common.Email;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Implementations.Common.Email.EmailTemplates
 {
-    public class EmailTemplateBuilder
+    public class EmailTemplateBuilder : IEmailTemplateBuilder
     {
         private readonly string _templateRoot;
 
@@ -77,6 +79,79 @@ namespace Infrastructure.Implementations.Common.Email.EmailTemplates
                 .Replace("{{StudentName}}", studentName)
                 .Replace("{{ClassName}}", className)
                 .Replace("{{StartDate}}", startDate.ToString("dd MMM yyyy"));
+        }
+
+        // ======================
+        // 4. Dropout Request Submitted Email
+        // ======================
+        public string BuildDropoutRequestSubmittedEmail(
+            string studentName,
+            string requestType,
+            string effectiveDate,
+            string submissionDate)
+        {
+            var template = LoadTemplate("DropoutRequestSubmitted.html");
+
+            return template
+                .Replace("{{StudentName}}", studentName)
+                .Replace("{{RequestType}}", requestType)
+                .Replace("{{EffectiveDate}}", effectiveDate)
+                .Replace("{{SubmissionDate}}", submissionDate)
+                .Replace("{{Year}}", DateTime.Now.Year.ToString());
+        }
+
+        // ======================
+        // 5. Dropout Request Approved Email
+        // ======================
+        public string BuildDropoutRequestApprovedEmail(
+            string studentName,
+            string requestType,
+            string effectiveDate,
+            string status,
+            string processedDate,
+            string? staffComment = null)
+        {
+            var template = LoadTemplate("DropoutRequestApproved.html");
+
+            var staffCommentHtml = string.IsNullOrEmpty(staffComment)
+                ? ""
+                : $"<p style=\"font-size:14px;color:#333;margin:8px 0;\"><strong>Staff Comment:</strong> {staffComment}</p>";
+
+            return template
+                .Replace("{{StudentName}}", studentName)
+                .Replace("{{RequestType}}", requestType)
+                .Replace("{{EffectiveDate}}", effectiveDate)
+                .Replace("{{Status}}", status)
+                .Replace("{{ProcessedDate}}", processedDate)
+                .Replace("{{StaffComment}}", staffCommentHtml)
+                .Replace("{{Year}}", DateTime.Now.Year.ToString());
+        }
+
+        // ======================
+        // 6. Dropout Request Completed Email
+        // ======================
+        public string BuildDropoutRequestCompletedEmail(
+            string studentName,
+            string requestType,
+            string effectiveDate,
+            string status,
+            string processedDate,
+            string? staffComment = null)
+        {
+            var template = LoadTemplate("DropoutRequestCompleted.html");
+
+            var staffCommentHtml = string.IsNullOrEmpty(staffComment)
+                ? ""
+                : $"<p style=\"font-size:14px;color:#333;margin:8px 0;\"><strong>Staff Comment:</strong> {staffComment}</p>";
+
+            return template
+                .Replace("{{StudentName}}", studentName)
+                .Replace("{{RequestType}}", requestType)
+                .Replace("{{EffectiveDate}}", effectiveDate)
+                .Replace("{{Status}}", status)
+                .Replace("{{ProcessedDate}}", processedDate)
+                .Replace("{{StaffComment}}", staffCommentHtml)
+                .Replace("{{Year}}", DateTime.Now.Year.ToString());
         }
 
     }

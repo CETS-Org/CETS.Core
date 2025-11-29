@@ -1,4 +1,4 @@
-﻿using Application.Interfaces.ExternalServices.Email;
+﻿using Application.Interfaces.Common.Email;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Implementations.Services.Email
+namespace Infrastructure.Implementations.Common.Email
 {
     public class MailService : IMailService
     {
