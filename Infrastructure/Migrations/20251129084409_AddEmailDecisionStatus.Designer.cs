@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251129084409_AddEmailDecisionStatus")]
+    partial class AddEmailDecisionStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,9 +48,6 @@ namespace Infrastructure.Migrations
                     b.Property<Guid?>("ClassMeetingID")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool?>("CompletedExitSurvey")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(0)
@@ -55,12 +55,6 @@ namespace Infrastructure.Migrations
                         .HasDefaultValueSql("(sysutcdatetime())");
 
                     b.Property<DateOnly?>("EffectiveDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("ExitSurveyId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateOnly?>("ExpectedReturnDate")
                         .HasColumnType("date");
 
                     b.Property<Guid?>("FromClassID")
@@ -89,9 +83,6 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ReasonCategory")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<Guid>("RequestTypeID")
                         .HasColumnType("uniqueidentifier");
 
@@ -100,12 +91,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<Guid>("StudentID")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateOnly?>("SuspensionEndDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateOnly?>("SuspensionStartDate")
-                        .HasColumnType("date");
 
                     b.Property<Guid?>("ToClassID")
                         .HasColumnType("uniqueidentifier");
@@ -917,9 +902,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<Guid>("EnrollmentStatusID")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal?>("FinalGrade")
-                        .HasColumnType("decimal(5, 2)");
 
                     b.Property<Guid?>("InvoiceID")
                         .HasColumnType("uniqueidentifier");

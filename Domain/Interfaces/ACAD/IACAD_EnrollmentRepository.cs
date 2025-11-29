@@ -1,4 +1,6 @@
+using Domain.Constants;
 using Domain.Entities;
+using DTOs.ACAD.ACAD_Enrollment.Responses;
 
 namespace Domain.Interfaces.ACAD
 {
@@ -12,6 +14,10 @@ namespace Domain.Interfaces.ACAD
         Task<ACAD_Enrollment?> GetEnrollmentDetailByStudentAndCourseAsync(Guid studentId, Guid courseId);
 
         Task<IEnumerable<ACAD_Enrollment>> GetStudentWaitList(Guid courseId);
+
+        Task<ACAD_Enrollment?> GetEnrollmentForRefundAsync(Guid enrollmentId);
+
+        Task UpdateDecisionStatusAsync(Guid enrollmentId, EmailDecisionStatus status);
 
     }
 }
