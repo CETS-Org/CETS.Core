@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Domain.Constants;
+using Domain.Entities;
 using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_Enrollment.Requests;
 using DTOs.ACAD.ACAD_Enrollment.Responses;
@@ -22,6 +23,10 @@ namespace Application.Interfaces.ACAD
         Task<StudentCourseDetailResponse?> GetStudentCourseDetailAsync(Guid studentId, Guid courseId);
         Task<LearningPathOverviewResponse?> GetLearningPathOverviewAsync(Guid studentId);
         Task<WaitingStudentSearchResult> GetStudentWaitListAsync(Guid courseId, string? query, int page, int pageSize);
+        Task<BulkUpdateFinalGradesResponse> BulkUpdateFinalGradesAsync(BulkUpdateFinalGradesRequest request);
+        Task<EnrollmentForRefundResponse?> GetEnrollmentForRefund(Guid enrollmentId);
+        Task<EmailDecisionStatus?> GetDecisionStatusAsync(Guid enrollmentId);
+        Task UpdateDecisionStatusAsync(Guid enrollmentId, EmailDecisionStatus status);
 
     }
 }

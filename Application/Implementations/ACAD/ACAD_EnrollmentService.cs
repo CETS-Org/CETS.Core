@@ -1,5 +1,7 @@
 ﻿using Application.Interfaces.ACAD;
+using Application.Interfaces.CORE;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
@@ -21,7 +23,8 @@ namespace Application.Implementations.ACAD
     public class ACAD_EnrollmentService : IACAD_EnrollmentService
     {
         private readonly IACAD_EnrollmentRepository _enrollmentRepo;
-        private readonly IACAD_AttendanceRepository _attendanceRepo;    
+        private readonly IACAD_AttendanceRepository _attendanceRepo;
+        private readonly ICORE_LookUpService _lookUpService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
@@ -29,12 +32,14 @@ namespace Application.Implementations.ACAD
             IACAD_EnrollmentRepository enrollmentRepo,
             IACAD_AttendanceRepository attendanceRepo,
             IUnitOfWork unitOfWork,
+            ICORE_LookUpService lookUpService,
             IMapper mapper)
         {
             _enrollmentRepo = enrollmentRepo;
             _attendanceRepo = attendanceRepo;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _lookUpService = lookUpService;
         }
 
         public async Task<EnrollmentResponse> EnrollAsync(CreateEnrollmentRequest request)
@@ -67,6 +72,45 @@ namespace Application.Implementations.ACAD
             var enrollment = await _enrollmentRepo.GetDetailAsync(enrollmentId);
             return _mapper.Map<EnrollmentDetailResponse?>(enrollment);
         }
+
+        public async Task<EmailDecisionStatus?> GetDecisionStatusAsync(Guid enrollmentId)
+        {
+            var entity = await _enrollmentRepo.GetByIdAsync(enrollmentId);
+            return entity?.EmailDecisionStatus;
+        }
+
+        public async Task UpdateDecisionStatusAsync(Guid enrollmentId, EmailDecisionStatus status)
+        {
+            await _enrollmentRepo.UpdateDecisionStatusAsync(enrollmentId, status);
+        }
+
+        public async Task<EnrollmentForRefundResponse?> GetEnrollmentForRefund(Guid enrollmentId)
+        {
+            var enrollment = await _enrollmentRepo.GetEnrollmentForRefundAsync(enrollmentId);
+            if (enrollment == null) return null;
+
+            var invoice = enrollment.Invoice;
+            var firstPayment = invoice?.FIN_Payments?
+                .OrderBy(p => p.PaymentDate)
+                .FirstOrDefault();
+
+            return new EnrollmentForRefundResponse
+            {
+                EnrollmentId = enrollment.Id,
+                StudentId = enrollment.StudentID,
+                StudentName = enrollment.Student?.Account?.FullName ?? enrollment.Student?.Account.FullName ?? "",
+                InvoiceId = enrollment.InvoiceID,
+                InvoiceTotal = invoice?.TotalAmount,
+                FirstPaymentAmount = firstPayment?.Amount,
+                FirstPaymentDate = firstPayment?.PaymentDate,
+                FirstPaymentMethod = firstPayment?.PaymentMethod?.Name,
+                CourseName = enrollment.Course.CourseName
+            };
+        }
+
+
+
+
 
         public async Task<IEnumerable<CourseEnrollmentListResponse>> GetStudentCoursesEnrollmentAsync(Guid studentId)
         {
@@ -404,6 +448,73 @@ namespace Application.Implementations.ACAD
                 HasMore = totalCount > (page * pageSize),
                 Items = items
             };
+        }
+
+        public async Task<BulkUpdateFinalGradesResponse> BulkUpdateFinalGradesAsync(BulkUpdateFinalGradesRequest request)
+        {
+            var response = new BulkUpdateFinalGradesResponse
+            {
+                Success = true,
+                Data = new BulkUpdateFinalGradesData
+                {
+                    Results = new List<FinalGradeUpdateResult>()
+                }
+            };
+
+            // Process each final grade update
+            foreach (var gradeUpdate in request.FinalGrades)
+            {
+                try
+                {
+                    // Retrieve the enrollment from database
+                    var enrollment = await _enrollmentRepo.GetByIdAsync(gradeUpdate.EnrollmentId);
+
+                    if (enrollment == null)
+                    {
+                        // Enrollment not found
+                        response.Data.Results.Add(new FinalGradeUpdateResult
+                        {
+                            EnrollmentId = gradeUpdate.EnrollmentId,
+                            Status = "failed",
+                            Error = "Enrollment not found"
+                        });
+                        response.Data.FailedCount++;
+                        continue;
+                    }
+
+                    // Update final grade
+                    enrollment.FinalGrade = gradeUpdate.FinalGrade;
+                    enrollment.UpdatedAt = DateTime.UtcNow;
+
+                    _enrollmentRepo.Update(enrollment);
+
+                    response.Data.Results.Add(new FinalGradeUpdateResult
+                    {
+                        EnrollmentId = gradeUpdate.EnrollmentId,
+                        Status = "success"
+                    });
+                    response.Data.UpdatedCount++;
+                }
+                catch (Exception ex)
+                {
+                    response.Data.Results.Add(new FinalGradeUpdateResult
+                    {
+                        EnrollmentId = gradeUpdate.EnrollmentId,
+                        Status = "failed",
+                        Error = ex.Message
+                    });
+                    response.Data.FailedCount++;
+                }
+            }
+
+            // Save all changes to database
+            await _unitOfWork.SaveChangesAsync();
+
+            response.Message = response.Data.FailedCount > 0
+                ? $"Updated {response.Data.UpdatedCount} record(s). {response.Data.FailedCount} failed."
+                : $"Successfully updated {response.Data.UpdatedCount} record(s)!";
+
+            return response;
         }
     }
 }

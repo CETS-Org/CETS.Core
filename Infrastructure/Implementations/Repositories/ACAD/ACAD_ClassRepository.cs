@@ -282,11 +282,14 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             var totalSessions = meetings.Count();
 
             // Get students enrolled in this class with attendance and progress
+            // Filter by enrollment status code "Enrolled"
             var enrollments = await _context.ACAD_Enrollments
                 .AsNoTracking()
-                .Where(e => e.ClassID == classId && !e.IsDeleted)
+                
                 .Include(e => e.Student)
                     .ThenInclude(s => s.Account)
+                .Include(e => e.EnrollmentStatus)
+                .Where(e => e.ClassID == classId && !e.IsDeleted && e.EnrollmentStatus.Code == "Enrolled")
                 .ToListAsync();
 
             var studentResponses = new List<StudentInClassResponse>();
@@ -332,13 +335,15 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 studentResponses.Add(new StudentInClassResponse
                 {
                     Id = account.Id,
+                    EnrollmentId = enrollment.Id,
                     StudentCode = student.StudentCode ?? string.Empty,
                     Name = account.FullName ?? string.Empty,
                     Email = account.Email ?? string.Empty,
                     Phone = account.PhoneNumber ?? string.Empty,
                     JoinDate = enrollment.CreatedAt.ToString("yyyy-MM-dd"),
                     AttendanceRate = Math.Round(attendanceRate, 0),
-                    ProgressPercentage = Math.Round(progressPercentage, 0)
+                    ProgressPercentage = Math.Round(progressPercentage, 0),
+                    FinalGrade = enrollment.FinalGrade
                 });
             }
 

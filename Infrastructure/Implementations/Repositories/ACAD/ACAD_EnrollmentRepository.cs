@@ -1,4 +1,5 @@
-﻿using Domain.Data;
+﻿using Domain.Constants;
+using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using Infrastructure.Implementations.Repositories;
@@ -52,6 +53,18 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(e => e.Course)
                 .FirstOrDefaultAsync(e => e.Id == enrollmentId);
         }
+
+        public async Task<ACAD_Enrollment?> GetEnrollmentForRefundAsync(Guid enrollmentId)
+        {
+            return await _context.ACAD_Enrollments
+                .Include(e => e.Student)
+                    .ThenInclude(s => s.Account)
+                .Include(e => e.Course)
+                .Include(e => e.Invoice)
+                    .ThenInclude(i => i.FIN_Payments)
+                .FirstOrDefaultAsync(e => e.Id == enrollmentId);
+        }
+
         public async Task<IEnumerable<ACAD_Enrollment>> GetStudentAcademicResultsAsync(Guid studentId)
         {
             return await _context.ACAD_Enrollments
@@ -105,6 +118,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 )
                 .OrderBy(e => e.CreatedAt)          // (Tùy chọn) Sắp xếp theo ai đăng ký trước xếp trước
                 .ToListAsync();
+        }
+
+        public async Task UpdateDecisionStatusAsync(Guid enrollmentId, EmailDecisionStatus status)
+        {
+            var entity = await _context.ACAD_Enrollments.FirstOrDefaultAsync(e => e.Id == enrollmentId);
+
+            if (entity != null)
+            {
+                entity.EmailDecisionStatus = status;
+                await _context.SaveChangesAsync();
+            }
         }
 
     }
