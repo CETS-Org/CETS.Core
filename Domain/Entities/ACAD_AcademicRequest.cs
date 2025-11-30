@@ -56,6 +56,10 @@ public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
     public bool? CompletedExitSurvey { get; set; }
     public string? ExitSurveyId { get; set; }
 
+    // Related enrollment and payment
+    public Guid? EnrollmentID { get; set; }
+    public Guid? PaymentID { get; set; }
+
     public virtual ICollection<ACAD_AcademicRequestHistory> ACAD_AcademicRequestHistories { get; set; } = new List<ACAD_AcademicRequestHistory>();
 
     [ForeignKey(nameof(AcademicRequestStatusID))]
@@ -90,4 +94,10 @@ public partial class ACAD_AcademicRequest : EntityBase, IHasCreationTime
 
     [ForeignKey(nameof(ToClassID))]
     public virtual ACAD_Class? ToClass { get; set; }
+
+    [ForeignKey(nameof(EnrollmentID))]
+    public virtual ACAD_Enrollment? Enrollment { get; set; }
+
+    [ForeignKey(nameof(PaymentID))]
+    public virtual FIN_Payment? Payment { get; set; }
 }

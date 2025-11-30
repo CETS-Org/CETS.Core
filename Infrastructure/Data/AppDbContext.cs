@@ -183,6 +183,16 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.NewRoomID)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_ACAD_AcReq_NewRoom");
+
+            entity.HasOne(d => d.Enrollment).WithMany()
+                .HasForeignKey(d => d.EnrollmentID)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_ACAD_AcReq_Enrollment");
+
+            entity.HasOne(d => d.Payment).WithMany()
+                .HasForeignKey(d => d.PaymentID)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_ACAD_AcReq_Payment");
         });
 
         modelBuilder.Entity<ACAD_AcademicRequestHistory>(entity =>

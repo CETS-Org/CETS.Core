@@ -62,5 +62,9 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Responses
         // For dropout requests
         public bool? CompletedExitSurvey { get; set; }
         public string? ExitSurveyId { get; set; }
+
+        // Related enrollment and payment
+        public Guid? EnrollmentID { get; set; }
+        public Guid? PaymentID { get; set; }
     }
 }
