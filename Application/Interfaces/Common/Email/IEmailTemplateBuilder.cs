@@ -51,6 +51,14 @@ namespace Application.Interfaces.Common.Email
             string status,
             string processedDate,
             string? staffComment = null);
+
+        string BuildAttendanceWarningEmail(
+         string studentName,
+         string courseName,
+         string className,
+         int absentCount,
+         int totalSessions,
+         int maxAbsent);
     }
 }
 

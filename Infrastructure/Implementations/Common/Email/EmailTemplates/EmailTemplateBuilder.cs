@@ -153,6 +153,29 @@ namespace Infrastructure.Implementations.Common.Email.EmailTemplates
                 .Replace("{{StaffComment}}", staffCommentHtml)
                 .Replace("{{Year}}", DateTime.Now.Year.ToString());
         }
+        // ======================
+        // 7. Attendance Warning Email
+        // ======================
+        public string BuildAttendanceWarningEmail(
+         string studentName,
+         string courseName,
+         string className,
+         int absentCount,
+         int totalSessions,
+         int maxAbsent)
+            {
+                var template = LoadTemplate("AttendanceWarning.html");
+
+                return template
+                    .Replace("{{StudentName}}", studentName)
+                    .Replace("{{CourseName}}", courseName)
+                    .Replace("{{ClassName}}", className)
+                    .Replace("{{AbsentCount}}", absentCount.ToString())
+                    .Replace("{{TotalSessions}}", totalSessions.ToString())
+                    .Replace("{{MaxAbsent}}", maxAbsent.ToString());
+            }
+
+
 
     }
 }
