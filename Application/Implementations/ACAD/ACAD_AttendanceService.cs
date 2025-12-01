@@ -108,10 +108,8 @@ namespace Application.Implementations.ACAD
                 Attended = present,
                 Absent = absent,
                 AttendanceRate = attendanceRate,
-                IsWarning = absentRate > 20,
-                WarningMessage = absentRate > 20
-                    ? $"You have been absent {absent}/{totalSessions} sessions ({absentRate:F1}%). Maximum allowed is 20%."
-                    : null,
+                IsWarning = false,
+                WarningMessage = null,
 
                 // 🔹 Danh sách chi tiết các buổi học (sessions)
                 SessionRecords = attendances
@@ -203,9 +201,9 @@ namespace Application.Implementations.ACAD
                     Absent = absent,
                     AttendanceRate = rate,
                     SessionRecords = sessionRecords,
-                    IsWarning = totalSessions > 0 && (double)absent / totalSessions * 100 > 20,
-                    WarningMessage = totalSessions > 0 && (double)absent / totalSessions * 100 > 20
-                        ? $"You have been absent {absent}/{totalSessions} sessions ({(double)absent / totalSessions * 100:F1}%). Maximum allowed is 20%."
+                    IsWarning = totalSessions > 0 && (double)absent / totalSessions * 100 > 30,
+                    WarningMessage = totalSessions > 0 && (double)absent / totalSessions * 100 > 30
+                        ? $"You have been absent {absent}/{totalSessions} sessions ({(double)absent / totalSessions * 100:F1}%). Maximum allowed is 30%."
                         : null
                 });
             }
