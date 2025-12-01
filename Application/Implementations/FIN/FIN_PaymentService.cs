@@ -28,12 +28,13 @@ namespace Application.Implementations.FIN
         private readonly IACAD_ClassReservationService _classReservationService;
         private readonly IACAD_EnrollmentRepository _enrollmentRepository;
         private readonly IMailService _mailService;
+        private readonly IFIN_PaymentRepository _paymentRepository;
         private readonly IIDN_AccountService _accountService;
         private readonly IFIN_InvoiceItemService _invoiceItemService;
         public FIN_PaymentService(IFIN_PaymentRepository repository, IUnitOfWork unitOfWork, IMapper mapper, ICORE_LookUpService lookUpService, 
             IFIN_PaymentWebhookService paymentWebhookService, IFIN_InvoiceService invoiceService, IACAD_ReservationItemService reservationItemService, 
             IACAD_EnrollmentRepository enrollmentRepository, IACAD_ClassReservationService classReservationService, IMailService mailService, IIDN_AccountService accountService,
-            IFIN_InvoiceItemService invoiceItemService)
+            IFIN_InvoiceItemService invoiceItemService, IFIN_PaymentRepository paymentRepository)
 			: base(repository, unitOfWork, mapper)
 		{
 			_lookUpService = lookUpService;
@@ -45,6 +46,7 @@ namespace Application.Implementations.FIN
             _mailService = mailService;
             _accountService = accountService;
             _invoiceItemService = invoiceItemService;
+            _paymentRepository = paymentRepository;
         }
 
 		public async Task<FIN_Payment?> CreateMonthlyPayment(Guid invoiceId,Guid studentId, Guid reservationItemId)
@@ -276,6 +278,11 @@ namespace Application.Implementations.FIN
 
 			return paymentHistoryList.AsReadOnly();
 		}
+
+        public async Task<IReadOnlyList<FIN_Payment>> GetPaymentsByInvoiceIdAsync(Guid? invoiceId)
+        {
+            return await _paymentRepository.GetPaymentsByInvoiceIdAsync(invoiceId);
+        }
 
     }
 }
