@@ -423,7 +423,6 @@ namespace Application.Implementations.ACAD
         public async Task<IEnumerable<AcademicRequestResponse>> GetRequestsByStudentAsync(Guid studentId)
         {
             var requests = await _requestRepo.GetByStudentAsync(studentId);
-            await UpdateExpiredRequestsAsync(requests);
             return _mapper.Map<IEnumerable<AcademicRequestResponse>>(requests);
         }
 
@@ -435,63 +434,19 @@ namespace Application.Implementations.ACAD
         public async Task<AcademicRequestResponse?> GetDetailsAsync(Guid requestId)
         {
             var r = await _requestRepo.GetDetailsAsync(requestId);
-            if (r != null)
-            {
-                await UpdateExpiredRequestsAsync(new[] { r });
-            }
             return _mapper.Map<AcademicRequestResponse?>(r);
         }
 
         public async Task<IEnumerable<AcademicRequestResponse>> GetAllRequestsAsync()
         {
             var requests = await _requestRepo.GetAllAsync();
-            await UpdateExpiredRequestsAsync(requests);
             return _mapper.Map<IEnumerable<AcademicRequestResponse>>(requests);
         }
 
         public async Task<IEnumerable<AcademicRequestResponse>> GetRequestsByStatusAsync(Guid statusId)
         {
             var requests = await _requestRepo.GetByStatusAsync(statusId);
-            await UpdateExpiredRequestsAsync(requests);
             return _mapper.Map<IEnumerable<AcademicRequestResponse>>(requests);
-        }
-
-        // Helper method to update expired academic requests
-        private async Task UpdateExpiredRequestsAsync(IEnumerable<ACAD_AcademicRequest> requests)
-        {
-            var expiredStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AcademicRequestStatus, "Expired");
-            if (expiredStatus == null)
-            {
-                // If Expired status doesn't exist, skip the update
-                return;
-            }
-
-            var pendingStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AcademicRequestStatus, "Pending");
-            if (pendingStatus == null)
-            {
-                return;
-            }
-
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            var hasChanges = false;
-
-            foreach (var request in requests)
-            {
-                // Only update pending requests that have passed their effective date
-                if (request.AcademicRequestStatusID == pendingStatus.Id && 
-                    request.EffectiveDate.HasValue && 
-                    request.EffectiveDate.Value < today)
-                {
-                    request.AcademicRequestStatusID = expiredStatus.Id;
-                    _requestRepo.Update(request);
-                    hasChanges = true;
-                }
-            }
-
-            if (hasChanges)
-            {
-                await _unitOfWork.SaveChangesAsync();
-            }
         }
 
         public async Task<AcademicRequestUploadResponse> GetAttachmentUploadUrlAsync(string fileName, string contentType)
