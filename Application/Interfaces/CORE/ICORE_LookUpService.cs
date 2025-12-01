@@ -9,6 +9,8 @@ namespace Application.Interfaces.CORE
         Task<LookUpResponse?> GetByIdAsync(Guid id);
         Task<IReadOnlyList<LookUpResponse>> GetByTypeIdAsync(Guid lookUpTypeId);
         Task<IReadOnlyList<LookUpResponse>> GetByTypeCodeAsync(string lookUpTypeCode);
+
+        Task<LookUpResponse> GetByCodeAsync(string lookUpTypeCode, string lookUpCode);
         Task<LookUpResponse> CreateAsync(CreateLookUpRequest dto);
         Task<LookUpResponse> UpdateAsync(Guid id, UpdateLookUpRequest dto);
         Task<LookUpResponse> DeactivateAsync(Guid id);

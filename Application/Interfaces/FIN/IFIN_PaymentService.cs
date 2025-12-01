@@ -8,7 +8,10 @@ namespace Application.Interfaces.FIN
 	{
 		Task<FIN_Payment?> CreateMonthlyPayment(Guid invoiceId,Guid studentId, Guid reservationItemId);
 		Task<IReadOnlyList<PaymentHistoryResponse>> GetPaymentHistoryByStudentIdAsync(Guid studentId);
-	}
+
+		Task<IReadOnlyList<FIN_Payment>> GetPaymentsByInvoiceIdAsync(Guid? invoiceId);
+
+    }
 }
 
 

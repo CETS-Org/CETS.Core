@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces.ACAD;
 using Application.Interfaces.COM;
+using Application.Interfaces.CORE;
 using Application.Interfaces.IDN;
 using AutoMapper;
 using Domain.Entities;
@@ -29,6 +30,7 @@ namespace Application.Implementations.ACAD
         private readonly IACAD_EnrollmentRepository _enrollmentRepo;
         private readonly IIDN_AccountService _accountService;
         private readonly ICOM_ChatService _chatService;
+        private readonly ICORE_LookUpService _lookUpService;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
@@ -41,7 +43,9 @@ namespace Application.Implementations.ACAD
             IACAD_CourseTeacherAssignmentRepository courseTeacherAssignmentService,
             IACAD_EnrollmentRepository enrollmentRepo,
             IFIN_InvoiceItemRepository invoiceItemRepository,
+            ICORE_LookUpService lookUpService,
             IIDN_AccountService accountService,
+
             IUnitOfWork uow,
             IMapper mapper)
         {
@@ -56,6 +60,7 @@ namespace Application.Implementations.ACAD
             _invoiceItemRepository = invoiceItemRepository;
             _chatService = chatService;
             _accountService = accountService;
+            _lookUpService = lookUpService;
         }
 
         public async Task<Guid> CreateClassAsync(CreateClassRequest request)
@@ -178,7 +183,7 @@ namespace Application.Implementations.ACAD
         public async Task<Guid> CreateClassWithScheduleAsync(CreateClassWithScheduleRequest request)
         {
             // [CONSTANTS]
-            var STATUS_ENROLLED = Guid.Parse("148fdc3d-fecc-457d-a539-cc28fd5df900");
+            var STATUS_ENROLLED = await _lookUpService.GetByCodeAsync("EnrollmentStatus", "Enrolled");//Guid.Parse("148fdc3d-fecc-457d-a539-cc28fd5df900");
 
             return await _uow.ExecuteInTransactionAsync(async () =>
             {
@@ -225,7 +230,7 @@ namespace Application.Implementations.ACAD
                         if (enrollment != null)
                         {
                             enrollment.ClassID = classEntity.Id;
-                            enrollment.EnrollmentStatusID = STATUS_ENROLLED;
+                            enrollment.EnrollmentStatusID = STATUS_ENROLLED.LookUpId;
                             enrollment.UpdatedAt = DateTime.UtcNow;
                             enrollment.UpdatedBy = request.CreatedBy;
 

@@ -45,6 +45,12 @@ namespace Application.Implementations.CORE
             return _mapper.Map<IReadOnlyList<LookUpResponse>>(entities);
         }
 
+        public async Task<LookUpResponse> GetByCodeAsync(string lookUpTypeCode, string lookUpCode)
+        {
+            var entities = await _lookUpRepository.GetByCodeAsync(lookUpTypeCode, lookUpCode);
+            return _mapper.Map<LookUpResponse>(entities);
+        }
+
         public async Task<LookUpResponse> CreateAsync(CreateLookUpRequest dto)
         {
             var entity = _mapper.Map<CORE_LookUp>(dto);
