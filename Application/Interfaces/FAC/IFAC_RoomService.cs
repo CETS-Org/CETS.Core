@@ -13,6 +13,8 @@ namespace Application.Interfaces.FAC
 
         Task<SlotAvailabilityDto> CheckSlotAvailabilityAsync(Guid roomId, DateTime date, int slotNumber);
 
+        Task<IEnumerable<RoomResponse>> GetAvailableRoomsForSlotAsync(DateTime date, Guid slotId);
+
         Task<IEnumerable<RoomWeeklyScheduleDto>> GetWeeklyScheduleAsync(DateTime weekStart, DateTime weekEnd);
         Task<RoomStatisticsResponse> GetStatisticsAsync();
 

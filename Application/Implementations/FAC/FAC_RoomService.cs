@@ -107,6 +107,33 @@ namespace Application.Implementations.FAC
             };
         }
 
+        public async Task<IEnumerable<RoomResponse>> GetAvailableRoomsForSlotAsync(DateTime date, Guid slotId)
+        {
+            var dateOnly = DateOnly.FromDateTime(date);
+            
+            // Get all active rooms with "Available" status
+            var allRooms = await _repository.GetAllAsync();
+            var availableStatusRooms = allRooms
+                .Where(r => r.IsActive && r.RoomStatus?.Code == "Available")
+                .ToList();
+
+            // Get all class meetings for the specified date and slot
+            var bookedMeetings = await _classMeetingRepository.FindAsync(x =>
+                x.Date == dateOnly &&
+                x.SlotID == slotId &&
+                !x.IsDeleted);
+
+            // Get the list of booked room IDs
+            var bookedRoomIds = bookedMeetings.Select(m => m.RoomID).ToHashSet();
+
+            // Filter out rooms that are already booked
+            var availableRooms = availableStatusRooms
+                .Where(r => !bookedRoomIds.Contains(r.Id))
+                .ToList();
+
+            return _mapper.Map<IEnumerable<RoomResponse>>(availableRooms);
+        }
+
 
         public async Task<IEnumerable<RoomWeeklyScheduleDto>> GetWeeklyScheduleAsync(DateTime weekStart, DateTime weekEnd)
         {
