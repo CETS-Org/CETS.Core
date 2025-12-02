@@ -64,6 +64,22 @@ namespace Application.Implementations.RPT
 			return await _fileStorageService.GetPresignedGetUrlAsync(report.AttachmentUrl);
 		}
 
+		public async Task<string> GetReportImageDownloadUrlAsync(Guid id)
+		{
+			var report = await _reportRepository.GetByIdAsync(id);
+			if (report == null)
+				throw new KeyNotFoundException("Report not found");
+
+			if (string.IsNullOrEmpty(report.ReportUrl))
+				throw new InvalidOperationException("Report has no associated image");
+
+			var fileExists = await _fileStorageService.FileExistsAsync(report.ReportUrl);
+			if (!fileExists)
+				throw new InvalidOperationException($"Image not found in storage: {report.ReportUrl}");
+
+			return await _fileStorageService.GetPresignedGetUrlAsync(report.ReportUrl);
+		}
+
 		public async Task<IReadOnlyList<ReportResponse>> GetSystemComplaintsAsync()
 		{
 			// Get System Complaint ReportType by code
@@ -85,6 +101,18 @@ namespace Application.Implementations.RPT
 		{
 			var items = await _reportRepository.GetSystemComplaintsByReportTypeAsync(reportTypeId);
 			return _mapper.Map<IReadOnlyList<ReportResponse>>(items);
+		}
+
+		public async Task<ReportUploadResponse> GetReportImageUploadUrlAsync(string fileName, string contentType)
+		{
+			// Get presigned upload URL and generated file path
+			var (uploadUrl, filePath) = await _fileStorageService.GetPresignedPutUrlAsync("system-complaints", fileName, contentType);
+
+			return new ReportUploadResponse
+			{
+				UploadUrl = uploadUrl,
+				FilePath = filePath
+			};
 		}
 
 		public override async Task<ReportResponse> UpdateAsync(Guid id, UpdateReportRequest dto)
