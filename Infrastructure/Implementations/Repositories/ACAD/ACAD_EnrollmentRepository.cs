@@ -35,6 +35,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     .ThenInclude(c => c.ACAD_CourseTeacherAssignments)
                         .ThenInclude(cta => cta.Teacher)
                         .ThenInclude(t => t.Account)
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.ACAD_CourseSchedules)
                 .Include(e => e.EnrollmentStatus)
                 .Where(e => e.StudentID == studentId)
                 .ToListAsync();

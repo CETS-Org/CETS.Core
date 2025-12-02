@@ -116,7 +116,29 @@ namespace Application.Implementations.ACAD
         {
             var enrollments = await _enrollmentRepo.GetByStudentAsync(studentId);
 
-            return _mapper.Map<IEnumerable<CourseEnrollmentListResponse>>(enrollments);
+            var list = new List<CourseEnrollmentListResponse>();
+
+            foreach (var e in enrollments)
+            {
+                var dto = _mapper.Map<CourseEnrollmentListResponse>(e);
+
+                // Nếu đang Pending thì tính ngày dự kiến
+                if (dto.EnrollmentStatus == "Pending")
+                {
+                    // Không có schedule → bỏ qua, không crash
+                    if (e.Course.ACAD_CourseSchedules == null ||
+                        e.Course.ACAD_CourseSchedules.Count == 0)
+                    {
+                        dto.TentativeStartDate = null;      // hoặc message tùy ý
+                        continue;                            // <-- BỎ QUA KHÓA NÀY
+                    }
+                    dto.TentativeStartDate = CalculateTentativeStartDate(e.Course);
+                }
+
+                list.Add(dto);
+            }
+
+            return list;
         }
         public async Task<AcademicResultResponse> GetStudentAcademicResultsAsync(Guid studentId)
         {
@@ -516,6 +538,49 @@ namespace Application.Implementations.ACAD
 
             return response;
         }
+
+        private DateTime CalculateTentativeStartDate(ACAD_Course course)
+        {
+            var schedules = course.ACAD_CourseSchedules
+                .Select(s => s.DayOfWeek)
+                .Distinct()
+                .ToList();
+
+            // ❗ Prevent infinite loop
+            if (schedules == null || schedules.Count == 0)
+                throw new Exception("Course does not have any schedules configured.");
+
+            DateTime now = DateTime.Now;
+
+            DateTime anchor;
+            if (now.Day <= 1)
+                anchor = new DateTime(now.Year, now.Month, 1);
+            else if (now.Day <= 15)
+                anchor = new DateTime(now.Year, now.Month, 15);
+            else
+                anchor = new DateTime(now.Year, now.Month, 1).AddMonths(1);
+
+            DateTime date = anchor;
+
+            // ❗ Safety limit to avoid infinite loop (max 60 days)
+            int safety = 0;
+
+            while (true)
+            {
+                if (schedules.Contains(date.DayOfWeek))
+                    return date;
+
+                date = date.AddDays(1);
+
+                safety++;
+                if (safety > 60)
+                    throw new Exception("Unable to find next session date. Course schedule invalid.");
+            }
+        }
+
+
+
+
     }
 }
 
