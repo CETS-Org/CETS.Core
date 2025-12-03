@@ -81,6 +81,14 @@ namespace Application.Interfaces.Common.Email
             string expectedReturnDate,
             int daysOverdue,
             int gracePeriodDays);
+            
+        string BuildAttendanceWarningEmail(
+         string studentName,
+         string courseName,
+         string className,
+         int absentCount,
+         int totalSessions,
+         int maxAbsent);
     }
 }
 

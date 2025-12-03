@@ -2,15 +2,19 @@
 using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
+using Domain.Interfaces.CORE;
 using Infrastructure.Implementations.Repositories;
+using Infrastructure.Implementations.Repositories.CORE;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Implementations.Repositories.ACAD
 {
     public class ACAD_EnrollmentRepository : BaseRepository<ACAD_Enrollment>, IACAD_EnrollmentRepository
     {
-        public ACAD_EnrollmentRepository(AppDbContext context) : base(context)
+        private readonly ICORE_LookUpRepository _lookUpRepository;
+        public ACAD_EnrollmentRepository(AppDbContext context, ICORE_LookUpRepository lookUpRepository) : base(context)
         {
+            _lookUpRepository = lookUpRepository;
         }
         public async Task<IEnumerable<ACAD_Enrollment>> GetAllEnrollment()
         {
@@ -31,6 +35,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     .ThenInclude(c => c.ACAD_CourseTeacherAssignments)
                         .ThenInclude(cta => cta.Teacher)
                         .ThenInclude(t => t.Account)
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.ACAD_CourseSchedules)
                 .Include(e => e.EnrollmentStatus)
                 .Where(e => e.StudentID == studentId)
                 .ToListAsync();
@@ -102,8 +108,9 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
         public async Task<IEnumerable<ACAD_Enrollment>> GetStudentWaitList(Guid courseId)
         {
+
             // Nên đưa ra constant file
-            var waitingStatusId = Guid.Parse("2dba3beb-8336-417f-9dc3-fb853604dd2f");
+            var waitingStatusId = await _lookUpRepository.GetByCodeAsync("EnrollmentStatus", "Pending"); //Guid.Parse("2dba3beb-8336-417f-9dc3-fb853604dd2f");
 
             return await _context.ACAD_Enrollments
                 .AsNoTracking() // Tối ưu tốc độ đọc
@@ -113,7 +120,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     e.CourseID == courseId &&
                     e.ClassID == null &&            // Chưa xếp lớp
                     !e.IsDeleted &&                 // Enrollment chưa bị xóa
-                    e.EnrollmentStatusID == waitingStatusId &&
+                    e.EnrollmentStatusID == waitingStatusId.Id &&
                     !e.Student.IsDeleted            // Quan trọng: Học sinh cũng phải chưa bị xóa
                 )
                 .OrderBy(e => e.CreatedAt)          // (Tùy chọn) Sắp xếp theo ai đăng ký trước xếp trước
