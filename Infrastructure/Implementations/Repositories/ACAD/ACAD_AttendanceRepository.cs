@@ -140,7 +140,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             if (classMeeting == null)
                 throw new Exception($"Class meeting with ID {request.ClassMeetingId} not found");
 
-            // 2. Lấy danh sách tất cả học sinh trong lớp từ enrollment
+            // 2. Kiểm tra xem ngày meeting có quá hạn 1 ngày không
+            var meetingDate = classMeeting.Date.ToDateTime(TimeOnly.MinValue);
+            var currentDate = DateTime.Now.Date;
+            var daysDifference = (currentDate - meetingDate).Days;
+
+            if (daysDifference > 1)
+            {
+                throw new Exception("The class session has expired more than 1 day. Attendance cannot be taken.");
+            }
+
+            // 3. Lấy danh sách tất cả học sinh trong lớp từ enrollment
             var allStudents = await _context.ACAD_Enrollments
                 .Include(e => e.Student)
                     .ThenInclude(s => s.Account)
@@ -153,7 +163,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 })
                 .ToListAsync();
 
-            // 3. Lấy Present và Absent status từ lookup
+            // 4. Lấy Present và Absent status từ lookup
             var presentStatus = await _context.CORE_LookUps
                 .FirstOrDefaultAsync(l => l.Code == "Present" && l.LookUpType.Code == "AttendanceStatus");
             var absentStatus = await _context.CORE_LookUps
@@ -162,14 +172,14 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             if (presentStatus == null || absentStatus == null)
                 throw new Exception("Attendance status (Present/Absent) not found in lookup table");
 
-            // 4. Lấy thông tin teacher để response
+            // 5. Lấy thông tin teacher để response
             var teacher = await _context.IDN_Teachers
                 .Include(t => t.Account)
                 .FirstOrDefaultAsync(t => t.Id == request.TeacherId);
 
             var teacherName = teacher?.Account?.FullName ?? "Unknown";
 
-            // 5. Tạo hoặc update attendance records
+            // 6. Tạo hoặc update attendance records
             var records = new List<AttendanceRecordResponse>();
             var now = DateTime.UtcNow;
 
@@ -230,7 +240,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
             await _context.SaveChangesAsync();
 
-            // 6. Tạo response
+            // 7. Tạo response
             var response = new BulkAttendanceResponse
             {
                 ClassMeetingId = request.ClassMeetingId,

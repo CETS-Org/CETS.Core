@@ -175,7 +175,29 @@ namespace Infrastructure.Implementations.Common.Email.EmailTemplates
                     .Replace("{{MaxAbsent}}", maxAbsent.ToString());
             }
 
+        // ======================
+        // 8. Payment Confirmation Email
+        // ======================
+        public string BuildPaymentConfirmationEmail(
+            string studentName,
+            string courseName,
+            string invoiceNumber,
+            DateTime paymentDate,
+            int quantity,
+            decimal unitPrice,
+            decimal totalAmount)
+        {
+            var template = LoadTemplate("PaymentConfirmation.html");
 
+            return template
+                .Replace("{{StudentName}}", studentName)
+                .Replace("{{CourseName}}", courseName)
+                .Replace("{{InvoiceNumber}}", invoiceNumber)
+                .Replace("{{PaymentDate}}", paymentDate.ToString("MM/dd/yyyy"))
+                .Replace("{{Quantity}}", quantity.ToString())
+                .Replace("{{UnitPrice}}", unitPrice.ToString("N0"))
+                .Replace("{{TotalAmount}}", totalAmount.ToString("N0"));
+        }
 
         // ======================
         // 7. Suspension Activated Email
