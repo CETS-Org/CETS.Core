@@ -70,11 +70,7 @@ namespace Application.Implementations.ACAD
 
         public async Task<AcademicRequestResponse> SubmitRequestAsync(CreateAcademicRequest requestDto)
         {
-            // TODO: Add proper role-based validation for meeting reschedule requests
-            // Currently, the frontend filters out meeting reschedule for students
-            // For proper backend validation, we need to check the user's role from the authentication context
-            // or pass the user's role in the request DTO
-
+           
             // Get request type to check if it's a suspension request
             var requestType = await _lookUpRepository.GetByIdAsync(requestDto.RequestTypeID);
             if (requestType == null)
@@ -82,10 +78,9 @@ namespace Application.Implementations.ACAD
                 throw new KeyNotFoundException("Request type not found. Please ensure the lookup data is properly seeded.");
             }
 
-            var requestTypeName = (requestType.Name ?? "").ToLower();
             var requestTypeCode = (requestType.Code ?? "").ToLower();
-            var isSuspension = requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension");
-            var isDropout = requestTypeName.Contains("dropout") || requestTypeCode.Contains("dropout");
+            var isSuspension = requestTypeCode.Contains("suspension");
+            var isDropout =  requestTypeCode.Contains("dropout");
 
             // Validate suspension requests
             if (isSuspension && _suspensionValidationService != null)
@@ -108,7 +103,9 @@ namespace Application.Implementations.ACAD
             }
 
             // Validate EnrollmentID exists if provided
-            var isEnrollmentCancellation = requestTypeName.Contains("cancel") || requestTypeCode.Contains("cancel");
+            var isEnrollmentCancellation = requestTypeCode.Contains("cancel");
+            var isReturnFromSuspension = requestTypeCode.Contains("resume");
+            
             if (requestDto.EnrollmentID.HasValue)
             {
                 var enrollment = await _enrollmentRepo.GetByIdAsync(requestDto.EnrollmentID.Value);
@@ -138,8 +135,19 @@ namespace Application.Implementations.ACAD
                         throw new InvalidOperationException($"Only enrolled courses can be {(isSuspension ? "suspended" : "dropped out from")}. This enrollment status is: {enrollmentStatus?.Name ?? "Unknown"}");
                     }
                 }
+
+                // For return from suspension, verify enrollment is Suspended or AwaitingReturn
+                if (isReturnFromSuspension)
+                {
+                    var enrollmentStatus = await _lookUpRepository.GetByIdAsync(enrollment.EnrollmentStatusID);
+                    var statusCode = (enrollmentStatus?.Code ?? "").ToLower();
+                    if (statusCode != "suspended" && statusCode != "awaitingreturn")
+                    {
+                        throw new InvalidOperationException($"Only suspended or awaiting return enrollments can be reactivated. This enrollment status is: {enrollmentStatus?.Name ?? "Unknown"}");
+                    }
+                }
             }
-            else if (isSuspension || isDropout || isEnrollmentCancellation)
+            else if (isSuspension || isDropout || isEnrollmentCancellation || isReturnFromSuspension)
             {
                 // EnrollmentID is required for these request types
                 throw new InvalidOperationException($"EnrollmentID is required for {(isSuspension ? "suspension" : isDropout ? "dropout" : "cancellation")} requests.");
@@ -160,18 +168,15 @@ namespace Application.Implementations.ACAD
             {
                 string priorityCode = "Medium";
 
-                if (requestTypeName.Contains("meeting reschedule") || requestTypeCode.Contains("meetingreschedule") ||
-                    requestTypeName.Contains("class transfer") || requestTypeCode.Contains("classtransfer"))
+                if (requestTypeCode.Contains("reschedule") || requestTypeCode.Contains("transfer"))
                 {
                     priorityCode = "High";
                 }
-                else if (requestTypeName.Contains("enrollment cancellation") || requestTypeCode.Contains("enrollmentcancellation") ||
-                         requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension") ||
-                         requestTypeName.Contains("dropout") || requestTypeCode.Contains("dropout"))
+                else if (requestTypeCode.Contains("cancel") || requestTypeCode.Contains("suspension") || requestTypeCode.Contains("dropout"))
                 {
                     priorityCode = "Medium";
                 }
-                else if (requestTypeName.Contains("other") || requestTypeCode.Contains("other"))
+                else if (requestTypeCode.Contains("other"))
                 {
                     priorityCode = "Low";
                 }
@@ -189,7 +194,7 @@ namespace Application.Implementations.ACAD
             // - Use SuspensionStartDate for suspension
             // - Use provided EffectiveDate for dropout (or default to 7 days if not provided)
             // - 7 days for all other requests (if not provided)
-            if (requestTypeName.Contains("meeting reschedule") || requestTypeCode.Contains("meetingreschedule"))
+            if (requestTypeCode.Contains("reschedule"))
             {
                 entity.EffectiveDate = requestDto.EffectiveDate ?? DateOnly.FromDateTime(DateTime.Now.AddDays(3));
             }
@@ -264,14 +269,13 @@ namespace Application.Implementations.ACAD
 
             // If this is an approved suspension request, handle suspension
             var requestType = await _lookUpRepository.GetByIdAsync(entity.RequestTypeID);
-            var requestTypeName = (requestType?.Name ?? "").ToLower();
             var requestTypeCode = (requestType?.Code ?? "").ToLower();
-            var isSuspension = requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension");
-            var isDropout = requestTypeName.Contains("dropout") || requestTypeCode.Contains("dropout");
-            var isEnrollmentCancellation = requestTypeName.Contains("cancel") || requestTypeCode.Contains("cancel");
+            var isSuspension = requestTypeCode.Contains("suspension");
+            var isDropout = requestTypeCode.Contains("dropout");
+            var isEnrollmentCancellation = requestTypeCode.Contains("cancel");
             
             if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isSuspension)
-            {
+            {   
                 await HandleSuspensionApprovalAsync(entity);
             }
 
@@ -279,6 +283,14 @@ namespace Application.Implementations.ACAD
             if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isEnrollmentCancellation)
             {
                 await HandleEnrollmentCancellationAsync(entity);
+            }
+
+            // If this is an approved return from suspension request, handle return
+            var isReturnFromSuspension = requestTypeCode.Contains("resume");
+            
+            if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isReturnFromSuspension)
+            {
+                await HandleReturnFromSuspensionAsync(entity);
             }
 
             // If this is a completed dropout request, handle dropout finalization
@@ -466,7 +478,46 @@ namespace Application.Implementations.ACAD
             // Update enrollment status to Cancelled and remove class assignment
             enrollment.EnrollmentStatusID = cancelledStatus.Id;
             enrollment.ClassID = null; // Remove class assignment when cancelled
-          
+           
+            _enrollmentRepo.Update(enrollment);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        private async Task HandleReturnFromSuspensionAsync(ACAD_AcademicRequest request)
+        {
+            // When a return from suspension is approved, reactivate the enrollment
+            if (!request.EnrollmentID.HasValue)
+            {
+                throw new InvalidOperationException("EnrollmentID is required for return from suspension.");
+            }
+
+            var enrollment = await _enrollmentRepo.GetByIdAsync(request.EnrollmentID.Value);
+            if (enrollment == null)
+            {
+                throw new KeyNotFoundException("Enrollment not found.");
+            }
+
+            // Verify enrollment is suspended or awaiting return
+            var currentStatus = await _lookUpRepository.GetByIdAsync(enrollment.EnrollmentStatusID);
+            var statusCode = (currentStatus?.Code ?? "").ToLower();
+            
+            if (statusCode != "suspended" && statusCode != "awaitingreturn")
+            {
+                throw new InvalidOperationException(
+                    $"Only suspended or awaiting return enrollments can be reactivated. Current status: {currentStatus?.Name ?? "Unknown"}"
+                );
+            }
+
+            // Get Enrolled status
+            var enrolledStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.EnrollmentStatus, "Enrolled");
+            if (enrolledStatus == null)
+            {
+                throw new KeyNotFoundException("Enrolled enrollment status not found in lookup data.");
+            }
+
+            // Reactivate enrollment
+            enrollment.EnrollmentStatusID = enrolledStatus.Id;
+            
             _enrollmentRepo.Update(enrollment);
             await _unitOfWork.SaveChangesAsync();
         }
