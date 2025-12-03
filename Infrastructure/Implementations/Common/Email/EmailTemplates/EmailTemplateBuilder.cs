@@ -154,5 +154,85 @@ namespace Infrastructure.Implementations.Common.Email.EmailTemplates
                 .Replace("{{Year}}", DateTime.Now.Year.ToString());
         }
 
+        // ======================
+        // 7. Suspension Activated Email
+        // ======================
+        public string BuildSuspensionActivatedEmail(
+            string studentName,
+            string startDate,
+            string endDate,
+            string expectedReturnDate,
+            string reasonCategory)
+        {
+            var template = LoadTemplate("SuspensionActivated.html");
+
+            return template
+                .Replace("{{StudentName}}", studentName)
+                .Replace("{{StartDate}}", startDate)
+                .Replace("{{EndDate}}", endDate)
+                .Replace("{{ExpectedReturnDate}}", expectedReturnDate)
+                .Replace("{{ReasonCategory}}", reasonCategory)
+                .Replace("{{Year}}", DateTime.Now.Year.ToString());
+        }
+
+        // ======================
+        // 8. Suspension Ended Email
+        // ======================
+        public string BuildSuspensionEndedEmail(
+            string studentName,
+            string endDate,
+            string expectedReturnDate,
+            int gracePeriodDays)
+        {
+            var template = LoadTemplate("SuspensionEnded.html");
+
+            return template
+                .Replace("{{StudentName}}", studentName)
+                .Replace("{{EndDate}}", endDate)
+                .Replace("{{ExpectedReturnDate}}", expectedReturnDate)
+                .Replace("{{GracePeriodDays}}", gracePeriodDays.ToString())
+                .Replace("{{Year}}", DateTime.Now.Year.ToString());
+        }
+
+        // ======================
+        // 9. Suspension Return Reminder Email
+        // ======================
+        public string BuildSuspensionReturnReminderEmail(
+            string studentName,
+            string endDate,
+            string expectedReturnDate,
+            int daysUntilReturn)
+        {
+            var template = LoadTemplate("SuspensionReturnReminder.html");
+
+            return template
+                .Replace("{{StudentName}}", studentName)
+                .Replace("{{EndDate}}", endDate)
+                .Replace("{{ExpectedReturnDate}}", expectedReturnDate)
+                .Replace("{{DaysUntilReturn}}", daysUntilReturn.ToString())
+                .Replace("{{Year}}", DateTime.Now.Year.ToString());
+        }
+
+        // ======================
+        // 10. Auto Dropout Email
+        // ======================
+        public string BuildAutoDropoutEmail(
+            string studentName,
+            string endDate,
+            string expectedReturnDate,
+            int daysOverdue,
+            int gracePeriodDays)
+        {
+            var template = LoadTemplate("AutoDropout.html");
+
+            return template
+                .Replace("{{StudentName}}", studentName)
+                .Replace("{{EndDate}}", endDate)
+                .Replace("{{ExpectedReturnDate}}", expectedReturnDate)
+                .Replace("{{DaysOverdue}}", daysOverdue.ToString())
+                .Replace("{{GracePeriodDays}}", gracePeriodDays.ToString())
+                .Replace("{{Year}}", DateTime.Now.Year.ToString());
+        }
+
     }
 }

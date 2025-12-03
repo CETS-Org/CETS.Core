@@ -354,14 +354,7 @@ namespace Application.Implementations.ACAD
 
         private async Task HandleSuspensionApprovalAsync(ACAD_AcademicRequest request)
         {
-            // When a suspension request is approved, we need to:
-            // 1. Update the student's account status to "Suspended" on the start date (handled by background job/scheduler)
-            // 2. Set the expected return date
-            // 3. Schedule reminders (handled by notification service/background job)
-            
-            // Note: The actual status change happens on the SuspensionStartDate
-            // This method just validates and prepares the suspension
-
+         
             if (!request.SuspensionStartDate.HasValue || !request.SuspensionEndDate.HasValue)
             {
                 throw new InvalidOperationException("Suspension dates are required for suspension approval.");
@@ -372,24 +365,10 @@ namespace Application.Implementations.ACAD
             {
                 request.ExpectedReturnDate = request.SuspensionEndDate.Value.AddDays(1);
             }
-
-            // Note: A background job should:
-            // - On SuspensionStartDate: Set account status to "Suspended" and request status to "Suspended"
-            // - 3 days before ExpectedReturnDate: Send reminder notification
-            // - On ExpectedReturnDate: Send return notification and set status to "AwaitingReturn"
-            // - After AwaitingReturnGraceDays: Optionally set to "AutoDroppedOut"
         }
 
         private async Task HandleDropoutCompletionAsync(ACAD_AcademicRequest request)
         {
-            // When a dropout request is completed (final step), we need to:
-            // 1. Update the student's account status to "DroppedOut"
-            // 2. Clear class assignments (if any)
-            // 3. Stop attendance tracking
-            // 4. Apply refund policy if applicable (handled separately by finance module)
-            
-            // Note: This is a permanent action and cannot be undone
-            // Student must re-enroll as a new student if they want to return
 
             // Get the student account
             var account = await _accountRepo.GetDetailByIdAsync(request.StudentID);
@@ -408,14 +387,6 @@ namespace Application.Implementations.ACAD
             // Update student account status to DroppedOut
             account.AccountStatusID = droppedOutStatus.Id;
             _accountRepo.Update(account);
-
-            // Note: Additional actions should be handled by background jobs or separate services:
-            // - Remove student from class roster
-            // - Cancel upcoming sessions/enrollments
-            // - Freeze tuition calculations
-            // - Process refunds if applicable based on refund policy
-            // - Deactivate LMS access (optional)
-            // - Send final confirmation email
 
             await _unitOfWork.SaveChangesAsync();
         }

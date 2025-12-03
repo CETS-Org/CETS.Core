@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Dropout Notification</title>
+</head>
+<body style="margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background:linear-gradient(135deg,#ff6b6b 0%,#c92a2a 100%);padding:40px 30px;text-align:center;">
+                            <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:bold;">⚠️ Account Suspended - Auto Dropout</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding:40px 30px;">
+                            <p style="font-size:16px;color:#333;margin:0 0 20px;">Dear <strong>{{StudentName}}</strong>,</p>
+                            
+                            <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 20px;">
+                                We regret to inform you that your account has been <strong>automatically dropped out</strong> due to 
+                                failure to return after your suspension period ended.
+                            </p>
+                            
+                            <!-- Dropout Details -->
+                            <div style="background-color:#ffebee;border-left:4px solid #dc3545;padding:20px;margin:20px 0;border-radius:4px;">
+                                <h3 style="margin:0 0 15px;color:#333;font-size:16px;">📋 Dropout Details</h3>
+                                <table width="100%" cellpadding="8" cellspacing="0">
+                                    <tr>
+                                        <td style="font-size:14px;color:#666;width:40%;"><strong>Suspension End Date:</strong></td>
+                                        <td style="font-size:14px;color:#333;">{{EndDate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size:14px;color:#666;"><strong>Expected Return Date:</strong></td>
+                                        <td style="font-size:14px;color:#333;">{{ExpectedReturnDate}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size:14px;color:#666;"><strong>Grace Period:</strong></td>
+                                        <td style="font-size:14px;color:#333;">{{GracePeriodDays}} days</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size:14px;color:#666;"><strong>Days Overdue:</strong></td>
+                                        <td style="font-size:14px;color:#dc3545;font-weight:bold;">{{DaysOverdue}} days</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <!-- What This Means -->
+                            <div style="background-color:#fff3cd;border-left:4px solid #ffc107;padding:15px;margin:20px 0;border-radius:4px;">
+                                <h4 style="margin:0 0 10px;color:#856404;font-size:14px;">📌 What This Means</h4>
+                                <ul style="margin:0;padding-left:20px;color:#856404;font-size:13px;line-height:1.6;">
+                                    <li>Your enrollment has been terminated</li>
+                                    <li>You will no longer have access to your account</li>
+                                    <li>Your suspension ended on <strong>{{EndDate}}</strong></li>
+                                    <li>You were expected to return by <strong>{{ExpectedReturnDate}}</strong></li>
+                                    <li>After {{GracePeriodDays}} days of grace period, automatic dropout was processed</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Next Steps -->
+                            <div style="background-color:#e7f3ff;border-left:4px solid #2196F3;padding:15px;margin:20px 0;border-radius:4px;">
+                                <h4 style="margin:0 0 10px;color:#0d47a1;font-size:14px;">🔄 What You Can Do</h4>
+                                <p style="margin:0;color:#0d47a1;font-size:13px;line-height:1.6;">
+                                    If you believe this is an error or wish to re-enroll in the future, please contact our 
+                                    <strong>admissions office immediately</strong>. We may be able to help you with the re-enrollment process.
+                                </p>
+                            </div>
+                            
+                            <p style="font-size:14px;color:#555;line-height:1.6;margin:20px 0 0;">
+                                We're sorry to see you go. If there's anything we can do to assist you or if you have any questions, 
+                                please don't hesitate to reach out to our support team.
+                            </p>
+                            
+                            <p style="font-size:14px;color:#555;margin:20px 0 0;">
+                                We hope to hear from you soon,<br>
+                                <strong>CETS Academic Team</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color:#f8f9fa;padding:20px 30px;text-align:center;border-top:1px solid #e9ecef;">
+                            <p style="margin:0;font-size:12px;color:#6c757d;">
+                                © {{Year}} CETS. All rights reserved.<br>
+                                This is an automated email. Please do not reply to this message.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+

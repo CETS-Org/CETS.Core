@@ -51,6 +51,36 @@ namespace Application.Interfaces.Common.Email
             string status,
             string processedDate,
             string? staffComment = null);
+
+        // Suspension Activated Email
+        string BuildSuspensionActivatedEmail(
+            string studentName,
+            string startDate,
+            string endDate,
+            string expectedReturnDate,
+            string reasonCategory);
+
+        // Suspension Ended Email
+        string BuildSuspensionEndedEmail(
+            string studentName,
+            string endDate,
+            string expectedReturnDate,
+            int gracePeriodDays);
+
+        // Suspension Return Reminder Email
+        string BuildSuspensionReturnReminderEmail(
+            string studentName,
+            string endDate,
+            string expectedReturnDate,
+            int daysUntilReturn);
+
+        // Auto Dropout Email
+        string BuildAutoDropoutEmail(
+            string studentName,
+            string endDate,
+            string expectedReturnDate,
+            int daysOverdue,
+            int gracePeriodDays);
     }
 }
 
