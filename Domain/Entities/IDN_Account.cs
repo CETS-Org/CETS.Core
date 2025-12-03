@@ -21,7 +21,7 @@ public partial class IDN_Account : EntityBase, IHasCreationTime, IHasModificatio
 
     public DateOnly? DateOfBirth { get; set; }
 
-    [StringLength(50)]
+    [StringLength(100)]
     public string? CID { get; set; }
 
     [StringLength(255)]

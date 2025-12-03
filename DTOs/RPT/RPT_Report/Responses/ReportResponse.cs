@@ -18,6 +18,7 @@ namespace DTOs.RPT.RPT_Report.Responses
 		public Guid SubmittedBy { get; set; }
 		public string? SubmitterName { get; set; }
 		public string? SubmitterEmail { get; set; }
+		public string? SubmitterRole { get; set; }
 		public string Title { get; set; } = null!;
 		public string Description { get; set; } = null!;
 		public string? AttachmentUrl { get; set; }

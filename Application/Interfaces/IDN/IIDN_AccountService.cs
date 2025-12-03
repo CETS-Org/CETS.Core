@@ -39,6 +39,7 @@ namespace Application.Interfaces.IDN
         Task<bool> ChangePassword(string password, string email);
 
         Task<bool> CheckEmailExist(string email);
+        Task<bool> CheckPhoneExist(string phoneNumber);
         Task<bool> CheckCIDExist(string cid);
         Task<List<UserBasicInfo>> GetUsersByIdsAsync(List<Guid> userIds);
     }
