@@ -43,10 +43,17 @@ namespace Application.Implementations.COM
             if (request.MemberIds == null || !request.MemberIds.Any())
                 throw new ArgumentException("Members cannot be empty.");
 
+            // Normalize member IDs to uppercase for consistency (matching notification system)
+            var normalizedMemberIds = request.MemberIds
+                .Select(id => string.IsNullOrWhiteSpace(id) ? id : id.ToUpperInvariant())
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct()
+                .ToList();
+
             // Logic cho phòng 1v1: Kiểm tra đã tồn tại chưa
-            if (request.Type.ToLower() == "private" && request.MemberIds.Count == 2)
+            if (request.Type.ToLower() == "private" && normalizedMemberIds.Count == 2)
             {
-                var existingRoom = await _repository.GetPrivateRoomByMembersAsync(request.MemberIds[0], request.MemberIds[1]);
+                var existingRoom = await _repository.GetPrivateRoomByMembersAsync(normalizedMemberIds[0], normalizedMemberIds[1]);
                 if (existingRoom != null)
                 {
                     return _mapper.Map<ChatRoomResponse>(existingRoom);
@@ -57,8 +64,8 @@ namespace Application.Implementations.COM
             roomEntity.CreatedAt = DateTime.UtcNow;
             roomEntity.LastMessageAt = DateTime.UtcNow; // Set default để sort không bị null
 
-            // Xử lý chuẩn hóa MemberIds (Unique)
-            roomEntity.MemberIds = roomEntity.MemberIds.Distinct().ToList();
+            // Xử lý chuẩn hóa MemberIds (Unique và uppercase)
+            roomEntity.MemberIds = normalizedMemberIds;
 
             var createdRoom = await _repository.CreateRoomAsync(roomEntity);
             return _mapper.Map<ChatRoomResponse>(createdRoom);
@@ -73,8 +80,11 @@ namespace Application.Implementations.COM
 
         public async Task<List<ChatRoomResponse>> GetUserRoomsAsync(string userId)
         {
+            // Normalize userId to uppercase for consistency
+            var normalizedUserId = string.IsNullOrWhiteSpace(userId) ? userId : userId.ToUpperInvariant();
+            
             // 1. Lấy danh sách phòng từ MongoDB
-            var rooms = await _repository.GetRoomsByUserIdAsync(userId);
+            var rooms = await _repository.GetRoomsByUserIdAsync(normalizedUserId);
             var responseList = _mapper.Map<List<ChatRoomResponse>>(rooms);
 
             // 2. Lấy danh sách ID thành viên (đang là String) và lọc trùng
@@ -125,11 +135,19 @@ namespace Application.Implementations.COM
                 throw new KeyNotFoundException($"Room with Id {request.RoomId} not found.");
             }
 
-            // Validate User is in Room
-            if (!room.MemberIds.Contains(request.SenderId))
+            // Normalize sender ID to uppercase for comparison
+            var normalizedSenderId = string.IsNullOrWhiteSpace(request.SenderId) 
+                ? request.SenderId 
+                : request.SenderId.ToUpperInvariant();
+            
+            // Validate User is in Room (case-insensitive comparison)
+            if (!room.MemberIds.Any(id => id.Equals(normalizedSenderId, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new UnauthorizedAccessException("User is not a member of this room.");
             }
+            
+            // Update sender ID to normalized version
+            request.SenderId = normalizedSenderId;
 
             // Validate Assignment Link Type
             if (request.Type == "assignment_link")

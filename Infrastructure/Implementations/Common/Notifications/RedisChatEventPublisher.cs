@@ -23,20 +23,6 @@ namespace Infrastructure.Implementations.Common.Notifications
 
         public RedisChatEventPublisher(IConfiguration configuration)
         {
-            var enabledRaw = configuration["Redis:Enabled"];
-            bool enabled = false;
-
-            if (!string.IsNullOrEmpty(enabledRaw))
-            {
-                enabled = enabledRaw.Equals("true", StringComparison.OrdinalIgnoreCase);
-            }
-
-            if (!enabled)
-            {
-                _subscriber = null!;
-                return;
-            }
-
             var connectionString = configuration["Redis:ConnectionString"] 
                 ?? configuration.GetConnectionString("Redis") 
                 ?? "localhost:6379,abortConnect=false";

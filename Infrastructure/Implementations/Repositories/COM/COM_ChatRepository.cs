@@ -27,6 +27,14 @@ namespace Infrastructure.Implementations.Repositories.COM
 
         public async Task<COM_ChatRoom> CreateRoomAsync(COM_ChatRoom room)
         {
+            // Ensure all member IDs are normalized to uppercase before storing
+            if (room.MemberIds != null)
+            {
+                room.MemberIds = room.MemberIds
+                    .Select(id => string.IsNullOrWhiteSpace(id) ? id : id.ToUpperInvariant())
+                    .ToList();
+            }
+            
             await _rooms.InsertOneAsync(room);
             return room;
         }
@@ -39,8 +47,11 @@ namespace Infrastructure.Implementations.Repositories.COM
 
         public async Task<List<COM_ChatRoom>> GetRoomsByUserIdAsync(string userId)
         {
+            // Normalize userId to uppercase for consistency (matching notification system)
+            var normalizedUserId = string.IsNullOrWhiteSpace(userId) ? userId : userId.ToUpperInvariant();
+            
             // Tìm tất cả phòng mà user là thành viên
-            var filter = Builders<COM_ChatRoom>.Filter.AnyEq(x => x.MemberIds, userId);
+            var filter = Builders<COM_ChatRoom>.Filter.AnyEq(x => x.MemberIds, normalizedUserId);
             return await _rooms.Find(filter)
                 .SortByDescending(x => x.LastMessageAt)
                 .ToListAsync();
@@ -48,12 +59,16 @@ namespace Infrastructure.Implementations.Repositories.COM
 
         public async Task<COM_ChatRoom?> GetPrivateRoomByMembersAsync(string user1Id, string user2Id)
         {
+            // Normalize user IDs to uppercase for consistency (matching notification system)
+            var normalizedUser1Id = string.IsNullOrWhiteSpace(user1Id) ? user1Id : user1Id.ToUpperInvariant();
+            var normalizedUser2Id = string.IsNullOrWhiteSpace(user2Id) ? user2Id : user2Id.ToUpperInvariant();
+            
             // Tìm phòng private có chứa ĐÚNG và ĐỦ 2 user này
             var builder = Builders<COM_ChatRoom>.Filter;
             var filter = builder.And(
                 builder.Eq(x => x.Type, "private"),
-                builder.AnyEq(x => x.MemberIds, user1Id),
-                builder.AnyEq(x => x.MemberIds, user2Id)
+                builder.AnyEq(x => x.MemberIds, normalizedUser1Id),
+                builder.AnyEq(x => x.MemberIds, normalizedUser2Id)
             );
             return await _rooms.Find(filter).FirstOrDefaultAsync();
         }
@@ -66,6 +81,12 @@ namespace Infrastructure.Implementations.Repositories.COM
 
         public async Task<COM_ChatMessage> CreateMessageAsync(COM_ChatMessage message)
         {
+            // Normalize senderId to uppercase for consistency (matching notification system)
+            if (!string.IsNullOrWhiteSpace(message.SenderId))
+            {
+                message.SenderId = message.SenderId.ToUpperInvariant();
+            }
+            
             await _messages.InsertOneAsync(message);
 
             // Update LastMessageAt for sorting rooms
