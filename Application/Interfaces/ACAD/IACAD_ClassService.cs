@@ -31,5 +31,8 @@ namespace Application.Interfaces.ACAD
 
         Task<List<FeedbackClassResponse>> GetFeedbackClassesByStudentId(Guid studentId);
 
+        Task<ClassDetailForEditResponse> GetClassDetailForEditAsync(Guid classId);
+        Task UpdateClassCompositeAsync(Guid classId, UpdateClassCompositeRequest request);
+
     }
 }

@@ -11,6 +11,8 @@ using DTOs.ACAD.ACAD_Class.Requests;
 using DTOs.ACAD.ACAD_Class.Responses;
 using DTOs.COM.COM_Chat.Requests;
 using DTOs.COM.COM_Notification.Requests;
+using DTOs.IDN.IDN_Student.Responses;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -352,6 +354,153 @@ namespace Application.Implementations.ACAD
                 return classEntity.Id;
             });
         }
+
+        public async Task<ClassDetailForEditResponse> GetClassDetailForEditAsync(Guid classId)
+        {
+            // Gọi Repository đã viết ở trên
+            var classEntity = await _classRepo.GetClassWithDetailForEditAsync(classId);
+
+            if (classEntity == null)
+                throw new KeyNotFoundException("Class not found or deleted.");
+
+            // Map Entity -> DTO (Thủ công hoặc dùng AutoMapper nếu đã config)
+            return new ClassDetailForEditResponse
+            {
+                Id = classEntity.Id,
+                CourseId = classEntity.TeacherAssignment.CourseID,
+                ClassName = classEntity.ClassName,
+                TeacherAssignmentID = classEntity.TeacherAssignment.Id,
+                TeacherName = classEntity.TeacherAssignment.Teacher.Account.FullName,
+                // Lấy phòng từ buổi học đầu tiên (nếu có)
+                RoomId = classEntity.ACAD_ClassMeetings.FirstOrDefault()?.RoomID,
+                StartDate = classEntity.StartDate,
+                EndDate = classEntity.EndDate,
+                Capacity = classEntity.Capacity,
+                Status = classEntity.IsActive ? "active" : "inactive",
+
+                // Map lịch học
+                Schedules = classEntity.ACAD_ClassMeetings
+                    .Where(m => !m.IsDeleted)
+                    .Select(m => new ClassMeetingScheduleDto
+                    {
+                        SlotID = m.SlotID,
+                        Date = m.Date,
+                        RoomID = m.RoomID,
+                        SyllabusItemID = m.CoveredTopicID
+                    }).ToList(),
+
+                // Map danh sách học sinh đang Active trong lớp
+                Enrollments = classEntity.ACAD_Enrollments
+                    .Where(e => !e.IsDeleted && e.ClassID == classId)
+                    .Select(e => new WaitingStudentResponse
+                    {
+                        EnrollmentId = e.Id,
+                        StudentId = e.StudentID,
+                        StudentCode = e.Student.StudentCode,
+                        FullName = e.Student.Account.FullName,
+                        Email = e.Student.Account.Email ?? "",
+                        Phone = e.Student.Account.PhoneNumber ?? ""
+                    }).ToList()
+            };
+        }
+
+
+        public async Task UpdateClassCompositeAsync(Guid classId, UpdateClassCompositeRequest request)
+        {
+            // [CONSTANTS]
+            var STATUS_ENROLLED = await _lookUpService.GetByCodeAsync("EnrollmentStatus", "Enrolled");
+            var STATUS_WAITING = await _lookUpService.GetByCodeAsync("EnrollmentStatus", "Pending");
+
+            await _uow.ExecuteInTransactionAsync(async () =>
+            {
+                // ==================================================================
+                // 1. UPDATE CLASS INFO
+                // ==================================================================
+                var classEntity = await _classRepo.GetByIdAsync(classId);
+                if (classEntity == null) throw new KeyNotFoundException("Class not found.");
+
+                classEntity.ClassName = request.ClassName;
+                classEntity.TeacherAssignmentID = request.TeacherAssignmentID;
+                classEntity.StartDate = request.StartDate;
+                classEntity.EndDate = request.EndDate;
+                classEntity.Capacity = request.Capacity;
+
+                // Cập nhật sĩ số mới dựa trên danh sách Enrollment gửi lên
+                classEntity.EnrolledCount = request.EnrollmentIds?.Count ?? 0;
+
+                classEntity.UpdatedBy = request.UpdatedBy;
+                classEntity.UpdatedAt = DateTime.UtcNow;
+
+                _classRepo.Update(classEntity);
+
+                // ==================================================================
+                // 2. SYNC ENROLLMENTS (Dựa trên EnrollmentId)
+                // ==================================================================
+                if (request.EnrollmentIds != null)
+                {
+                    // A. Lấy danh sách EnrollmentId hiện tại của lớp
+                    // Dùng GetQueryable (hoặc GetAllAsync) để lấy list ID
+                    var currentClassEnrollments = await _enrollmentRepo.GetQueryable()
+                        .Where(e => e.ClassID == classId && !e.IsDeleted)
+                        .ToListAsync();
+
+                    var currentEnrollmentIds = currentClassEnrollments.Select(e => e.Id).ToList();
+                    var newEnrollmentIds = request.EnrollmentIds; // List<Guid> từ Request
+
+                    // B. Phân loại: Cần Thêm và Cần Xóa
+                    var enrollmentsToAdd = newEnrollmentIds.Except(currentEnrollmentIds).ToList();
+                    var enrollmentsToRemove = currentEnrollmentIds.Except(newEnrollmentIds).ToList();
+
+                    // --- B1. Xử lý THÊM (Waiting -> Enrolled) ---
+                    if (enrollmentsToAdd.Any())
+                    {
+                        // Tìm các Enrollment đang Waiting theo ID
+                        var waitingEnrollments = await _enrollmentRepo.GetQueryable()
+                            .Where(e => enrollmentsToAdd.Contains(e.Id)
+                                        && e.ClassID == null // Chỉ lấy nếu chưa có lớp
+                                        && !e.IsDeleted)
+                            .ToListAsync();
+
+                        foreach (var enrollment in waitingEnrollments)
+                        {
+                            enrollment.ClassID = classId;
+                            enrollment.EnrollmentStatusID = STATUS_ENROLLED.LookUpId;
+                            enrollment.UpdatedBy = request.UpdatedBy;
+                            enrollment.UpdatedAt = DateTime.UtcNow;
+
+                            // Tùy chọn: Update Invoice DueDate nếu cần thiết ở bước này
+
+                            _enrollmentRepo.Update(enrollment);
+                        }
+                    }
+
+                    // --- B2. Xử lý XÓA (Enrolled -> Waiting) ---
+                    if (enrollmentsToRemove.Any())
+                    {
+                        var enrollmentsToKick = currentClassEnrollments
+                            .Where(e => enrollmentsToRemove.Contains(e.Id))
+                            .ToList();
+
+                        foreach (var enrollment in enrollmentsToKick)
+                        {
+                            enrollment.ClassID = null; // Gỡ khỏi lớp
+                            enrollment.EnrollmentStatusID = STATUS_WAITING.LookUpId; // Quay về hàng chờ
+                            enrollment.UpdatedBy = request.UpdatedBy;
+                            enrollment.UpdatedAt = DateTime.UtcNow;
+
+                            _enrollmentRepo.Update(enrollment);
+                        }
+                    }
+                }
+
+                // 3. Commit
+                await _uow.SaveChangesAsync();
+                return true;
+            });
+        }
+
+
+
 
 
     }

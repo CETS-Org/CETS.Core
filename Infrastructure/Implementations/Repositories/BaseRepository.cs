@@ -90,5 +90,10 @@ namespace Infrastructure.Implementations.Repositories
         {
             return await _dbSet.CountAsync(predicate);
         }
+
+        public IQueryable<TEntity> GetQueryable()
+        {
+            return _dbSet.AsQueryable();
+        }
     }
 }
