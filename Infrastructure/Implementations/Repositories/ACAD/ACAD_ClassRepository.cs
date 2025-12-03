@@ -239,6 +239,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             // Main class query with all related entities
             var classEntity = await _context.ACAD_Classes
                 .AsNoTracking()
+                .Include(c => c.ACAD_Enrollments)
                 .Include(c => c.ClassStatus)
                 .Include(c => c.TeacherAssignment)
                     .ThenInclude(ta => ta.Course)
