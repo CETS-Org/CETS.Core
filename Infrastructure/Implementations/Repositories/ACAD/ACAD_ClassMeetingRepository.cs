@@ -203,6 +203,53 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     m.SlotID == slotId);
         }
 
+
+        public async Task<IReadOnlyList<ACAD_ClassMeeting>> GetMeetingsForScheduleOverlapAsync(
+            DateOnly startDate,
+            DateOnly endDate,
+            IEnumerable<Guid> slotIds)
+        {
+            var slotIdList = slotIds.Distinct().ToList();
+            if (!slotIdList.Any())
+                return Array.Empty<ACAD_ClassMeeting>();
+
+            return await _context.ACAD_ClassMeetings
+                .Where(m =>
+                    !m.IsDeleted &&
+                    m.IsActive &&
+                    m.IsStudy &&
+                    m.RoomID != null &&
+                    m.Date >= startDate &&
+                    m.Date <= endDate &&
+                    slotIdList.Contains(m.SlotID)
+                )
+                .ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<ACAD_ClassMeeting>> GetMeetingsForTeacherOverlapAsync(
+           DateOnly startDate,
+           DateOnly endDate,
+           IEnumerable<Guid> slotIds,
+           IEnumerable<Guid> teacherAssignmentIds)
+        {
+            var slotList = slotIds.Distinct().ToList();
+            var teacherAssignmentList = teacherAssignmentIds.Distinct().ToList();
+
+            if (!slotList.Any() || !teacherAssignmentList.Any())
+                return Array.Empty<ACAD_ClassMeeting>();
+
+            return await _context.ACAD_ClassMeetings
+                .Where(m => !m.IsDeleted
+                            && m.IsActive
+                            && m.IsStudy
+                            && m.TeacherAssignmentID != null
+                            && m.Date >= startDate
+                            && m.Date <= endDate
+                            && slotList.Contains(m.SlotID)
+                            && teacherAssignmentList.Contains(m.TeacherAssignmentID.Value))
+                .ToListAsync();
+        }
+
     }
 }
 

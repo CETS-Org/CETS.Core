@@ -9,6 +9,11 @@ namespace Domain.Interfaces.FAC
         Task<List<CORE_LookUp>> GetRoomStatusesAsync();
         Task<List<ACAD_ClassMeeting>> GetMeetingsWithNavigationAsync(DateOnly start, DateOnly end);
 
+        Task<IReadOnlyList<FAC_Room>> GetActiveRoomsAsync();
+        Task<IReadOnlyList<FAC_Room>> GetAvailableRoomsByIdsAsync(IEnumerable<Guid> roomIds);
+
+       
+
     }
 
 }

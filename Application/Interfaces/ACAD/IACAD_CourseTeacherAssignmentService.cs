@@ -19,5 +19,7 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<CourseTeacherAssignmentResponse>> GetAssignmentsByCourseIdAsync(Guid courseId);
         Task<CourseTeacherAssignmentResponse> CreateAssignmentAsync(CreateCourseTeacherAssignmentRequest request);
         Task DeleteAssignmentAsync(Guid assignmentId);
+
+        Task<IReadOnlyList<TeacherOptionDto>> GetAvailableTeachersForClassAsync(GetAvailableTeachersRequest request);
     }
 }

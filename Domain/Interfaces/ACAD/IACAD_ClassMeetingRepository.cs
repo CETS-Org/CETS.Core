@@ -12,6 +12,17 @@ namespace Domain.Interfaces.ACAD
         Task<IEnumerable<ACAD_ClassMeeting>> GetAllClassMeetingByClassId(Guid classId);
         Task<ACAD_SyllabusItem> GetCoveredTopicByClassMeetingId(Guid classMeetingId);
         Task<ACAD_ClassMeeting?> GetMeetingDetailAsync(Guid roomId, DateOnly date, Guid slotId);
+
+        Task<IReadOnlyList<ACAD_ClassMeeting>> GetMeetingsForScheduleOverlapAsync(
+           DateOnly startDate,
+           DateOnly endDate,
+           IEnumerable<Guid> slotIds);
+
+        Task<IReadOnlyList<ACAD_ClassMeeting>> GetMeetingsForTeacherOverlapAsync(
+            DateOnly startDate,
+            DateOnly endDate,
+            IEnumerable<Guid> slotIds,
+            IEnumerable<Guid> teacherAssignmentIds);
     }
 }
 

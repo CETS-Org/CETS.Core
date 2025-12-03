@@ -24,6 +24,8 @@ namespace Application.Interfaces.FAC
         Task<Guid> BookSlotAsync(BookRoomSlotRequest request);
         Task CancelSlotBookingAsync(Guid meetingId);
 
+        Task<IReadOnlyList<RoomOptionDto>> GetAvailableRoomsAsync(GetAvailableRoomsRequest request);
+
 
 
     }

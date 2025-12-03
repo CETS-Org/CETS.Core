@@ -102,6 +102,16 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cta => cta.Id == assignmentId);
         }
+
+        public async Task<IReadOnlyList<ACAD_CourseTeacherAssignment>> GetByCourseAsync(Guid courseId)
+        {
+            return await _context.ACAD_CourseTeacherAssignments
+                .Where(cta => cta.CourseID == courseId)
+                .Include(cta => cta.Teacher)
+                    .ThenInclude(t => t.Account)
+                .ToListAsync();
+        }
+
     }
 }
 
