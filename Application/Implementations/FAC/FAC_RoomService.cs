@@ -180,8 +180,8 @@ namespace Application.Implementations.FAC
                         continue;
 
                     int slotNumber = 0;
-                    if (m.Slot?.Code != null && m.Slot.Code.StartsWith("Slot "))
-                        int.TryParse(m.Slot.Code.Replace("Slot ", ""), out slotNumber);
+                    if (m.Slot?.Code != null && m.Slot.Code.StartsWith("Slot"))
+                        int.TryParse(m.Slot.Code.Replace("Slot", ""), out slotNumber);
 
                     if (slotNumber == 0)
                         continue;
@@ -266,7 +266,7 @@ namespace Application.Implementations.FAC
         {
             var room = await _roomRepository.GetByIdAsync(roomId);
             var slotLookup = await _lookUpRepository.FindFirstAsync(x =>
-                x.LookUpType.Code == "TimeSlot" && x.Code == $"Slot {slotNumber}");
+                x.LookUpType.Code == "TimeSlot" && x.Code == $"Slot{slotNumber}");
 
             var meeting = await _classMeetingRepository.GetMeetingDetailAsync(roomId, date, slotLookup.Id);
 
@@ -304,7 +304,7 @@ namespace Application.Implementations.FAC
             // Slot lookup
             var slotLookup = await _lookUpRepository.FindFirstAsync(x =>
                 x.LookUpType.Code == "TimeSlot" &&
-                x.Code == $"Slot {request.SlotNumber}");
+                x.Code == $"Slot{request.SlotNumber}");
 
             if (slotLookup == null)
                 throw new Exception("Invalid slot");
@@ -341,7 +341,7 @@ namespace Application.Implementations.FAC
                 SlotID = slotLookup.Id,
                 Date = request.Date,
                 CoveredTopicID = firstTopic.Id,   // FIX HERE
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 IsActive = true,
                 IsDeleted = false
             };
@@ -355,7 +355,7 @@ namespace Application.Implementations.FAC
             {
                 var room = await _repository.GetByIdAsync(request.RoomId);
                 room.RoomStatusId = inUseStatus.Id;
-                room.UpdatedAt = DateTime.UtcNow;
+                room.UpdatedAt = DateTime.Now;
                 _repository.Update(room);
             }
 
