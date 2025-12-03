@@ -31,6 +31,10 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Requests
 
         [StringLength(500)]
         public string? AttachmentUrl { get; set; }
+
+        // Related enrollment (required for status tracking)
+        [Required]
+        public Guid EnrollmentID { get; set; }
     }
 }
 

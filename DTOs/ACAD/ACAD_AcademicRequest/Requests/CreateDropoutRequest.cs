@@ -33,6 +33,10 @@ namespace DTOs.ACAD.ACAD_AcademicRequest.Requests
 
         [StringLength(100)]
         public string? ExitSurveyId { get; set; }
+
+        // Related enrollment (required for status tracking)
+        [Required]
+        public Guid EnrollmentID { get; set; }
     }
 }
 

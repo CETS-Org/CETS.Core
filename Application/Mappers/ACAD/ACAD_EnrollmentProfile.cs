@@ -25,7 +25,8 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.EnrollmentStatus != null ? src.EnrollmentStatus.Name : null));
 
             CreateMap<ACAD_Enrollment, CourseEnrollmentListResponse>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Course != null ? src.Course.Id : Guid.Empty))
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id)) // Enrollment ID
+            .ForMember(dest => dest.CourseId, opt => opt.MapFrom(src => src.CourseID)) // Course ID
             .ForMember(dest => dest.CourseCode, opt => opt.MapFrom(src => src.Course != null ? src.Course.CourseCode : string.Empty))
             .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course != null ? src.Course.CourseName : string.Empty))
             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Course.Description))

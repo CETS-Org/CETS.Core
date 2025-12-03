@@ -8,7 +8,8 @@ namespace DTOs.ACAD.ACAD_Enrollment.Responses
 {
     public class CourseEnrollmentListResponse
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } // EnrollmentID
+        public Guid CourseId { get; set; } // CourseID
         public string CourseCode { get; set; } = null!;
         public string CourseName { get; set; } = null!;
         public string? Description { get; set; }

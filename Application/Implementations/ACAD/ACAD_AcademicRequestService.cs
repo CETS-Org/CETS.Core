@@ -23,6 +23,7 @@ namespace Application.Implementations.ACAD
     {
         private readonly IACAD_AcademicRequestRepository _requestRepo;
         private readonly IACAD_AcademicRequestHistoryRepository _historyRepo;
+        private readonly IACAD_EnrollmentRepository _enrollmentRepo;
         private readonly ICORE_LookUpRepository _lookUpRepository;
         private readonly IFileStorageService _fileStorageService;
         private readonly IACAD_ClassMeetingRepository _classMeetingRepo;
@@ -38,6 +39,7 @@ namespace Application.Implementations.ACAD
         public ACAD_AcademicRequestService(
             IACAD_AcademicRequestRepository requestRepo,
             IACAD_AcademicRequestHistoryRepository historyRepo,
+            IACAD_EnrollmentRepository enrollmentRepo,
             ICORE_LookUpRepository lookUpRepository,
             IFileStorageService fileStorageService,
             IACAD_ClassMeetingRepository classMeetingRepo,
@@ -52,6 +54,7 @@ namespace Application.Implementations.ACAD
         {
             _requestRepo = requestRepo;
             _historyRepo = historyRepo;
+            _enrollmentRepo = enrollmentRepo;
             _lookUpRepository = lookUpRepository;
             _fileStorageService = fileStorageService;
             _classMeetingRepo = classMeetingRepo;
@@ -82,8 +85,7 @@ namespace Application.Implementations.ACAD
             var requestTypeName = (requestType.Name ?? "").ToLower();
             var requestTypeCode = (requestType.Code ?? "").ToLower();
             var isSuspension = requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension");
-            var isDropout = requestTypeName.Contains("dropout") || requestTypeCode.Contains("dropout") || 
-                           requestTypeName.Contains("dropping out") || requestTypeCode.Contains("droppingout");
+            var isDropout = requestTypeName.Contains("dropout") || requestTypeCode.Contains("dropout");
 
             // Validate suspension requests
             if (isSuspension && _suspensionValidationService != null)
@@ -103,6 +105,44 @@ namespace Application.Implementations.ACAD
                 {
                     throw new InvalidOperationException($"Dropout request validation failed: {string.Join("; ", validationResult.Errors)}");
                 }
+            }
+
+            // Validate EnrollmentID exists if provided
+            var isEnrollmentCancellation = requestTypeName.Contains("cancel") || requestTypeCode.Contains("cancel");
+            if (requestDto.EnrollmentID.HasValue)
+            {
+                var enrollment = await _enrollmentRepo.GetByIdAsync(requestDto.EnrollmentID.Value);
+                if (enrollment == null)
+                {
+                    throw new KeyNotFoundException($"Enrollment with ID {requestDto.EnrollmentID.Value} not found. Please ensure you have selected a valid enrollment.");
+                }
+
+                // For cancellation, verify enrollment is in Pending status
+                if (isEnrollmentCancellation)
+                {
+                    var enrollmentStatus = await _lookUpRepository.GetByIdAsync(enrollment.EnrollmentStatusID);
+                    var statusCode = (enrollmentStatus?.Code ?? "").ToLower();
+                    if (statusCode != "pending" && statusCode != "pendingconfirmation")
+                    {
+                        throw new InvalidOperationException($"Only pending enrollments can be cancelled. This enrollment status is: {enrollmentStatus?.Name ?? "Unknown"}");
+                    }
+                }
+
+                // For suspension/dropout, verify enrollment is in Enrolled status
+                if (isSuspension || isDropout)
+                {
+                    var enrollmentStatus = await _lookUpRepository.GetByIdAsync(enrollment.EnrollmentStatusID);
+                    var statusCode = (enrollmentStatus?.Code ?? "").ToLower();
+                    if (statusCode != "enrolled")
+                    {
+                        throw new InvalidOperationException($"Only enrolled courses can be {(isSuspension ? "suspended" : "dropped out from")}. This enrollment status is: {enrollmentStatus?.Name ?? "Unknown"}");
+                    }
+                }
+            }
+            else if (isSuspension || isDropout || isEnrollmentCancellation)
+            {
+                // EnrollmentID is required for these request types
+                throw new InvalidOperationException($"EnrollmentID is required for {(isSuspension ? "suspension" : isDropout ? "dropout" : "cancellation")} requests.");
             }
 
             var entity = _mapper.Map<ACAD_AcademicRequest>(requestDto);
@@ -227,11 +267,18 @@ namespace Application.Implementations.ACAD
             var requestTypeName = (requestType?.Name ?? "").ToLower();
             var requestTypeCode = (requestType?.Code ?? "").ToLower();
             var isSuspension = requestTypeName.Contains("suspension") || requestTypeCode.Contains("suspension");
-            var isDropout = requestTypeName.Contains("dropout") || requestTypeCode.Contains("dropout") ;
+            var isDropout = requestTypeName.Contains("dropout") || requestTypeCode.Contains("dropout");
+            var isEnrollmentCancellation = requestTypeName.Contains("cancel") || requestTypeCode.Contains("cancel");
             
             if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isSuspension)
             {
                 await HandleSuspensionApprovalAsync(entity);
+            }
+
+            // If this is an approved enrollment cancellation request, handle cancellation
+            if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isEnrollmentCancellation)
+            {
+                await HandleEnrollmentCancellationAsync(entity);
             }
 
             // If this is a completed dropout request, handle dropout finalization
@@ -388,6 +435,39 @@ namespace Application.Implementations.ACAD
             account.AccountStatusID = droppedOutStatus.Id;
             _accountRepo.Update(account);
 
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        private async Task HandleEnrollmentCancellationAsync(ACAD_AcademicRequest request)
+        {
+            // When an enrollment cancellation is approved, cancel the pending enrollment
+            if (!request.EnrollmentID.HasValue)
+            {
+                throw new InvalidOperationException("EnrollmentID is required for enrollment cancellation.");
+            }
+
+            var enrollment = await _enrollmentRepo.GetByIdAsync(request.EnrollmentID.Value);
+            if (enrollment == null)
+            {
+                throw new KeyNotFoundException("Enrollment not found.");
+            }
+
+            // Get the Cancelled enrollment status
+            var cancelledStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.EnrollmentStatus, "Cancelled");
+            if (cancelledStatus == null)
+            {
+                // If "Cancelled" doesn't exist, try "Dropped" as fallback
+                cancelledStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.EnrollmentStatus, "Dropped");
+                if (cancelledStatus == null)
+                {
+                    throw new KeyNotFoundException("Cancelled or Dropped enrollment status not found in lookup data.");
+                }
+            }
+            // Update enrollment status to Cancelled and remove class assignment
+            enrollment.EnrollmentStatusID = cancelledStatus.Id;
+            enrollment.ClassID = null; // Remove class assignment when cancelled
+          
+            _enrollmentRepo.Update(enrollment);
             await _unitOfWork.SaveChangesAsync();
         }
 
