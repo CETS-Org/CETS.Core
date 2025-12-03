@@ -478,49 +478,46 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
         public async Task<List<ClassRowResponse>> GetAllClassRowsAsync()
         {
-            var query = from cls in _context.ACAD_Classes
-                        where !cls.IsDeleted
-                        join assignOpt in _context.ACAD_CourseTeacherAssignments on cls.TeacherAssignmentID equals assignOpt.Id into assignLeft
-                        from assign in assignLeft.DefaultIfEmpty()
-                        join courseOpt in _context.ACAD_Courses on assign.CourseID equals courseOpt.Id into courseLeft
-                        from course in courseLeft.DefaultIfEmpty()
-                        join teacherOpt in _context.IDN_Teachers on assign.TeacherID equals teacherOpt.Id into teacherLeft
-                        from teacher in teacherLeft.DefaultIfEmpty()
-                        join accountOpt in _context.IDN_Accounts on teacher.Id equals accountOpt.Id into accountLeft
-                        from account in accountLeft.DefaultIfEmpty()
-                        join statusLookup in _context.CORE_LookUps on cls.ClassStatusID equals statusLookup.Id
-                        select new
-                        {
-                            Class = cls,
-                            Course = course,
-                            TeacherName = account != null ? account.FullName : string.Empty,
-                            StatusCode = statusLookup.Code,
-                            StatusName = statusLookup.Name,
-                            Meetings = _context.ACAD_ClassMeetings
-                                .Where(m => m.ClassID == cls.Id && !m.IsDeleted && m.IsActive)
-                                .OrderBy(m => m.Date)
-                                .Select(m => new
-                                {
-                                    Date = m.Date,
-                                    SlotCode = m.Slot.Code,
-                                    RoomCode = m.Room != null ? m.Room.RoomCode : string.Empty
-                                })
-                                .ToList()
-                        };
-
-            var items = await query.ToListAsync();
+            // Get all classes with related entities
+            var classes = await _context.ACAD_Classes
+                .AsNoTracking()
+                .Include(c => c.ClassStatus)
+                .Include(c => c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Course)
+                .Include(c => c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Teacher)
+                        .ThenInclude(t => t.Account)
+                .Where(c => !c.IsDeleted)
+                .ToListAsync();
 
             var responses = new List<ClassRowResponse>();
 
-            foreach (var item in items)
+            foreach (var classEntity in classes)
             {
+                // Get meetings for this class
+                var meetings = await _context.ACAD_ClassMeetings
+                    .AsNoTracking()
+                    .Where(m => m.ClassID == classEntity.Id && !m.IsDeleted && m.IsActive)
+                    .Include(m => m.Room)
+                    .Include(m => m.Slot)
+                    .OrderBy(m => m.Date)
+                    .ToListAsync();
+
+                // Get enrolled students count (only with status "Enrolled")
+                var enrolledCount = await _context.ACAD_Enrollments
+                    .AsNoTracking()
+                    .Where(e => e.ClassID == classEntity.Id && 
+                                !e.IsDeleted && 
+                                e.EnrollmentStatus.Code == "Enrolled")
+                    .CountAsync();
+
                 // Determine status: if enrolled >= capacity then "full", else check IsActive
                 string status;
-                if (item.Class.EnrolledCount >= item.Class.Capacity)
+                if (enrolledCount >= classEntity.Capacity)
                 {
                     status = "full";
                 }
-                else if (item.Class.IsActive)
+                else if (classEntity.IsActive)
                 {
                     status = "active";
                 }
@@ -530,29 +527,34 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 }
 
                 // Get room from the first meeting or most common room
-                var room = item.Meetings.FirstOrDefault()?.RoomCode ?? string.Empty;
+                var room = meetings.FirstOrDefault()?.Room?.RoomCode ?? string.Empty;
 
                 // Build schedule
-                var schedule = item.Meetings.Select(m => new ClassScheduleItem
+                var schedule = meetings.Select(m => new ClassScheduleItem
                 {
                     Date = m.Date.ToString("yyyy-MM-dd"),
-                    Slot = m.SlotCode
+                    Slot = m.Slot?.Code ?? string.Empty
                 }).ToList();
+
+                // Extract related data
+                var course = classEntity.TeacherAssignment?.Course;
+                var teacher = classEntity.TeacherAssignment?.Teacher;
+                var teacherAccount = teacher?.Account;
 
                 responses.Add(new ClassRowResponse
                 {
-                    Id = item.Class.Id.ToString(),
-                    Name = item.Class.ClassName ?? string.Empty,
-                    CourseId = item.Course?.Id.ToString() ?? string.Empty,
-                    CourseName = item.Course?.CourseName ?? string.Empty,
-                    Teacher = item.TeacherName,
+                    Id = classEntity.Id.ToString(),
+                    Name = classEntity.ClassName ?? string.Empty,
+                    CourseId = course?.Id.ToString() ?? string.Empty,
+                    CourseName = course?.CourseName ?? string.Empty,
+                    Teacher = teacherAccount?.FullName ?? string.Empty,
                     Room = room,
-                    CurrentStudents = item.Class.EnrolledCount,
-                    MaxStudents = item.Class.Capacity,
+                    CurrentStudents = enrolledCount,
+                    MaxStudents = classEntity.Capacity,
                     Status = status,
                     Schedule = schedule.Any() ? schedule : null,
-                    StartDate = item.Class.StartDate.ToString("yyyy-MM-dd"),
-                    EndDate = item.Class.EndDate.ToString("yyyy-MM-dd")
+                    StartDate = classEntity.StartDate.ToString("yyyy-MM-dd"),
+                    EndDate = classEntity.EndDate.ToString("yyyy-MM-dd")
                 });
             }
             return responses;
