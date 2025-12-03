@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.ExternalServices.Security;
+﻿using Application.Interfaces.Common.Email;
+using Application.Interfaces.ExternalServices.Security;
 using Application.Interfaces.IDN;
 using AutoMapper;
 using Domain.Constants;
@@ -15,6 +16,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -31,6 +33,7 @@ namespace Application.Implementations.IDN
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IMailService _mailService;
 
         public IDN_TeacherService(IIDN_TeacherRepository teacherRepository, 
             IIDN_TeacherCredentialRepository teacherCredentialRepository,
@@ -39,7 +42,8 @@ namespace Application.Implementations.IDN
             ICORE_LookUpRepository lookUpRepository,
             IUnitOfWork unitOfWork, 
             IMapper mapper, 
-            IPasswordHasher passwordHasher)
+            IPasswordHasher passwordHasher,
+            IMailService mailService)
         {
             _teacherRepository = teacherRepository;
             _teacherCredentialRepository = teacherCredentialRepository;
@@ -49,6 +53,16 @@ namespace Application.Implementations.IDN
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
+            _mailService = mailService;
+        }
+
+        private string HashCID(string cid)
+        {
+            // Hash CID using SHA256 for security
+            using var sha256 = SHA256.Create();
+            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(cid));
+            var hashHex = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+            return hashHex;
         }
 
         /* Get methods */
@@ -84,8 +98,7 @@ namespace Application.Implementations.IDN
         {
             if (!await _accountRepository.IsEmailUniqueAsync(dto.Email))
                 throw new InvalidOperationException("Email already exists.");
-            if (!string.IsNullOrEmpty(dto.PhoneNumber) &&
-                !await _accountRepository.IsPhoneUniqueAsync(dto.PhoneNumber))
+            if (await _accountRepository.IsPhoneUniqueAsync(dto.PhoneNumber))
                 throw new InvalidOperationException("Phone number already exists.");
             if (string.IsNullOrWhiteSpace(dto.FullName))
                 throw new ArgumentException("FullName is required.");
@@ -99,6 +112,10 @@ namespace Application.Implementations.IDN
             account.AccountStatusID = activeStatus.Id;
             account.Password = _passwordHasher.HashPassword(rawPassword);
             account.IsVerified = false;
+            
+            // Hash CID for security
+            if (!string.IsNullOrWhiteSpace(account.CID))
+                account.CID = HashCID(account.CID);
 
             account.IDN_AccountRoles = new List<IDN_AccountRole>
             {
@@ -133,11 +150,78 @@ namespace Application.Implementations.IDN
             _teacherRepository.Add(teacher);
             await _unitOfWork.SaveChangesAsync();
 
+            // Send login credentials email to teacher
+            await SendLoginCredentialsEmailAsync(account.Email, account.FullName, rawPassword, "Teacher");
+
             var createdTeacher = await _teacherRepository.GetTeacherDetailsByIdAsync(teacher.Id);
 
             var response = _mapper.Map<TeacherDetailResponse>(createdTeacher);
 
             return response;
+        }
+
+        private async Task SendLoginCredentialsEmailAsync(string email, string fullName, string password, string roleName)
+        {
+            string subject = "CETS Account Created - Login Credentials";
+            string roleDisplayName = roleName switch
+            {
+                "Teacher" => "Teacher",
+                _ => "Staff"
+            };
+
+            string body = $@"
+                <div style='max-width:600px;margin:0 auto;padding:20px;font-family:Arial,Helvetica,sans-serif;background:#ffffff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.1);'>
+                  <!-- Logo -->
+                  <div style='margin-bottom:20px;'>
+                    <img src='https://i.ibb.co/0c2dT3L/cets-logo.png' alt='CETS Logo' style='height:40px;'>
+                  </div>
+                  <!-- Title -->
+                  <div style='font-size:20px;font-weight:bold;color:#333;margin-bottom:10px;'>
+                    Welcome to CETS English Center
+                  </div>
+                  <!-- Greeting -->
+                  <div style='font-size:16px;color:#333;margin-bottom:20px;'>
+                    Hello {fullName},
+                  </div>
+                  <!-- Message -->
+                  <div style='font-size:14px;color:#555;margin-bottom:20px;line-height:1.6;'>
+                    Your {roleDisplayName} account has been successfully created at CETS English Center. Below are your login credentials:
+                  </div>
+                  <!-- Credentials Box -->
+                  <div style='background:#f8f9fa;padding:20px;border-radius:6px;margin:20px 0;border-left:4px solid #4CAF50;'>
+                    <div style='font-size:14px;color:#333;margin-bottom:10px;'>
+                      <strong>Email:</strong> {email}
+                    </div>
+                    <div style='font-size:14px;color:#333;'>
+                      <strong>Password:</strong> <span style='font-family:monospace;font-size:16px;color:#4CAF50;font-weight:bold;'>{password}</span>
+                    </div>
+                  </div>
+                  <!-- Security Notice -->
+                  <div style='background:#fff3cd;padding:15px;border-radius:6px;margin:20px 0;border-left:4px solid #ffc107;'>
+                    <div style='font-size:13px;color:#856404;'>
+                      <strong>⚠️ Security Notice:</strong><br/>
+                      Please change your password after your first login for security purposes. Do not share your password with anyone.
+                    </div>
+                  </div>
+                  <!-- Instructions -->
+                  <div style='font-size:14px;color:#555;margin-bottom:20px;line-height:1.6;'>
+                    <strong>Next Steps:</strong><br/>
+                    1. Use the credentials above to log in to the CETS system<br/>
+                    2. Change your password immediately after first login<br/>
+                    3. If you have any questions, please contact the administrator
+                  </div>
+                  <!-- Footer -->
+                  <div style='font-size:12px;color:#888;border-top:1px solid #e0e0e0;padding-top:20px;'>
+                    This is an automated message from CETS English Center.<br/><br/>
+                    <a href='#' style='color:#4CAF50;text-decoration:none;'>Contact Us</a> | 
+                    <a href='#' style='color:#4CAF50;text-decoration:none;'>Privacy Policy</a>
+                    <br/><br/>
+                    © 2025 CETS English Center. All rights reserved.<br/>
+                    CETS, 123 ABC Street, District 1, Ho Chi Minh City.
+                  </div>
+                </div>";
+
+            await _mailService.SendEmailAsync(email, subject, body);
         }
 
 

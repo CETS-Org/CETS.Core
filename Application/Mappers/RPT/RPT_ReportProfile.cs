@@ -2,6 +2,7 @@ using AutoMapper;
 using Domain.Entities;
 using DTOs.RPT.RPT_Report.Requests;
 using DTOs.RPT.RPT_Report.Responses;
+using System.Linq;
 
 namespace Application.Mappers.RPT
 {
@@ -13,6 +14,13 @@ namespace Application.Mappers.RPT
 				.ForMember(dest => dest.ReportTypeName, opt => opt.MapFrom(src => src.ReportType != null ? src.ReportType.Name : null))
 				.ForMember(dest => dest.SubmitterName, opt => opt.MapFrom(src => src.SubmittedByNavigation != null ? src.SubmittedByNavigation.FullName : null))
 				.ForMember(dest => dest.SubmitterEmail, opt => opt.MapFrom(src => src.SubmittedByNavigation != null ? src.SubmittedByNavigation.Email : null))
+				.ForMember(dest => dest.SubmitterRole, opt => opt.MapFrom(src => 
+					src.SubmittedByNavigation != null && src.SubmittedByNavigation.IDN_AccountRoles != null && src.SubmittedByNavigation.IDN_AccountRoles.Any()
+						? src.SubmittedByNavigation.IDN_AccountRoles
+							.Where(r => r.Role != null)
+							.Select(r => r.Role.RoleName)
+							.FirstOrDefault()
+						: null))
 				.ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.ReportStatus != null ? src.ReportStatus.Name : null))
 				.ForMember(dest => dest.ReportStatus, opt => opt.MapFrom(src => src.ReportStatus != null ? new DTOs.RPT.RPT_Report.Responses.ReportStatusInfo
 				{

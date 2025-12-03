@@ -1353,6 +1353,15 @@ public partial class AppDbContext : DbContext
         var currentUserId = _currentUserService.UserId ?? /* Guid.Empty*/ Guid.Parse("2782B49E-CDCC-4A1E-BAAE-E74DE022D657");
         var now = DateTime.Now;
 
+        // For IDN_Account entities, we need to verify the UpdatedBy account exists
+        // to avoid foreign key constraint violations on the self-referencing FK_IDN_Accounts_Updated
+        bool? accountExists = null;
+        if (entries.Any(e => e.Entity is IDN_Account && e.State == EntityState.Modified))
+        {
+            // Check if the account exists in the database (bypassing change tracker)
+            accountExists = IDN_Accounts.AsNoTracking().Any(a => a.Id == currentUserId);
+        }
+
         foreach (var entry in entries)
         {
             // --- Handle Created properties for new entities ---
@@ -1381,7 +1390,18 @@ public partial class AppDbContext : DbContext
 
                 if (entry.Entity is IHasModifier modifierEntity)
                 {
-                    modifierEntity.UpdatedBy = currentUserId;
+                    // Special handling for IDN_Account to prevent self-referencing FK constraint violation
+                    // The FK_IDN_Accounts_Updated constraint requires UpdatedBy to reference an existing AccountID
+                    if (entry.Entity is IDN_Account)
+                    {
+                        // Only set UpdatedBy if the account exists in the database
+                        // If the account doesn't exist, set to null to avoid FK constraint violation
+                        modifierEntity.UpdatedBy = accountExists == true ? currentUserId : null;
+                    }
+                    else
+                    {
+                        modifierEntity.UpdatedBy = currentUserId;
+                    }
                 }
             }
         }
