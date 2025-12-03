@@ -59,6 +59,16 @@ namespace Application.Interfaces.Common.Email
          int absentCount,
          int totalSessions,
          int maxAbsent);
+
+        // Payment Confirmation Email
+        string BuildPaymentConfirmationEmail(
+            string studentName,
+            string courseName,
+            string invoiceNumber,
+            DateTime paymentDate,
+            int quantity,
+            decimal unitPrice,
+            decimal totalAmount);
     }
 }
 

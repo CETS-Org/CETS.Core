@@ -31,10 +31,11 @@ namespace Application.Implementations.FIN
         private readonly IFIN_PaymentRepository _paymentRepository;
         private readonly IIDN_AccountService _accountService;
         private readonly IFIN_InvoiceItemService _invoiceItemService;
+        private readonly IEmailTemplateBuilder _templateBuilder;
         public FIN_PaymentService(IFIN_PaymentRepository repository, IUnitOfWork unitOfWork, IMapper mapper, ICORE_LookUpService lookUpService, 
             IFIN_PaymentWebhookService paymentWebhookService, IFIN_InvoiceService invoiceService, IACAD_ReservationItemService reservationItemService, 
             IACAD_EnrollmentRepository enrollmentRepository, IACAD_ClassReservationService classReservationService, IMailService mailService, IIDN_AccountService accountService,
-            IFIN_InvoiceItemService invoiceItemService, IFIN_PaymentRepository paymentRepository)
+            IFIN_InvoiceItemService invoiceItemService, IFIN_PaymentRepository paymentRepository, IEmailTemplateBuilder templateBuilder)
 			: base(repository, unitOfWork, mapper)
 		{
 			_lookUpService = lookUpService;
@@ -47,6 +48,7 @@ namespace Application.Implementations.FIN
             _accountService = accountService;
             _invoiceItemService = invoiceItemService;
             _paymentRepository = paymentRepository;
+            _templateBuilder = templateBuilder;
         }
 
 		public async Task<FIN_Payment?> CreateMonthlyPayment(Guid invoiceId,Guid studentId, Guid reservationItemId)
@@ -98,46 +100,20 @@ namespace Application.Implementations.FIN
                 var account = await _accountService.GetAccountByIdAsync(studentId);
                 var invoiceItemList = await _invoiceItemService.GetByInvoiceIdAsync(invoice.Id);
                 var invoiceItem = invoiceItemList.FirstOrDefault();
-                if (account != null)
+                if (account != null && account.Email != null)
                 {
                     string subject = $"Course Payment Confirmation - {invoice.InvoiceNumber}";
-                    string body = $@"
-                        <div style='font-family:Arial, sans-serif; font-size:16px; color:#333; padding:20px; max-width:600px; margin:0 auto;'>
-                            <div style='text-align:center; margin-bottom:30px;'>
-                                <h1 style='color:#007bff; margin:0;'>Course Payment Confirmation</h1>
-                                <p style='color:#666; margin:5px 0;'>Thank you for your payment!</p>
-                            </div>
-                    
-                            <div style='background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:20px;'>
-                                <h3 style='color:#007bff; margin-top:0;'>Payment Details</h3>
-                                <p><strong>Invoice Number:</strong> {invoice.InvoiceNumber}</p>
-                                <p><strong>Payment Date:</strong> {DateTime.Now:MM/dd/yyyy}</p>
-                                <p><strong>Status:</strong> <span style='color:#28a745; font-weight:bold;'>Paid Successfully</span></p>
-                            </div>
+                    string body = _templateBuilder.BuildPaymentConfirmationEmail(
+                        studentName: account.FullName ?? "Student",
+                        courseName: invoiceItem?.Course?.CourseName ?? "Course",
+                        invoiceNumber: invoice.InvoiceNumber,
+                        paymentDate: DateTime.Now,
+                        quantity: invoiceItem?.Quantity ?? 1,
+                        unitPrice: invoiceItem?.UnitPrice ?? 0,
+                        totalAmount: invoice.TotalAmount
+                    );
 
-                            <div style='background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:20px;'>
-                                <h3 style='color:#007bff; margin-top:0;'>Course Information</h3>
-                                <div style='border-bottom:1px solid #eee; padding:10px 0;'>
-                                    <p style='margin:5px 0; font-weight:bold;'>{invoiceItem?.Course?.CourseName ?? "Course"}</p>
-                                    <p style='margin:5px 0; color:#666;'>Quantity: {invoiceItem?.Quantity ?? 1}</p>
-                                    <p style='margin:5px 0; color:#666;'>Price: ${invoiceItem?.UnitPrice}</p>
-                                </div>
-                            </div>
-
-                            <div style='background:#e8f5e8; padding:20px; border-radius:8px; margin-bottom:20px; text-align:center;'>
-                                <h2 style='color:#28a745; margin:0 0 10px 0;'>Total Paid: ${invoice.TotalAmount}</h2>
-                                <p style='color:#155724; margin:0;'>Your course enrollment is now confirmed!</p>
-                            </div>
-
-                            <div style='text-align:center; margin-top:30px; padding-top:20px; border-top:1px solid #eee;'>
-                                <p style='color:#666; margin:5px 0;'>If you have any questions, please contact us.</p>
-                                <p style='color:#666; margin:5px 0;'>Email: support@cets.com | Phone: 1900-xxxx</p>
-                                <p style='color:#666; margin:5px 0;'>Best regards,<br/><strong>CETS Team</strong></p>
-                            </div>
-                        </div>";
-
-                    if (account != null && account.Email != null)
-                        await _mailService.SendEmailAsync(account.Email, subject, body);
+                    await _mailService.SendEmailAsync(account.Email, subject, body);
                 }
                 
 

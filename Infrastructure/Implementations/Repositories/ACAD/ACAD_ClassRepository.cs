@@ -299,6 +299,9 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Where(e => e.ClassID == classId && !e.IsDeleted && e.EnrollmentStatus.Code == "Enrolled")
                 .ToListAsync();
 
+            // Calculate actual enrolled count based on filtered enrollments
+            var enrolledCount = enrollments.Count;
+
             var studentResponses = new List<StudentInClassResponse>();
 
             foreach (var enrollment in enrollments)
@@ -357,7 +360,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
             // Determine status
             string statusForDisplay;
-            if (classEntity.EnrolledCount >= classEntity.Capacity)
+            if (enrolledCount >= classEntity.Capacity)
             {
                 statusForDisplay = "full";
             }
@@ -382,7 +385,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 CourseName = course?.CourseName ?? string.Empty,
                 CourseId = course?.Id ?? Guid.Empty,
                 Capacity = classEntity.Capacity,
-                EnrolledCount = classEntity.EnrolledCount,
+                EnrolledCount = enrolledCount,
                 TeacherId = teacher?.Id,
                 TeacherName = teacherAccount?.FullName ?? string.Empty,
                 Schedule = scheduleString,

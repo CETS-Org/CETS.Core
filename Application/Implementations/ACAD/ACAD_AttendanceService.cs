@@ -18,23 +18,42 @@ namespace Application.Implementations.ACAD
     {
         private readonly IACAD_AttendanceRepository _attendanceRepository;
         private readonly IACAD_EnrollmentRepository _enrollmentRepository;
+        private readonly IACAD_ClassMeetingRepository _classMeetingRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
         public AttendanceService(
             IACAD_AttendanceRepository attendanceRepository,
             IACAD_EnrollmentRepository enrollmentRepository,
+            IACAD_ClassMeetingRepository classMeetingRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper)
         {
             _attendanceRepository = attendanceRepository;
             _enrollmentRepository = enrollmentRepository;
+            _classMeetingRepository = classMeetingRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public async Task<AttendanceResponse> MarkAttendanceAsync(Guid meetingId, Guid studentId, Guid statusId, Guid teacherId, string? notes = null)
         {
+            // Kiểm tra thời hạn điểm danh
+            var meeting = await _classMeetingRepository.GetByIdAsync(meetingId);
+            if (meeting == null)
+            {
+                throw new Exception($"Class meeting with ID {meetingId} not found");
+            }
+
+            var meetingDate = meeting.Date.ToDateTime(TimeOnly.MinValue);
+            var currentDate = DateTime.Now.Date;
+            var daysDifference = (currentDate - meetingDate).Days;
+
+            if (daysDifference > 1)
+            {
+                throw new Exception("The class session has expired more than 1 day. Attendance cannot be taken.");
+            }
+
             var existing = await _attendanceRepository.GetByMeetingAndStudentAsync(meetingId, studentId);
 
             if (existing == null)
