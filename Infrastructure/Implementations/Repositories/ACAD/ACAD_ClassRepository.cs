@@ -295,6 +295,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(e => e.Student)
                     .ThenInclude(s => s.Account)
                 .Include(e => e.EnrollmentStatus)
+                .Include(e => e.Course) // Include Course to get StandardScore for IsPass calculation
                 .Where(e => e.ClassID == classId && !e.IsDeleted && e.EnrollmentStatus.Code == "Enrolled")
                 .ToListAsync();
 
@@ -349,7 +350,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     JoinDate = enrollment.CreatedAt.ToString("yyyy-MM-dd"),
                     AttendanceRate = Math.Round(attendanceRate, 0),
                     ProgressPercentage = Math.Round(progressPercentage, 0),
-                    FinalGrade = enrollment.FinalGrade
+                    FinalGrade = enrollment.FinalGrade,
+                    IsPass = enrollment.IsPass // Read from database
                 });
             }
 

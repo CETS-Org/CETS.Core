@@ -14,6 +14,7 @@ namespace DTOs.ACAD.ACAD_Class.Responses
         public decimal AttendanceRate { get; set; }
         public decimal ProgressPercentage { get; set; }
         public decimal? FinalGrade { get; set; }
+        public bool IsPass { get; set; }
     }
 }
 
