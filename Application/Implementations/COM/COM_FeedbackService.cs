@@ -4,9 +4,11 @@ using AutoMapper;
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Interfaces;
+using Domain.Interfaces.ACAD;
 using Domain.Interfaces.COM;
 using DTOs.COM.COM_Feedback.Requests;
 using DTOs.COM.COM_Feedback.Responses;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Implementations.COM
 {
@@ -14,16 +16,19 @@ namespace Application.Implementations.COM
 	{
 		private readonly ICORE_LookUpService _lookUpService;
 		private readonly ICOM_FeedbackRepository _feedbackRepository;
+		private readonly IACAD_CourseRepository _courseRepository;
 
 		public COM_FeedbackService(
 			ICOM_FeedbackRepository repository, 
 			IUnitOfWork unitOfWork, 
 			IMapper mapper,
-			ICORE_LookUpService lookUpService)
+			ICORE_LookUpService lookUpService,
+			IACAD_CourseRepository courseRepository)
 			: base(repository, unitOfWork, mapper)
 		{
 			_lookUpService = lookUpService;
 			_feedbackRepository = repository;
+			_courseRepository = courseRepository;
 		}
 
 		public async Task<FeedbackResponse> SoftDeleteAsync(Guid id)
@@ -117,6 +122,9 @@ namespace Application.Implementations.COM
 				// Save all changes
 				await _unitOfWork.SaveChangesAsync();
 
+				// Update course average rating
+				await UpdateCourseAverageRatingAsync(request.CourseID, courseFeedbackType.LookUpId);
+
 				return new CombinedFeedbackResponse
 				{
 					CourseFeedback = courseFeedbackResponse,
@@ -138,6 +146,42 @@ namespace Application.Implementations.COM
 		public async Task<List<CourseFeedbackListResponse>> GetFeedbacksByCourseIdAsync(Guid courseId)
 		{
 			return await _feedbackRepository.GetFeedbacksByCourseIdAsync(courseId);
+		}
+
+		/// <summary>
+		/// Updates the average rating of a course based on course feedbacks only (excludes teacher feedbacks)
+		/// </summary>
+		private async Task UpdateCourseAverageRatingAsync(Guid courseId, Guid courseFeedbackTypeId)
+		{
+			// Get all course feedbacks (filter by FeedbackTypeID to get only course feedback, not teacher feedback)
+			var courseFeedbacks = await _repository.GetQueryable()
+				.Where(f => f.CourseID == courseId 
+					&& f.FeedbackTypeID == courseFeedbackTypeId 
+					&& f.Rating != null 
+					&& !f.IsDeleted)
+				.ToListAsync();
+
+			// Get the course entity
+			var course = await _courseRepository.GetByIdAsync(courseId);
+			if (course == null)
+			{
+				throw new KeyNotFoundException($"Course with id {courseId} not found.");
+			}
+
+			// Calculate average rating
+			if (courseFeedbacks.Any())
+			{
+				var averageRating = courseFeedbacks.Average(f => f.Rating!.Value);
+				course.AverageRating =(decimal) Math.Round(averageRating, 2);
+			}
+			else
+			{
+				course.AverageRating = null;
+			}
+
+			// Update course
+			_courseRepository.Update(course);
+			await _unitOfWork.SaveChangesAsync();
 		}
     }
 }

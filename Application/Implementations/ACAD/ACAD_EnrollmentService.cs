@@ -488,8 +488,8 @@ namespace Application.Implementations.ACAD
             {
                 try
                 {
-                    // Retrieve the enrollment from database
-                    var enrollment = await _enrollmentRepo.GetByIdAsync(gradeUpdate.EnrollmentId);
+                    // Retrieve the enrollment from database with Course for StandardScore
+                    var enrollment = await _enrollmentRepo.GetEnrollmentWithCourseAsync(gradeUpdate.EnrollmentId);
 
                     if (enrollment == null)
                     {
@@ -506,6 +506,17 @@ namespace Application.Implementations.ACAD
 
                     // Update final grade
                     enrollment.FinalGrade = gradeUpdate.FinalGrade;
+                    
+                    // Calculate and update IsPass based on FinalGrade and StandardScore
+                    if (gradeUpdate.FinalGrade.HasValue && enrollment.Course != null)
+                    {
+                        enrollment.IsPass = gradeUpdate.FinalGrade.Value >= enrollment.Course.StandardScore;
+                    }
+                    else
+                    {
+                        enrollment.IsPass = false;
+                    }
+                    
                     enrollment.UpdatedAt = DateTime.UtcNow;
 
                     _enrollmentRepo.Update(enrollment);
