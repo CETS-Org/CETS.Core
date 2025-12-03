@@ -179,5 +179,112 @@ namespace Application.Implementations.ACAD
                 await _unitOfWork.SaveChangesAsync();
             });
         }
+
+        public async Task<IReadOnlyList<TeacherOptionDto>> GetAvailableTeachersForClassAsync(GetAvailableTeachersRequest request)
+        {
+            if (request.EndDate < request.StartDate)
+                throw new ArgumentException("EndDate must be greater than or equal to StartDate.");
+
+            // 1. Lấy tất cả teacher assignment của course
+            var assignments = await _courseAssignmentRepository.GetByCourseAsync(request.CourseId);
+            if (!assignments.Any())
+                return Array.Empty<TeacherOptionDto>();
+
+            // 2. Không có schedule => coi như teacher nào cũng rảnh trong course này
+            if (request.Schedules == null || request.Schedules.Count == 0)
+            {
+                return assignments
+                    .Select(a => new TeacherOptionDto
+                    {
+                        Id = a.Id, // TeacherAssignmentID
+                        FullName = a.Teacher?.Account?.FullName ?? "Unknown",
+                        Email = a.Teacher?.Account?.Email
+                    })
+                    .OrderBy(t => t.FullName)
+                    .ToList();
+            }
+
+            // 3. Map DayOfWeek -> list TimeSlotID
+            var scheduleLookup = request.Schedules
+                .GroupBy(s => s.DayOfWeek)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.TimeSlotID).Distinct().ToList()
+                );
+
+            // 4. Generate (Date, TimeSlotID) buổi học của lớp mới
+            var requestedPairs = new List<(DateOnly Date, Guid TimeSlotID)>();
+            var cursor = request.StartDate;
+
+            while (cursor <= request.EndDate)
+            {
+                var dow = cursor.DayOfWeek;
+                if (scheduleLookup.TryGetValue(dow, out var slotList))
+                {
+                    foreach (var slotId in slotList)
+                    {
+                        requestedPairs.Add((cursor, slotId));
+                    }
+                }
+
+                cursor = cursor.AddDays(1);
+            }
+
+            if (!requestedPairs.Any())
+            {
+                // Không generate được buổi nào -> coi như không trùng lịch
+                return assignments
+                    .Select(a => new TeacherOptionDto
+                    {
+                        Id = a.Id,
+                        FullName = a.Teacher?.Account?.FullName ?? "Unknown",
+                        Email = a.Teacher?.Account?.Email
+                    })
+                    .OrderBy(t => t.FullName)
+                    .ToList();
+            }
+
+            // 5. SlotIDs cần quan tâm
+            var requestedSlotIds = request.Schedules
+                .Select(s => s.TimeSlotID)
+                .Distinct()
+                .ToList();
+
+            // 6. Lấy các buổi học của teacher trong khoảng để check trùng
+            var teacherAssignmentIds = assignments.Select(a => a.Id).ToList();
+            var candidateMeetings = await _classMeetingRepository.GetMeetingsForTeacherOverlapAsync(
+                request.StartDate,
+                request.EndDate,
+                requestedSlotIds,
+                teacherAssignmentIds);
+
+            // 7. HashSet "yyyy-MM-dd|slotGuid" cho lịch lớp mới
+            var requestedKeySet = requestedPairs
+                .Select(p => $"{p.Date:yyyy-MM-dd}|{p.TimeSlotID}")
+                .ToHashSet();
+
+            // 8. TeacherAssignment nào có (Date, SlotID) trùng => bị bận
+            var busyAssignmentIds = candidateMeetings
+                .Where(m => m.TeacherAssignmentID.HasValue &&
+                            requestedKeySet.Contains($"{m.Date:yyyy-MM-dd}|{m.SlotID}"))
+                .Select(m => m.TeacherAssignmentID!.Value)
+                .Distinct()
+                .ToHashSet();
+
+            // 9. Các assignment còn lại là available
+            var availableAssignments = assignments
+                .Where(a => !busyAssignmentIds.Contains(a.Id))
+                .ToList();
+
+            return availableAssignments
+                .Select(a => new TeacherOptionDto
+                {
+                    Id = a.Id,
+                    FullName = a.Teacher?.Account?.FullName ?? "Unknown",
+                    Email = a.Teacher?.Account?.Email
+                })
+                .OrderBy(t => t.FullName)
+                .ToList();
+        }
     }
 }

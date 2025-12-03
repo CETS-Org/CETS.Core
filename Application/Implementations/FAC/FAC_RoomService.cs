@@ -406,6 +406,114 @@ namespace Application.Implementations.FAC
         }
 
 
+        public async Task<IReadOnlyList<RoomOptionDto>> GetAvailableRoomsAsync(GetAvailableRoomsRequest request)
+        {
+            if (request.EndDate < request.StartDate)
+                throw new ArgumentException("EndDate must be greater than or equal to StartDate.");
+
+            // Không có schedule => trả về tất cả phòng active
+            if (request.Schedules == null || request.Schedules.Count == 0)
+            {
+                var allActiveRooms = await _roomRepository.GetActiveRoomsAsync();
+                return allActiveRooms
+                    .Select(r => new RoomOptionDto
+                    {
+                        Id = r.Id,
+                        RoomCode = r.RoomCode,
+                        Capacity = r.Capacity,
+                        IsActive = r.IsActive
+                    })
+                    .OrderBy(r => r.RoomCode)
+                    .ToList();
+            }
+
+            // 1. Map DayOfWeek -> list TimeSlotID (Guid)
+            var scheduleLookup = request.Schedules
+                .GroupBy(s => s.DayOfWeek)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.TimeSlotID).Distinct().ToList()
+                );
+
+            // 2. Generate (Date, TimeSlotID) cho tất cả buổi học
+            var requestedPairs = new List<(DateOnly Date, Guid TimeSlotID)>();
+            var cursor = request.StartDate;
+
+            while (cursor <= request.EndDate)
+            {
+                var dow = cursor.DayOfWeek;
+
+                if (scheduleLookup.TryGetValue(dow, out var slotList))
+                {
+                    foreach (var slotId in slotList)
+                    {
+                        requestedPairs.Add((cursor, slotId));
+                    }
+                }
+
+                cursor = cursor.AddDays(1);
+            }
+
+            // Nếu không có cặp nào => return full room active
+            if (requestedPairs.Count == 0)
+            {
+                var allActiveRooms = await _roomRepository.GetActiveRoomsAsync();
+                return allActiveRooms
+                    .Select(r => new RoomOptionDto
+                    {
+                        Id = r.Id,
+                        RoomCode = r.RoomCode,
+                        Capacity = r.Capacity,
+                        IsActive = r.IsActive
+                    })
+                    .OrderBy(r => r.RoomCode)
+                    .ToList();
+            }
+
+            // 3. SlotIDs cần quan tâm
+            var requestedSlotIds = request.Schedules
+                .Select(s => s.TimeSlotID)
+                .Distinct()
+                .ToList();
+
+            // 4. Lấy các ClassMeeting trong range để check trùng
+            var candidateMeetings = await _classMeetingRepository
+                .GetMeetingsForScheduleOverlapAsync(
+                    request.StartDate,
+                    request.EndDate,
+                    requestedSlotIds);
+
+            // 5. HashSet "yyyy-MM-dd|slotGuid" cho lịch lớp cần tạo
+            var requestedKeySet = requestedPairs
+                .Select(p => $"{p.Date:yyyy-MM-dd}|{p.TimeSlotID}")
+                .ToHashSet();
+
+            // 6. Room nào có (Date, SlotID) trùng => bị chiếm
+            var occupiedRoomIds = candidateMeetings
+                .Where(m => m.RoomID.HasValue &&
+                            requestedKeySet.Contains($"{m.Date:yyyy-MM-dd}|{m.SlotID}"))
+                .Select(m => m.RoomID!.Value)
+                .Distinct()
+                .ToHashSet();
+
+            // 7. Lấy phòng active chưa bị chiếm
+            var allRooms = await _roomRepository.GetActiveRoomsAsync();
+            var availableRooms = allRooms
+                .Where(r => !occupiedRoomIds.Contains(r.Id))
+                .OrderBy(r => r.RoomCode)
+                .Select(r => new RoomOptionDto
+                {
+                    Id = r.Id,
+                    RoomCode = r.RoomCode,
+                    Capacity = r.Capacity,
+                    IsActive = r.IsActive
+                })
+                .ToList();
+
+            return availableRooms;
+        }
+
+
 
     }
 }
