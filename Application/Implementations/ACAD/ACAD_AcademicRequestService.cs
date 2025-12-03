@@ -81,6 +81,7 @@ namespace Application.Implementations.ACAD
             var requestTypeCode = (requestType.Code ?? "").ToLower();
             var isSuspension = requestTypeCode.Contains("suspension");
             var isDropout =  requestTypeCode.Contains("dropout");
+            var isRefund = requestTypeCode.Contains("refund");
 
             // Validate suspension requests
             if (isSuspension && _suspensionValidationService != null)
@@ -147,7 +148,7 @@ namespace Application.Implementations.ACAD
                     }
                 }
             }
-            else if (isSuspension || isDropout || isEnrollmentCancellation || isReturnFromSuspension)
+            else if (isSuspension || isDropout || isEnrollmentCancellation || isReturnFromSuspension || isRefund)
             {
                 // EnrollmentID is required for these request types
                 throw new InvalidOperationException($"EnrollmentID is required for {(isSuspension ? "suspension" : isDropout ? "dropout" : "cancellation")} requests.");
@@ -273,6 +274,7 @@ namespace Application.Implementations.ACAD
             var isSuspension = requestTypeCode.Contains("suspension");
             var isDropout = requestTypeCode.Contains("dropout");
             var isEnrollmentCancellation = requestTypeCode.Contains("cancel");
+            var isRefund = requestTypeCode.Contains("refund");
             
             if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isSuspension)
             {   
@@ -283,6 +285,12 @@ namespace Application.Implementations.ACAD
             if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isEnrollmentCancellation)
             {
                 await HandleEnrollmentCancellationAsync(entity);
+            }
+
+            // If this is an approved refund request, handle refund enrollment status
+            if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isRefund)
+            {
+                await HandleRefundApprovalAsync(entity);
             }
 
             // If this is an approved return from suspension request, handle return
@@ -518,6 +526,34 @@ namespace Application.Implementations.ACAD
             // Reactivate enrollment
             enrollment.EnrollmentStatusID = enrolledStatus.Id;
             
+            _enrollmentRepo.Update(enrollment);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        private async Task HandleRefundApprovalAsync(ACAD_AcademicRequest request)
+        {
+            // When a refund request is approved, mark the related enrollment as Refunded
+            if (!request.EnrollmentID.HasValue)
+            {
+                throw new InvalidOperationException("EnrollmentID is required for refund requests.");
+            }
+
+            var enrollment = await _enrollmentRepo.GetByIdAsync(request.EnrollmentID.Value);
+            if (enrollment == null)
+            {
+                throw new KeyNotFoundException("Enrollment not found.");
+            }
+
+            // Get the Refunded enrollment status
+            var refundedStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.EnrollmentStatus, "Refunded");
+            if (refundedStatus == null)
+            {
+                throw new KeyNotFoundException("Refunded enrollment status not found in lookup data.");
+            }
+
+            // Update enrollment status to Refunded
+            enrollment.EnrollmentStatusID = refundedStatus.Id;
+
             _enrollmentRepo.Update(enrollment);
             await _unitOfWork.SaveChangesAsync();
         }
