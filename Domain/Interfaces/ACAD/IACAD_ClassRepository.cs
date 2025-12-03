@@ -14,5 +14,7 @@ namespace Domain.Interfaces.ACAD
         Task<ACAD_Class?> GetClassStaffViewById(Guid id);
         Task<List<FeedbackClassResponse>> GetFeedbackClassesByStudentId(Guid studentId);
         Task<List<ACAD_Class>> GetAllClass();
+
+        Task<ACAD_Class?> GetClassWithDetailForEditAsync(Guid classId);
     }
 }

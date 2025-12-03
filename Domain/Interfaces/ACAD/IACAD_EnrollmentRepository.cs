@@ -19,6 +19,8 @@ namespace Domain.Interfaces.ACAD
 
         Task UpdateDecisionStatusAsync(Guid enrollmentId, EmailDecisionStatus status);
 
+        Task<ACAD_Enrollment?> GetEnrollmentWithCourseAsync(Guid enrollmentId);
+
     }
 }
 

@@ -2,18 +2,22 @@
 using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
+using Domain.Interfaces.CORE;
 using DTOs.ACAD.ACAD_Class.Responses;
 using DTOs.ACAD.ACAD_ClassMeetings.Responses;
 using Infrastructure.Implementations.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Runtime.ConstrainedExecution;
 
 namespace Infrastructure.Implementations.Repositories.ACAD
 {
     public class ACAD_ClassRepository : BaseRepository<ACAD_Class>, IACAD_ClassRepository
     {
-        public ACAD_ClassRepository(AppDbContext context) : base(context)
+        private readonly ICORE_LookUpRepository _lookUpRepository;
+        public ACAD_ClassRepository(AppDbContext context, ICORE_LookUpRepository lookUpRepository) : base(context)
         {
+            _lookUpRepository = lookUpRepository;
         }
 
         public async Task<List<ACAD_Class>> GetAllClass()
@@ -90,11 +94,13 @@ namespace Infrastructure.Implementations.Repositories.ACAD
        public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
             {
                 var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+            var waitingStatusId = await _lookUpRepository.GetByCodeAsync("EnrollmentStatus", "Enrolled");
 
-                // 1 QUERY duy nhất, mọi thứ đều nằm trong projection
-                var items = await (
+            // 1 QUERY duy nhất, mọi thứ đều nằm trong projection
+            var items = await (
                     from enroll in _context.ACAD_Enrollments
-                    where enroll.StudentID == studentId && !enroll.IsDeleted
+                    where enroll.StudentID == studentId && !enroll.IsDeleted                      
+                         
 
                     join cls in _context.ACAD_Classes on enroll.ClassID equals cls.Id
                     where !cls.IsDeleted
@@ -289,6 +295,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(e => e.Student)
                     .ThenInclude(s => s.Account)
                 .Include(e => e.EnrollmentStatus)
+                .Include(e => e.Course) // Include Course to get StandardScore for IsPass calculation
                 .Where(e => e.ClassID == classId && !e.IsDeleted && e.EnrollmentStatus.Code == "Enrolled")
                 .ToListAsync();
 
@@ -343,7 +350,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     JoinDate = enrollment.CreatedAt.ToString("yyyy-MM-dd"),
                     AttendanceRate = Math.Round(attendanceRate, 0),
                     ProgressPercentage = Math.Round(progressPercentage, 0),
-                    FinalGrade = enrollment.FinalGrade
+                    FinalGrade = enrollment.FinalGrade,
+                    IsPass = enrollment.IsPass // Read from database
                 });
             }
 
@@ -572,6 +580,23 @@ namespace Infrastructure.Implementations.Repositories.ACAD
         {
             return await StaffViewQuery()
                 .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task<ACAD_Class?> GetClassWithDetailForEditAsync(Guid classId)
+        {
+            return await _context.ACAD_Classes
+                .AsNoTracking() // Read-only để tối ưu hiệu năng khi get
+                .Include(c => c.ACAD_ClassMeetings) // Lấy lịch học
+                .Include(c => c.ACAD_Enrollments)   // Lấy danh sách enrollment
+                    .ThenInclude(e => e.Student)    // Lấy thông tin học sinh
+                        .ThenInclude(s => s.Account) // Lấy email/sđt
+                .Include(c => c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Course)
+                .Include(c => c.TeacherAssignment)
+                    .ThenInclude(ta => ta.Teacher)
+                        .ThenInclude(t => t.Account)
+                
+                .FirstOrDefaultAsync(c => c.Id == classId && !c.IsDeleted);
         }
 
     }

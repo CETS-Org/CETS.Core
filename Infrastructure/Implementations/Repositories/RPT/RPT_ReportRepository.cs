@@ -18,6 +18,8 @@ namespace Infrastructure.Implementations.Repositories.RPT
                 .Include(r => r.ReportType)
                 .Include(r => r.ReportStatus)
                 .Include(r => r.SubmittedByNavigation)
+                    .ThenInclude(a => a.IDN_AccountRoles)
+                        .ThenInclude(ar => ar.Role)
                 .Include(r => r.ResolvedByNavigation)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
@@ -28,6 +30,8 @@ namespace Infrastructure.Implementations.Repositories.RPT
                 .Include(r => r.ReportType)
                 .Include(r => r.ReportStatus)
                 .Include(r => r.SubmittedByNavigation)
+                    .ThenInclude(a => a.IDN_AccountRoles)
+                        .ThenInclude(ar => ar.Role)
                 .Include(r => r.ResolvedByNavigation)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -91,6 +95,8 @@ namespace Infrastructure.Implementations.Repositories.RPT
                 .Include(r => r.ReportType)
                 .Include(r => r.ReportStatus)
                 .Include(r => r.SubmittedByNavigation)
+                    .ThenInclude(a => a.IDN_AccountRoles)
+                        .ThenInclude(ar => ar.Role)
                 .Include(r => r.ResolvedByNavigation)
                 .Where(r => r.ReportTypeID == reportTypeId)
                 .OrderByDescending(r => r.CreatedAt)
@@ -103,6 +109,8 @@ namespace Infrastructure.Implementations.Repositories.RPT
                 .Include(r => r.ReportType)
                 .Include(r => r.ReportStatus)
                 .Include(r => r.SubmittedByNavigation)
+                    .ThenInclude(a => a.IDN_AccountRoles)
+                        .ThenInclude(ar => ar.Role)
                 .Include(r => r.ResolvedByNavigation)
                 .Where(r => r.ReportTypeID == reportTypeId && r.ReportStatusID == statusId)
                 .OrderByDescending(r => r.CreatedAt)

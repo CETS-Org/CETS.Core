@@ -138,6 +138,13 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             }
         }
 
+        public async Task<ACAD_Enrollment?> GetEnrollmentWithCourseAsync(Guid enrollmentId)
+        {
+            return await _context.ACAD_Enrollments
+                .Include(e => e.Course)
+                .FirstOrDefaultAsync(e => e.Id == enrollmentId);
+        }
+
     }
 }
 

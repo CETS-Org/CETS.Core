@@ -22,6 +22,8 @@ public partial class ACAD_Enrollment : AuditedEntity
 
     [Column(TypeName = "decimal(5, 2)")]
     public decimal? FinalGrade { get; set; }
+
+    public bool IsPass { get; set; } = false; // Default is fail
     public EmailDecisionStatus EmailDecisionStatus { get; set; }
     = EmailDecisionStatus.None;
 
