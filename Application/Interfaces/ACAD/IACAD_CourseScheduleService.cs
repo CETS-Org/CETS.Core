@@ -16,5 +16,6 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<CourseScheduleResponse>> GetSchedulesByTimeSlotIdAsync(Guid timeSlotId);
         Task<bool> IsTimeSlotAvailableAsync(Guid courseId, Guid timeSlotId, DayOfWeek dayOfWeek);
         Task<CourseScheduleResponse?> GetDetailByIdAsync(Guid id);
+        Task<List<WeeklyScheduleResponse>> GetWeeklyScheduleAsync();
     }
 }

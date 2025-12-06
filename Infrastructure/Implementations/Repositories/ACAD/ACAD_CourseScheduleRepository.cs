@@ -71,5 +71,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<ACAD_CourseSchedule>> GetWeeklyScheduleAsync()
+        {
+            return await _context.Set<ACAD_CourseSchedule>()
+                .Include(cs => cs.Course)
+                .Include(cs => cs.TimeSlot)
+                .Where(cs => !cs.Course.IsDeleted && cs.Course.IsActive)
+                .OrderBy(cs => cs.DayOfWeek)
+                .ThenBy(cs => cs.TimeSlot.Code)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

@@ -105,5 +105,41 @@ namespace Application.Implementations.ACAD
 
             return await base.UpdateAsync(id, dto);
         }
+
+        public async Task<List<WeeklyScheduleResponse>> GetWeeklyScheduleAsync()
+        {
+            var schedules = await _courseScheduleRepository.GetWeeklyScheduleAsync();
+            
+            // Group by DayOfWeek (convert from DayOfWeek enum to int: Monday=1, Sunday=0 -> 2-7 for Mon-Sun)
+            var groupedByDay = schedules
+                .GroupBy(s => s.DayOfWeek)
+                .OrderBy(g => g.Key == DayOfWeek.Sunday ? 7 : (int)g.Key + 1) // Convert to 2-7 (Mon-Sun)
+                .Select(dayGroup => new WeeklyScheduleResponse
+                {
+                    DayOfWeek = dayGroup.Key == DayOfWeek.Sunday ? 7 : (int)dayGroup.Key + 1,
+                    DayName = dayGroup.Key.ToString(),
+                    TimeSlots = dayGroup
+                        .GroupBy(s => new { s.TimeSlotID, s.TimeSlot.Code, s.TimeSlot.Name })
+                        .OrderBy(tg => tg.Key.Code)
+                        .Select(timeSlotGroup => new TimeSlotInfo
+                        {
+                            TimeSlotID = timeSlotGroup.Key.TimeSlotID,
+                            TimeSlotCode = timeSlotGroup.Key.Code ?? string.Empty,
+                            TimeSlotName = timeSlotGroup.Key.Name ?? string.Empty,
+                            Courses = timeSlotGroup
+                                .Select(s => new CourseInSchedule
+                                {
+                                    CourseID = s.CourseID,
+                                    CourseName = s.Course.CourseName,
+                                    CourseCode = s.Course.CourseCode
+                                })
+                                .ToList()
+                        })
+                        .ToList()
+                })
+                .ToList();
+
+            return groupedByDay;
+        }
     }
 }

@@ -63,13 +63,20 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.Category)
                 .Include(c => c.CourseLevel)
                 .Include(c => c.CourseFormat)
-                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
                 .Include(c => c.ACAD_Syllabi.Where(s => !s.IsDeleted))
                     .ThenInclude(s => s.ACAD_SyllabusItems.Where(i => !i.IsDeleted).OrderBy(i => i.SessionNumber))
-                .Include(c => c.ACAD_Enrollments)
+                .Include(c => c.ACAD_Enrollments.Where(e => e.EnrollmentStatus.Name == "Enrolled"))
+                    .ThenInclude(e => e.EnrollmentStatus)
                 .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
                 .Include(c => c.ACAD_CourseRequirements).ThenInclude(r => r.Requirement)
                 .Include(c => c.ACAD_CourseSkills).ThenInclude(s => s.Skill)
+                .Include(c => c.ACAD_CourseSchedules)
+                    .ThenInclude(cs => cs.TimeSlot)
+                .Include(c => c.COM_Feedbacks.Where(f => f.TeacherID == null && !f.IsDeleted))
+                    .ThenInclude(f => f.Submitter)
+                        .ThenInclude(s => s.Account)
+                .Include(c => c.COM_Feedbacks.Where(f => f.TeacherID == null && !f.IsDeleted))
+                    .ThenInclude(f => f.FeedbackType)
                 .Include(c => c.CreatedByNavigation)
                 .Include(c => c.UpdatedByNavigation)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
@@ -96,7 +103,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
                 .Include(c => c.ACAD_Syllabi.Where(s => !s.IsDeleted))
                     .ThenInclude(s => s.ACAD_SyllabusItems.Where(i => !i.IsDeleted).OrderBy(i => i.SessionNumber))
-                .Include(c => c.ACAD_Enrollments);
+                .Include(c => c.ACAD_Enrollments)
+                    .ThenInclude(e => e.EnrollmentStatus);
         }
 
         public async Task<CourseSearchResult> SearchBasicAsync(CourseSearchQuery q, CancellationToken ct)
@@ -287,6 +295,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.CourseLevel)
                 .Include(c => c.CourseFormat)
                 .Include(c => c.ACAD_Enrollments)
+                    .ThenInclude(e => e.EnrollmentStatus)
                 .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
                 .Include(c => c.ACAD_Syllabi.Where(s => !s.IsDeleted))
                     .ThenInclude(s => s.ACAD_SyllabusItems.Where(i => !i.IsDeleted).OrderBy(i => i.SessionNumber))

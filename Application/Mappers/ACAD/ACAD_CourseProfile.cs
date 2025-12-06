@@ -8,6 +8,7 @@ using DTOs.ACAD.ACAD_CourseSkill.Responses;
 using DTOs.ACAD.ACAD_Syllabus.Responses;
 using DTOs.ACAD.ACAD_SyllabusItem.Responses;
 using DTOs.IDN.IDN_Teacher.Responses;
+using DTOs.COM.COM_Feedback.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,17 +52,13 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.FormatName, opt => opt.MapFrom(src => src.CourseFormat != null ? src.CourseFormat.Name : ""))
                 .ForMember(dest => dest.CourseObjective, opt => opt.MapFrom(src => src.CourseObjective))
                 
-                // Teacher information
-                .ForMember(dest => dest.TeacherDetails, opt => opt.MapFrom(src => 
-                    src.ACAD_CourseTeacherAssignments.Select(a => a.Teacher).ToList()))
-                
                 // Course statistics
                 .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => 
                     src.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).Sum(i => i.TotalSlots ?? 0) + " slots"))
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => 
                     (double)(src.AverageRating ?? 0)))
                 .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src => 
-                    src.ACAD_Enrollments.Count(e => !e.IsDeleted)))
+                    src.ACAD_Enrollments.Count(e => !e.IsDeleted && e.EnrollmentStatus.Name == "Enrolled")))
                 
                 // Audit information
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => 
@@ -74,7 +71,21 @@ namespace Application.Mappers.ACAD
                     src.ACAD_Syllabi.Where(s => !s.IsDeleted).ToList()))
                 .ForMember(dest => dest.Benefits, opt => opt.MapFrom(src => src.ACAD_CourseBenefits))
                 .ForMember(dest => dest.Requirements, opt => opt.MapFrom(src => src.ACAD_CourseRequirements))
-                .ForMember(dest => dest.CourseSkills, opt => opt.MapFrom(src => src.ACAD_CourseSkills));
+                .ForMember(dest => dest.CourseSkills, opt => opt.MapFrom(src => src.ACAD_CourseSkills))
+                .ForMember(dest => dest.CourseFeedbacks, opt => opt.MapFrom(src => 
+                    src.COM_Feedbacks.Where(f => f.TeacherID == null && !f.IsDeleted).ToList()))
+                .ForMember(dest => dest.WeeklySchedule, opt => opt.MapFrom(src => 
+                    src.ACAD_CourseSchedules
+                        .OrderBy(cs => cs.DayOfWeek)
+                        .ThenBy(cs => cs.TimeSlot.Code)
+                        .Select(cs => new CourseScheduleInfo
+                        {
+                            DayOfWeek = (int)cs.DayOfWeek,
+                            DayName = cs.DayOfWeek.ToString(),
+                            TimeSlotCode = cs.TimeSlot.Code ?? string.Empty,
+                            TimeSlotName = cs.TimeSlot.Name ?? string.Empty
+                        })
+                        .ToList()));
 
             CreateMap<ACAD_Course, CourseListItemResponse>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
@@ -88,7 +99,7 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => 
                     (double)(src.AverageRating ?? 0)))
                 .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src => 
-                    src.ACAD_Enrollments.Count(e => !e.IsDeleted)))
+                    src.ACAD_Enrollments.Count(e => !e.IsDeleted && e.EnrollmentStatus.Name == "Enrolled")))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
                 .ForMember(dest => dest.Schedules, opt => opt.MapFrom(src => src.ACAD_CourseSchedules))
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
@@ -117,6 +128,25 @@ namespace Application.Mappers.ACAD
 
             CreateMap<ACAD_CourseSkill, CourseSkillResponse>()
                 .ForMember(dest => dest.SkillName, opt => opt.MapFrom(src => src.Skill.Name));
+
+            CreateMap<COM_Feedback, CourseFeedbackListResponse>()
+                .ForMember(dest => dest.FeedbackId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.SubmitterId, opt => opt.MapFrom(src => src.SubmitterID))
+                .ForMember(dest => dest.SubmitterName, opt => opt.MapFrom(src => src.Submitter.Account.FullName))
+                .ForMember(dest => dest.FeedbackTypeId, opt => opt.MapFrom(src => src.FeedbackTypeID.ToString()))
+                .ForMember(dest => dest.FeedbackTypeName, opt => opt.MapFrom(src => src.FeedbackType != null ? src.FeedbackType.Name : ""))
+                .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Rating))
+                .ForMember(dest => dest.Comment, opt => opt.MapFrom(src => src.Comment))
+                .ForMember(dest => dest.ContentClarity, opt => opt.MapFrom(src => src.ContentClarity))
+                .ForMember(dest => dest.CourseRelevance, opt => opt.MapFrom(src => src.CourseRelevance))
+                .ForMember(dest => dest.MaterialsQuality, opt => opt.MapFrom(src => src.MaterialsQuality))
+                .ForMember(dest => dest.TeacherId, opt => opt.MapFrom(src => src.TeacherID))
+                .ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher != null ? src.Teacher.Account.FullName : null))
+                .ForMember(dest => dest.TeachingEffectiveness, opt => opt.MapFrom(src => src.TeachingEffectiveness))
+                .ForMember(dest => dest.CommunicationSkills, opt => opt.MapFrom(src => src.CommunicationSkills))
+                .ForMember(dest => dest.TeacherSupportiveness, opt => opt.MapFrom(src => src.TeacherSupportiveness))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+
             CreateMap<ACAD_Course, TeachingCourseResponse>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.CourseLevel, opt => opt.MapFrom(src => src.CourseLevel.Name))

@@ -15,5 +15,6 @@ namespace Domain.Interfaces.ACAD
         Task<bool> IsTimeSlotAvailableAsync(Guid courseId, Guid timeSlotId, DayOfWeek dayOfWeek);
         Task<ACAD_CourseSchedule?> GetDetailByIdAsync(Guid id);
         Task<IEnumerable<ACAD_CourseSchedule>> GetAllWithNavigationPropertiesAsync();
+        Task<IEnumerable<ACAD_CourseSchedule>> GetWeeklyScheduleAsync();
     }
 }
