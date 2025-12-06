@@ -6,6 +6,7 @@ namespace Application.Interfaces.FIN
 {
 	public interface IFIN_PaymentWebhookService : IBaseService<FIN_PaymentWebhook, PaymentWebhookResponse, UpdatePaymentWebhookRequest, CreatePaymentWebhookRequest>
 	{
+		Task<PaginatedPaymentWebhookResponse> GetPaginatedAsync(GetPaginatedPaymentWebhookRequest request);
 	}
 }
 
