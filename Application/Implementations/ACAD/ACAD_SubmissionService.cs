@@ -513,59 +513,65 @@ namespace Application.Implementations.ACAD
             }
         }
 
-        // New method: Grade essay by text (instead of file upload)
+        // New method: Grade essay by text using Groq API
         public async Task<(double Score, string Feedback)> GradeEssayByTextAsync(string essayText)
         {
-            var ApiKey = _configuration["GeminiApi:ApiKey"];
-            string modelUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+            var apiKey = _configuration["GroqApi:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new Exception("Groq API Key not configured");
+            }
+
+            var model = _configuration["GroqApi:Model"] ?? "llama-3.1-70b-versatile";
+            var baseUrl = _configuration["GroqApi:BaseUrl"] ?? "https://api.groq.com/openai/v1";
+            string apiUrl = $"{baseUrl}/chat/completions";
 
             var prompt = $@"You are an IELTS Writing examiner.
-                        Read the following essay and provide:
-                        1. A band score (0–10)
-                        2. Short feedback (3–5 sentences)
-                        Output ONLY valid JSON in this exact format: {{""score"": number, ""feedback"": string}}
+Read the following essay and provide:
+1. A band score (0–10)
+2. Short feedback (3–5 sentences)
+Output ONLY valid JSON in this exact format: {{""score"": number, ""feedback"": string}}
 
-                        Essay:
-                        {essayText}";
+Essay:
+{essayText}";
 
             var requestJson = new
             {
-                contents = new[]
+                model = model,
+                messages = new[]
                 {
                     new {
-                        parts = new[]
-                        {
-                            new { text = prompt }
-                        }
+                        role = "user",
+                        content = prompt
                     }
-                }
+                },
+                temperature = 0.3,
+                max_tokens = 500,
+                response_format = new { type = "json_object" }
             };
 
             var jsonBody = JsonSerializer.Serialize(requestJson);
-            var request = new HttpRequestMessage(HttpMethod.Post, modelUrl)
+            var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
             {
                 Content = new StringContent(jsonBody, Encoding.UTF8, "application/json")
             };
-            
-            // Add API key as header instead of query parameter
-            request.Headers.Add("X-goog-api-key", ApiKey);
+            request.Headers.Add("Authorization", $"Bearer {apiKey}");
 
             var response = await _httpClient.SendAsync(request);
             var responseBody = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"Gemini grading failed: {response.StatusCode} - {responseBody}");
+                throw new Exception($"Groq grading failed: {response.StatusCode} - {responseBody}");
             }
 
             try
             {
                 var doc = JsonDocument.Parse(responseBody);
                 var textResponse = doc.RootElement
-                    .GetProperty("candidates")[0]
+                    .GetProperty("choices")[0]
+                    .GetProperty("message")
                     .GetProperty("content")
-                    .GetProperty("parts")[0]
-                    .GetProperty("text")
                     .GetString();
 
                 // Clean up the response (remove markdown code blocks if present)
@@ -592,7 +598,7 @@ namespace Application.Implementations.ACAD
             }
             catch (Exception ex)
             {
-                throw new Exception($"Could not parse Gemini response: {ex.Message}. Response: {responseBody}");
+                throw new Exception($"Could not parse Groq response: {ex.Message}. Response: {responseBody}");
             }
         }
 
