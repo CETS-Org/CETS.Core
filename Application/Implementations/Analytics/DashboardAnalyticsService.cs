@@ -294,18 +294,9 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
             var dropoutData = await GetStudentDropoutAnalyticsAsync(new DropoutAnalysisRequest());
             var enrollmentData = await GetEnrollmentAnalyticsAsync();
 
-            // Try to call Gemini AI
-            try
-            {
-                var aiResponse = await CallGeminiForRecommendationsAsync(revenueData, courseData, dropoutData, enrollmentData, request);
-                return aiResponse;
-            }
-            catch (Exception aiEx)
-            {
-                _logger.LogWarning(aiEx, "Gemini AI call failed, falling back to rule-based recommendations");
-                // Fallback to rule-based recommendations
-                return GenerateFallbackRecommendations(revenueData, courseData, dropoutData, enrollmentData, request);
-            }
+            // Call Groq AI directly (no fallback)
+            var aiResponse = await CallGroqForRecommendationsAsync(revenueData, courseData, dropoutData, enrollmentData, request);
+            return aiResponse;
         }
         catch (Exception ex)
         {
@@ -314,59 +305,62 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
         }
     }
 
-    private async Task<AIAnalysisResponse> CallGeminiForRecommendationsAsync(
+    private async Task<AIAnalysisResponse> CallGroqForRecommendationsAsync(
         RevenueAnalyticsResponse revenue,
         CourseEnrollmentStatsResponse courses,
         StudentDropoutAnalyticsResponse dropout,
         StudentEnrollmentAnalyticsResponse enrollment,
         AIRecommendationRequest request)
     {
-        var apiKey = _configuration["GeminiApi:ApiKey"];
+        var apiKey = _configuration["GroqApi:ApiKey"];
         if (string.IsNullOrEmpty(apiKey))
         {
-            throw new Exception("Gemini API Key not configured");
+            throw new Exception("Groq API Key not configured");
         }
 
-        string modelUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}";
+        var model = _configuration["GroqApi:Model"] ?? "llama-3.1-70b-versatile";
+        var baseUrl = _configuration["GroqApi:BaseUrl"] ?? "https://api.groq.com/openai/v1";
+        string apiUrl = $"{baseUrl}/chat/completions";
 
         // Build comprehensive prompt with analytics data
         var prompt = BuildAIPrompt(revenue, courses, dropout, enrollment, request);
 
         var requestJson = new
         {
-            contents = new[]
+            model = model,
+            messages = new[]
             {
                 new {
                     role = "user",
-                    parts = new object[]
-                    {
-                        new { text = prompt }
-                    }
+                    content = prompt
                 }
-            }
+            },
+            temperature = 0.7,
+            max_tokens = 2048,
+            response_format = new { type = "json_object" }
         };
 
         var jsonBody = JsonSerializer.Serialize(requestJson);
-        var httpRequest = new HttpRequestMessage(HttpMethod.Post, modelUrl)
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, apiUrl)
         {
             Content = new StringContent(jsonBody, Encoding.UTF8, "application/json")
         };
+        httpRequest.Headers.Add("Authorization", $"Bearer {apiKey}");
 
         var response = await _httpClient.SendAsync(httpRequest);
         var responseBody = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception($"Gemini API failed: {response.StatusCode} - {responseBody}");
+            throw new Exception($"Groq API failed: {response.StatusCode} - {responseBody}");
         }
 
-        // Parse Gemini response
+        // Parse Groq response (OpenAI-compatible format)
         var doc = JsonDocument.Parse(responseBody);
         var textResponse = doc.RootElement
-            .GetProperty("candidates")[0]
+            .GetProperty("choices")[0]
+            .GetProperty("message")
             .GetProperty("content")
-            .GetProperty("parts")[0]
-            .GetProperty("text")
             .GetString();
 
         // Clean up markdown code blocks if present
@@ -393,7 +387,7 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
 
         if (aiResult == null)
         {
-            throw new Exception("Failed to parse Gemini response");
+            throw new Exception("Failed to parse Groq response");
         }
 
         aiResult.GeneratedAt = DateTime.Now;
@@ -519,10 +513,21 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
         
         sb.AppendLine("Generate exactly 3 strategic recommendations based on the data above.");
         sb.AppendLine("Recommendations should be:");
-        sb.AppendLine("- Data-driven and specific");
+        sb.AppendLine("- Data-driven and specific to the Vietnamese English training center context");
         sb.AppendLine("- Actionable with clear steps");
-        sb.AppendLine("- Include estimated impact (revenue/enrollments/retention)");
+        sb.AppendLine("- Include realistic estimated impact numbers");
         sb.AppendLine("- Assign confidence score (0-100)");
+        sb.AppendLine();
+        
+        sb.AppendLine("IMPORTANT RULES for estimatedImpact:");
+        sb.AppendLine("1. revenue: Expected revenue increase in VND (use realistic numbers based on current revenue, e.g., 5000000 to 50000000)");
+        sb.AppendLine("2. enrollments: Expected new enrollments (use positive integers, e.g., 10 to 100)");
+        sb.AppendLine("3. retention: Expected retention rate improvement in percentage (e.g., 5 to 15)");
+        sb.AppendLine("4. ALL THREE FIELDS MUST have numeric values (never use 0 or null)");
+        sb.AppendLine("5. Match the impact to the recommendation category:");
+        sb.AppendLine("   - Revenue recommendations: high revenue, moderate enrollments, low retention");
+        sb.AppendLine("   - Retention recommendations: moderate revenue, moderate enrollments, high retention");
+        sb.AppendLine("   - Enrollment recommendations: moderate revenue, high enrollments, moderate retention");
         sb.AppendLine();
         
         sb.AppendLine("Return response in this EXACT JSON format (no markdown, no code blocks):");
@@ -530,25 +535,87 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
   ""recommendations"": [
     {
       ""id"": ""rec-1"",
-      ""category"": ""revenue"" | ""retention"" | ""enrollment"",
-      ""priority"": ""high"" | ""medium"" | ""low"",
-      ""title"": ""Short recommendation title"",
-      ""description"": ""Detailed description explaining the recommendation and reasoning"",
-      ""impact"": ""Expected business impact summary"",
-      ""actionItems"": [""Action 1"", ""Action 2"", ""Action 3""],
+      ""category"": ""revenue"",
+      ""priority"": ""high"",
+      ""title"": ""Optimize Pricing Strategy for High-Demand Courses"",
+      ""description"": ""Based on current enrollment trends and student satisfaction scores, implement dynamic pricing for top-performing courses. Analysis shows strong demand with 85% capacity utilization."",
+      ""impact"": ""Estimated 15-20% revenue increase with minimal enrollment impact"",
+      ""actionItems"": [
+        ""Analyze competitor pricing in Ho Chi Minh City market"",
+        ""Implement A/B testing with 10-15% price increase"",
+        ""Create premium packages with additional features"",
+        ""Monitor enrollment rates weekly during transition""
+      ],
       ""estimatedImpact"": {
-        ""revenue"": 0,
-        ""enrollments"": 0,
-        ""retention"": 0
+        ""revenue"": 25000000,
+        ""enrollments"": 15,
+        ""retention"": 5
       },
       ""confidence"": 85,
       ""generatedAt"": ""2024-01-01T00:00:00""
+    },
+    {
+      ""id"": ""rec-2"",
+      ""category"": ""retention"",
+      ""priority"": ""high"",
+      ""title"": ""Implement Student Success Program"",
+      ""description"": ""Address the 57.9% dropout rate by creating a comprehensive student support system with regular check-ins and personalized learning paths."",
+      ""impact"": ""Reduce dropout rate by 30% and improve student satisfaction"",
+      ""actionItems"": [
+        ""Develop onboarding checklist for new students"",
+        ""Assign mentors for first 30 days"",
+        ""Implement automated check-ins at days 7, 14, 21"",
+        ""Create peer study groups""
+      ],
+      ""estimatedImpact"": {
+        ""revenue"": 15000000,
+        ""enrollments"": 25,
+        ""retention"": 12
+      },
+      ""confidence"": 90,
+      ""generatedAt"": ""2024-01-01T00:00:00""
+    },
+    {
+      ""id"": ""rec-3"",
+      ""category"": ""enrollment"",
+      ""priority"": ""medium"",
+      ""title"": ""Expand High-Growth Course Categories"",
+      ""description"": ""Capitalize on growing demand in business English and IELTS preparation by developing advanced level courses and corporate training packages."",
+      ""impact"": ""Increase quarterly enrollments by 50-80 students"",
+      ""actionItems"": [
+        ""Develop advanced business English curriculum"",
+        ""Create IELTS intensive preparation tracks"",
+        ""Partner with local companies for corporate training"",
+        ""Launch online hybrid learning options""
+      ],
+      ""estimatedImpact"": {
+        ""revenue"": 35000000,
+        ""enrollments"": 65,
+        ""retention"": 8
+      },
+      ""confidence"": 78,
+      ""generatedAt"": ""2024-01-01T00:00:00""
     }
   ],
-  ""summary"": ""Executive summary of overall performance and priorities"",
-  ""keyInsights"": [""Insight 1"", ""Insight 2"", ""Insight 3""],
-  ""riskFactors"": [""Risk 1"", ""Risk 2""],
-  ""opportunities"": [""Opportunity 1"", ""Opportunity 2""],
+  ""summary"": ""The English training center shows strong growth potential with opportunities to optimize pricing, improve retention, and expand course offerings. Focus on reducing the 57.9% dropout rate while capitalizing on high-demand categories."",
+  ""keyInsights"": [
+    ""Current enrollment growth rate indicates strong market demand"",
+    ""Top-performing courses have capacity for premium pricing"",
+    ""Student dropout rate requires immediate intervention"",
+    ""Business English and IELTS categories show highest growth potential"",
+    ""Corporate training market remains largely untapped""
+  ],
+  ""riskFactors"": [
+    ""High dropout rate of 57.9% impacting revenue and reputation"",
+    ""Over-reliance on single course category for revenue"",
+    ""Increasing competition in Ho Chi Minh City market""
+  ],
+  ""opportunities"": [
+    ""Growing corporate training demand in Vietnam"",
+    ""Online and hybrid learning expansion potential"",
+    ""Premium pricing opportunity for high-rated courses"",
+    ""Partnership opportunities with international companies""
+  ],
   ""generatedAt"": ""2024-01-01T00:00:00""
 }");
         
