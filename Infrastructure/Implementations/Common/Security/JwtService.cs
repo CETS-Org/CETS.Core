@@ -86,9 +86,9 @@ namespace Infrastructure.Implementations.Services.Security
                     new Claim(JwtRegisteredClaimNames.Email, email),
                     new Claim("otp", otp),
                     new Claim("type", "PasswordReset"),
-                    new Claim("expiresAt", DateTime.UtcNow.AddMinutes(5).ToString("o")) // ISO 8601
+                    new Claim("expiresAt", DateTime.Now.AddMinutes(5).ToString("o")) // ISO 8601
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(5),
+                Expires = DateTime.Now.AddMinutes(5),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };

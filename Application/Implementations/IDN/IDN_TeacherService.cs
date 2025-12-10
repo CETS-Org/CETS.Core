@@ -130,7 +130,7 @@ namespace Application.Implementations.IDN
 
             var teacher = _mapper.Map<IDN_Teacher>(dto);
             teacher.Id = account.Id;
-            teacher.CreatedAt = DateTime.UtcNow;
+            teacher.CreatedAt = DateTime.Now;
 
             foreach (var credDto in dto.Credentials)
             {
@@ -254,8 +254,8 @@ namespace Application.Implementations.IDN
         //    teacher.Account.Address = dto.Address ?? teacher.Account.Address;
         //    teacher.Account.AvatarUrl = dto.AvatarUrl ?? teacher.Account.AvatarUrl;
 
-        //    teacher.UpdatedAt = DateTime.UtcNow;
-        //    teacher.Account.UpdatedAt = DateTime.UtcNow;
+        //    teacher.UpdatedAt = DateTime.Now;
+        //    teacher.Account.UpdatedAt = DateTime.Now;
 
         //    _teacherRepository.Update(teacher);
         //    await _unitOfWork.SaveChangesAsync();
@@ -277,8 +277,8 @@ namespace Application.Implementations.IDN
             _mapper.Map(dto, teacher);
             _mapper.Map(dto, teacher.Account);
 
-            teacher.UpdatedAt = DateTime.UtcNow;
-            teacher.Account.UpdatedAt = DateTime.UtcNow;
+            teacher.UpdatedAt = DateTime.Now;
+            teacher.Account.UpdatedAt = DateTime.Now;
 
             Debug.WriteLine($"✅ Updating Teacher {teacher.Id}, Code={teacher.TeacherCode}, Name={teacher.Account.FullName}");
      
@@ -313,7 +313,7 @@ namespace Application.Implementations.IDN
                         {
                             Debug.WriteLine($"🔄 Updating existing credential {existing.Id}");
                             _mapper.Map(credDto, existing);
-                            existing.UpdatedAt = DateTime.UtcNow;
+                            existing.UpdatedAt = DateTime.Now;
                         }
                         else
                         {
@@ -321,7 +321,7 @@ namespace Application.Implementations.IDN
                             var newCred = _mapper.Map<IDN_TeacherCredential>(credDto);
                             newCred.Id = Guid.NewGuid();
                             newCred.TeacherID = teacherId;
-                            newCred.UpdatedAt = DateTime.UtcNow;
+                            newCred.UpdatedAt = DateTime.Now;
                             teacher.IDN_TeacherCredentials.Add(newCred);
                         }
                     }
@@ -334,7 +334,7 @@ namespace Application.Implementations.IDN
                         // Đảm bảo không bị copy Id từ DTO
                         newCred.Id = Guid.NewGuid();
                         newCred.TeacherID = teacherId;
-                        newCred.UpdatedAt = DateTime.UtcNow;
+                        newCred.UpdatedAt = DateTime.Now;
 
                         // Force trạng thái = Added
                         _teacherCredentialRepository.Add(newCred); 

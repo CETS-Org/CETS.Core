@@ -51,7 +51,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 entity.NextStep = item.NextStep;
                 entity.CustomNote = item.CustomNote;
                 entity.Status = req.Submit ? 2 : 1;
-                entity.UpdatedAt = DateTime.UtcNow;
+                entity.UpdatedAt = DateTime.Now;
             }
 
             await _db.SaveChangesAsync(ct);
