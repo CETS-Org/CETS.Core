@@ -39,7 +39,7 @@ namespace DTOs.Analytics.OverallOverview.Responses
         /// <summary>
         /// Timestamp when the data was generated
         /// </summary>
-        public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
+        public DateTime GeneratedAt { get; set; } = DateTime.Now;
 
         /// <summary>
         /// [DEPRECATED] Old structure - kept for backward compatibility

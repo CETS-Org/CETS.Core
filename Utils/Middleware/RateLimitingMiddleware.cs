@@ -55,11 +55,11 @@ namespace Utils.Middleware
                 counter = new RequestCounter
                 {
                     Count = 0,
-                    FirstRequestTime = DateTime.UtcNow
+                    FirstRequestTime = DateTime.Now
                 };
             }
 
-            var timeSinceFirstRequest = DateTime.UtcNow - counter.FirstRequestTime;
+            var timeSinceFirstRequest = DateTime.Now - counter.FirstRequestTime;
 
             // Reset counter if time window has passed
             if (timeSinceFirstRequest.TotalSeconds >= policy.WindowSeconds)
@@ -67,7 +67,7 @@ namespace Utils.Middleware
                 counter = new RequestCounter
                 {
                     Count = 1,
-                    FirstRequestTime = DateTime.UtcNow
+                    FirstRequestTime = DateTime.Now
                 };
             }
             else

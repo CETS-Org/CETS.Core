@@ -181,7 +181,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
             // 6. Tạo hoặc update attendance records
             var records = new List<AttendanceRecordResponse>();
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
 
             foreach (var student in allStudents)
             {
