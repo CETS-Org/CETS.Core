@@ -34,7 +34,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
      
         /* public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
          {
-             var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+             var today = DateOnly.FromDateTime(DateTime.Now.Date);
 
              var items = await (
                  from enroll in _context.ACAD_Enrollments
@@ -93,7 +93,7 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
        public async Task<List<LearningClassResponse>> GetLearningClassByStudentId(Guid studentId)
             {
-                var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+                var today = DateOnly.FromDateTime(DateTime.Now.Date);
             var waitingStatusId = await _lookUpRepository.GetByCodeAsync("EnrollmentStatus", "Enrolled");
 
             // 1 QUERY duy nhất, mọi thứ đều nằm trong projection

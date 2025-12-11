@@ -76,7 +76,7 @@ public class ACAD_ExitSurveyService : IACAD_ExitSurveyService
         var reasonStats = await _exitSurveyRepository.GetReasonCategoryStatisticsAsync();
         var avgRatings = await _exitSurveyRepository.GetAverageFeedbackRatingsAsync();
         
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         var startOfMonth = new DateTime(now.Year, now.Month, 1);
         var startOfYear = new DateTime(now.Year, 1, 1);
         

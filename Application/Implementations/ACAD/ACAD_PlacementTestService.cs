@@ -75,7 +75,7 @@ namespace Application.Implementations.ACAD
                     SkillTypeID = request.SkillTypeID,
                     Difficulty = request.Difficulty,
                     QuestionUrl = questionUrl ?? request.QuestionUrl,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     CreatedBy = _currentUserService.UserId ?? Guid.Empty,
                     IsDeleted = false
                 };
@@ -94,7 +94,7 @@ namespace Application.Implementations.ACAD
             {
                 var entities = new List<ACAD_PlacementQuestion>();
                 var userId = _currentUserService.UserId ?? Guid.Empty;
-                var now = DateTime.UtcNow;
+                var now = DateTime.Now;
 
                 foreach (var request in requests)
                 {
@@ -142,7 +142,7 @@ namespace Application.Implementations.ACAD
             entity.QuestionTypeID = request.QuestionTypeID;
             entity.SkillTypeID = request.SkillTypeID;
             entity.Difficulty = request.Difficulty;
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.Now;
             entity.UpdatedBy = _currentUserService.UserId;
 
             if (!string.IsNullOrEmpty(request.QuestionJson))
@@ -172,7 +172,7 @@ namespace Application.Implementations.ACAD
                 return;
 
             entity.IsDeleted = true;
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.Now;
             entity.UpdatedBy = _currentUserService.UserId;
 
             _placementQuestionRepository.Update(entity);
@@ -356,11 +356,11 @@ namespace Application.Implementations.ACAD
             return new PlacementTestResponse
             {
                 Id = Guid.Empty, // Chưa tạo trong DB
-                Title = $"Random Placement Test - {DateTime.UtcNow:yyyy-MM-dd HH:mm}",
+                Title = $"Random Placement Test - {DateTime.Now:yyyy-MM-dd HH:mm}",
                 DurationMinutes = 60,
                 StoreUrl = null,
                 Questions = questionResponses,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 UpdatedAt = null,
                 IsDeleted = false
             };
@@ -389,7 +389,7 @@ namespace Application.Implementations.ACAD
                     title = request.Title,
                     durationMinutes = request.DurationMinutes,
                     questions = questionsData,
-                    createdAt = DateTime.UtcNow
+                    createdAt = DateTime.Now
                 }, new JsonSerializerOptions { WriteIndented = true });
 
                 // Upload test JSON lên cloud
@@ -403,7 +403,7 @@ namespace Application.Implementations.ACAD
                     Title = request.Title,
                     DurationMinutes = request.DurationMinutes,
                     StoreUrl = storeUrl,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     CreatedBy = _currentUserService.UserId ?? Guid.Empty,
                     IsDeleted = false
                 };
@@ -424,7 +424,7 @@ namespace Application.Implementations.ACAD
 
                 test.Title = request.Title;
                 test.DurationMinutes = request.DurationMinutes;
-                test.UpdatedAt = DateTime.UtcNow;
+                test.UpdatedAt = DateTime.Now;
                 test.UpdatedBy = _currentUserService.UserId;
                 test.IsDeleted = request.IsDeleted;
 
@@ -450,7 +450,7 @@ namespace Application.Implementations.ACAD
                         title = request.Title,
                         durationMinutes = request.DurationMinutes,
                         questions = questionsData,
-                        updatedAt = DateTime.UtcNow
+                        updatedAt = DateTime.Now
                     }, new JsonSerializerOptions { WriteIndented = true });
 
                     // Upload test JSON mới lên cloud (có thể xóa file cũ nếu cần)
@@ -570,7 +570,7 @@ namespace Application.Implementations.ACAD
                 return;
 
             entity.IsDeleted = true;
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.Now;
             entity.UpdatedBy = _currentUserService.UserId;
 
             _placementTestRepository.Update(entity);
@@ -586,7 +586,7 @@ namespace Application.Implementations.ACAD
             // isDisabled = true means disable (set IsDeleted = true)
             // isDisabled = false means enable (set IsDeleted = false)
             entity.IsDeleted = isDisabled;
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.Now;
             entity.UpdatedBy = _currentUserService.UserId;
 
             _placementTestRepository.Update(entity);
@@ -664,7 +664,7 @@ namespace Application.Implementations.ACAD
 
                 // Update student's PlacementTestGrade sau khi học sinh hoàn thành bài test
                 student.PlacementTestGrade = request.Score;
-                student.UpdatedAt = DateTime.UtcNow;
+                student.UpdatedAt = DateTime.Now;
                 _studentRepository.Update(student);
 
                 await _unitOfWork.SaveChangesAsync();

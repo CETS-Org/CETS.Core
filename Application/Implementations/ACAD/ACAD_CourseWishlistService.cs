@@ -58,7 +58,7 @@ namespace Application.Implementations.ACAD
                 {
                     StudentId = request.StudentId,
                     CourseId = request.CourseId,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
 
                 _wishlistRepo.Add(wishlistItem);

@@ -104,8 +104,8 @@ namespace Application.Implementations.IDN
             _mapper.Map(dto, student);
 
             // Cập nhật thời gian sửa đổi
-            account.UpdatedAt = DateTime.UtcNow;
-            student.UpdatedAt = DateTime.UtcNow;
+            account.UpdatedAt = DateTime.Now;
+            student.UpdatedAt = DateTime.Now;
 
             await _unitOfWork.SaveChangesAsync();
 

@@ -27,7 +27,7 @@ namespace Domain.Entities
         /// <summary>1: draft, 2: submitted</summary>
         public int Status { get; set; } = 1;
 
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
         [ForeignKey(nameof(ClassID))]
         public virtual ACAD_Class Class { get; set; } = null!;
