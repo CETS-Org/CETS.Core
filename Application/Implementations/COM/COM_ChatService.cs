@@ -61,8 +61,8 @@ namespace Application.Implementations.COM
             }
 
             var roomEntity = _mapper.Map<COM_ChatRoom>(request);
-            roomEntity.CreatedAt = DateTime.UtcNow;
-            roomEntity.LastMessageAt = DateTime.UtcNow; // Set default để sort không bị null
+            roomEntity.CreatedAt = DateTime.Now;
+            roomEntity.LastMessageAt = DateTime.Now; // Set default để sort không bị null
 
             // Xử lý chuẩn hóa MemberIds (Unique và uppercase)
             roomEntity.MemberIds = normalizedMemberIds;
@@ -161,7 +161,7 @@ namespace Application.Implementations.COM
             }
 
             var messageEntity = _mapper.Map<COM_ChatMessage>(request);
-            messageEntity.CreatedAt = DateTime.UtcNow;
+            messageEntity.CreatedAt = DateTime.Now;
 
             try
             {

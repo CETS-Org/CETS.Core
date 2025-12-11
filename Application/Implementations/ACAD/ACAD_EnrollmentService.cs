@@ -47,7 +47,7 @@ namespace Application.Implementations.ACAD
             var enrollment = _mapper.Map<ACAD_Enrollment>(request);
             enrollment.Id = Guid.NewGuid();
             enrollment.EnrollmentStatusID = Guid.Empty;
-            enrollment.CreatedAt = DateTime.UtcNow;
+            enrollment.CreatedAt = DateTime.Now;
 
             _enrollmentRepo.Add(enrollment);
             await _unitOfWork.SaveChangesAsync();
@@ -358,7 +358,7 @@ namespace Application.Implementations.ACAD
 
                 // 3️⃣ Course progress = (Sessions đã học / tổng sessions)
                 // Sessions đã học: có attendance Present hoặc đã qua ngày
-                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+                var today = DateOnly.FromDateTime(DateTime.Now);
 
                 var completedSessions = attendances.Count(a =>
                     a.AttendanceStatus.Code == "Present" ||
@@ -517,7 +517,7 @@ namespace Application.Implementations.ACAD
                         enrollment.IsPass = false;
                     }
                     
-                    enrollment.UpdatedAt = DateTime.UtcNow;
+                    enrollment.UpdatedAt = DateTime.Now;
 
                     _enrollmentRepo.Update(enrollment);
 

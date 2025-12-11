@@ -66,7 +66,7 @@ namespace Application.Implementations.ACAD
                     AttendanceStatusID = statusId,
                     Notes = notes,
                     CheckedBy = teacherId,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
                 _attendanceRepository.Add(attendance);
                 existing = attendance;
@@ -75,7 +75,7 @@ namespace Application.Implementations.ACAD
             {
                 existing.AttendanceStatusID = statusId;
                 existing.Notes = notes;
-                existing.UpdatedAt = DateTime.UtcNow;
+                existing.UpdatedAt = DateTime.Now;
                 existing.UpdatedBy = teacherId;
                 existing.CheckedBy = teacherId;
                 _attendanceRepository.Update(existing);

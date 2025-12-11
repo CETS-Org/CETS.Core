@@ -152,7 +152,7 @@ namespace Application.Implementations.ACAD
                 {
                     CourseID = request.CourseID,
                     TeacherID = request.TeacherID,
-                    AssignedAt = DateTime.UtcNow
+                    AssignedAt = DateTime.Now
                 };
 
                 _courseAssignmentRepository.Add(entity);

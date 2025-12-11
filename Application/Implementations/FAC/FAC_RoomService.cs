@@ -52,7 +52,7 @@ namespace Application.Implementations.FAC
                 throw new Exception("Room not found");
 
             room.RoomStatusId = statusId;
-            room.UpdatedAt = DateTime.UtcNow;
+            room.UpdatedAt = DateTime.Now;
 
             _repository.Update(room);
             await _unitOfWork.SaveChangesAsync();

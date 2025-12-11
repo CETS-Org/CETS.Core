@@ -86,7 +86,7 @@ namespace Application.Implementations.ACAD
                 if (entity == null) throw new Exception("ClassMeeting not found");
 
                 _mapper.Map(request, entity);
-                entity.UpdatedAt = DateTime.UtcNow;
+                entity.UpdatedAt = DateTime.Now;
 
                 _classMeetingRepository.Update(entity);
                 await _uow.SaveChangesAsync();

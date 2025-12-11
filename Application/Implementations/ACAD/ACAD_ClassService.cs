@@ -74,7 +74,7 @@ namespace Application.Implementations.ACAD
                 entity.EnrolledCount = 0;
                 entity.IsActive = true;
                 entity.IsDeleted = false;
-                entity.CreatedAt = DateTime.UtcNow;
+                entity.CreatedAt = DateTime.Now;
 
                 _classRepo.Add(entity);
                 await _uow.SaveChangesAsync();
@@ -91,7 +91,7 @@ namespace Application.Implementations.ACAD
                 if (entity == null) throw new Exception("Class not found");
 
                 _mapper.Map(request, entity); 
-                entity.UpdatedAt = DateTime.UtcNow;
+                entity.UpdatedAt = DateTime.Now;
 
                 _classRepo.Update(entity);
                 await _uow.SaveChangesAsync();
@@ -120,7 +120,7 @@ namespace Application.Implementations.ACAD
 
                 entity.IsDeleted = true;
                 entity.IsActive = false;                 
-                entity.UpdatedAt = DateTime.UtcNow;
+                entity.UpdatedAt = DateTime.Now;
                
 
                 _classRepo.Update(entity);
@@ -196,7 +196,7 @@ namespace Application.Implementations.ACAD
                 classEntity.EnrolledCount = request.Enrollments?.Count ?? 0;
                 classEntity.IsActive = true;
                 classEntity.IsDeleted = false;
-                classEntity.CreatedAt = DateTime.UtcNow;
+                classEntity.CreatedAt = DateTime.Now;
                 _classRepo.Add(classEntity);
 
                 // ==================================================================
@@ -214,7 +214,7 @@ namespace Application.Implementations.ACAD
                         TeacherAssignmentID = request.TeacherAssignmentID,
                         IsActive = true,
                         IsDeleted = false,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.Now
                     }).ToList();
 
                     _classMeetingRepo.AddRange(meetings);
@@ -233,7 +233,7 @@ namespace Application.Implementations.ACAD
                         {
                             enrollment.ClassID = classEntity.Id;
                             enrollment.EnrollmentStatusID = STATUS_ENROLLED.LookUpId;
-                            enrollment.UpdatedAt = DateTime.UtcNow;
+                            enrollment.UpdatedAt = DateTime.Now;
                             enrollment.UpdatedBy = request.CreatedBy;
 
                             _enrollmentRepo.Update(enrollment);
@@ -429,7 +429,7 @@ namespace Application.Implementations.ACAD
                 classEntity.EnrolledCount = request.EnrollmentIds?.Count ?? 0;
 
                 classEntity.UpdatedBy = request.UpdatedBy;
-                classEntity.UpdatedAt = DateTime.UtcNow;
+                classEntity.UpdatedAt = DateTime.Now;
 
                 _classRepo.Update(classEntity);
 
@@ -466,7 +466,7 @@ namespace Application.Implementations.ACAD
                             enrollment.ClassID = classId;
                             enrollment.EnrollmentStatusID = STATUS_ENROLLED.LookUpId;
                             enrollment.UpdatedBy = request.UpdatedBy;
-                            enrollment.UpdatedAt = DateTime.UtcNow;
+                            enrollment.UpdatedAt = DateTime.Now;
 
                             // Tùy chọn: Update Invoice DueDate nếu cần thiết ở bước này
 
@@ -486,7 +486,7 @@ namespace Application.Implementations.ACAD
                             enrollment.ClassID = null; // Gỡ khỏi lớp
                             enrollment.EnrollmentStatusID = STATUS_WAITING.LookUpId; // Quay về hàng chờ
                             enrollment.UpdatedBy = request.UpdatedBy;
-                            enrollment.UpdatedAt = DateTime.UtcNow;
+                            enrollment.UpdatedAt = DateTime.Now;
 
                             _enrollmentRepo.Update(enrollment);
                         }

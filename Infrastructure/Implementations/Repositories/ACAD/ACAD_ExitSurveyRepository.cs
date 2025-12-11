@@ -80,7 +80,7 @@ public class ACAD_ExitSurveyRepository : IACAD_ExitSurveyRepository
             document.AcademicRequestId = document.AcademicRequestId.ToUpperInvariant();
         }
         
-        document.CreatedAt = DateTime.UtcNow;
+        document.CreatedAt = DateTime.Now;
         await _collection.InsertOneAsync(document);
         return document;
     }

@@ -88,7 +88,7 @@ namespace Application.Implementations.COM
 						ContentClarity = request.CourseFeedback.ContentClarity,
 						CourseRelevance = request.CourseFeedback.CourseRelevance,
 						MaterialsQuality = request.CourseFeedback.MaterialsQuality,
-						CreatedAt = DateTime.UtcNow,
+						CreatedAt = DateTime.Now,
 						IsDeleted = false
 					};
 
@@ -111,7 +111,7 @@ namespace Application.Implementations.COM
 						TeachingEffectiveness = request.TeacherFeedback.TeachingEffectiveness,
 						CommunicationSkills = request.TeacherFeedback.CommunicationSkills,
 						TeacherSupportiveness = request.TeacherFeedback.TeacherSupportiveness,
-						CreatedAt = DateTime.UtcNow,
+						CreatedAt = DateTime.Now,
 						IsDeleted = false
 					};
 

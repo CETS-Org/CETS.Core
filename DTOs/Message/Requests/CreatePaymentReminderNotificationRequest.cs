@@ -24,7 +24,7 @@ namespace DTOs.Message.Requests
         /// </summary>
         public NotificationType NotificationType { get; set; } = NotificationType.All;
         
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
     
     public enum NotificationType
