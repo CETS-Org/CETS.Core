@@ -38,7 +38,7 @@ namespace Infrastructure.Implementations.Common.Email.EmailTemplates
             return template
                 .Replace("{{StudentName}}", studentName)
                 .Replace("{{ClassName}}", className)
-                .Replace("{{StartDate}}", startDate.ToString("dd MMM yyyy"))
+                .Replace("{{StartDate}}", startDate.ToString("dd MM yyyy"))
                 .Replace("{{ContinueUrl}}", continueUrl)
                 .Replace("{{RefundUrl}}", refundUrl);
         }

@@ -13,10 +13,13 @@ namespace Infrastructure.Implementations.Repositories.FIN
         }
         public async Task<int> GetNextSequenceInvoiceIdAsync()
         {
-            return (int)(await _context.FIN_Invoices
+            var maxSequence = await _context.FIN_Invoices
                     .OrderByDescending(i => i.InvoiceSequence)
                     .Select(i => i.InvoiceSequence)
-                    .FirstOrDefaultAsync() + 1);
+                    .FirstOrDefaultAsync();
+            
+            // If no invoices exist, start with sequence 1
+            return maxSequence.HasValue ? maxSequence.Value + 1 : 1;
         }
 
         public async Task<IEnumerable<FIN_Invoice>> GetUnpaidInvoicesByStudentAsync(Guid studentId)

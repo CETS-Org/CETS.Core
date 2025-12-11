@@ -712,8 +712,8 @@ namespace Application.Implementations.ACAD
                     return;
 
                 var subject = "Dropout Request Submitted - CETS";
-                var effectiveDate = request.EffectiveDate?.ToString("MMMM dd, yyyy") ?? "Not specified";
-                var submissionDate = DateTime.Now.ToString("MMMM dd, yyyy");
+                var effectiveDate = request.EffectiveDate?.ToString("dd MMM yyyy") ?? "Not specified";
+                var submissionDate = DateTime.Now.ToString("dd MMM yyyy");
 
                 var body = _emailTemplateBuilder.BuildDropoutRequestSubmittedEmail(
                     studentName: student.FullName ?? "Student",
