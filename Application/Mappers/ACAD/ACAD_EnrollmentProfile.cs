@@ -41,7 +41,8 @@ namespace Application.Mappers.ACAD
                         .ToList()
                     : new List<string>()))
             .ForMember(dest => dest.EnrollmentStatus, opt => opt.MapFrom(src => src.EnrollmentStatus.Name != null ? src.EnrollmentStatus.Name.ToString() : string.Empty))
-            .ForMember(dest => dest.ClassName, opt => opt.MapFrom(src => src.Class != null ? src.Class.ClassName : null));
+            .ForMember(dest => dest.ClassName, opt => opt.MapFrom(src => src.Class != null ? src.Class.ClassName : null))
+            .ForMember(dest => dest.ClassId, opt => opt.MapFrom(src => src.ClassID));
 
 
             CreateMap<ACAD_Enrollment, CourseItemResponse>()
