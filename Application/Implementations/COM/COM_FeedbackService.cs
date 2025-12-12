@@ -31,6 +31,85 @@ namespace Application.Implementations.COM
 			_courseRepository = courseRepository;
 		}
 
+		/// <summary>
+		/// Override CreateAsync to update course average rating after creating feedback
+		/// </summary>
+		public override async Task<FeedbackResponse> CreateAsync(CreateFeedbackRequest createDto)
+		{
+			var entity = _mapper.Map<COM_Feedback>(createDto);
+			entity.CreatedAt = DateTime.Now;
+			entity.IsDeleted = false;
+
+			_repository.Add(entity);
+			await _unitOfWork.SaveChangesAsync();
+
+			// Update course average rating if this is a course feedback
+			if (entity.CourseID.HasValue && entity.Rating.HasValue)
+			{
+				var feedbackTypes = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.FeedbackType);
+				var courseFeedbackType = feedbackTypes.FirstOrDefault(ft => ft.Code == "ForCourse");
+				
+				if (courseFeedbackType != null && entity.FeedbackTypeID == courseFeedbackType.LookUpId)
+				{
+					await UpdateCourseAverageRatingAsync(entity.CourseID.Value, courseFeedbackType.LookUpId);
+				}
+			}
+
+			return _mapper.Map<FeedbackResponse>(entity);
+		}
+
+		/// <summary>
+		/// Override UpdateAsync to update course average rating after updating feedback
+		/// </summary>
+		public override async Task<FeedbackResponse> UpdateAsync(Guid id, UpdateFeedbackRequest dto)
+		{
+			var entity = await _repository.GetByIdAsync(id);
+
+			if (entity == null)
+			{
+				throw new KeyNotFoundException($"COM_Feedback with id {id} not found.");
+			}
+
+			var courseIdBeforeUpdate = entity.CourseID;
+			var feedbackTypeIdBeforeUpdate = entity.FeedbackTypeID;
+			
+			// Get feedback types once for reuse
+			var feedbackTypes = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.FeedbackType);
+			var courseFeedbackType = feedbackTypes.FirstOrDefault(ft => ft.Code == "ForCourse");
+
+			_mapper.Map(dto, entity);
+			_repository.Update(entity);
+			await _unitOfWork.SaveChangesAsync();
+
+			// Update course average rating if this is a course feedback
+			if (entity.CourseID.HasValue && entity.Rating.HasValue)
+			{
+				if (courseFeedbackType != null && entity.FeedbackTypeID == courseFeedbackType.LookUpId)
+				{
+					await UpdateCourseAverageRatingAsync(entity.CourseID.Value, courseFeedbackType.LookUpId);
+				}
+
+				// Also update the previous course if the course changed
+				if (courseIdBeforeUpdate.HasValue && courseIdBeforeUpdate != entity.CourseID)
+				{
+					if (courseFeedbackType != null && feedbackTypeIdBeforeUpdate.HasValue && feedbackTypeIdBeforeUpdate.Value == courseFeedbackType.LookUpId)
+					{
+						await UpdateCourseAverageRatingAsync(courseIdBeforeUpdate.Value, courseFeedbackType.LookUpId);
+					}
+				}
+			}
+			else if (courseIdBeforeUpdate.HasValue)
+			{
+				// If rating was removed, update the previous course
+				if (courseFeedbackType != null && feedbackTypeIdBeforeUpdate.HasValue && feedbackTypeIdBeforeUpdate.Value == courseFeedbackType.LookUpId)
+				{
+					await UpdateCourseAverageRatingAsync(courseIdBeforeUpdate.Value, courseFeedbackType.LookUpId);
+				}
+			}
+
+			return _mapper.Map<FeedbackResponse>(entity);
+		}
+
 		public async Task<FeedbackResponse> SoftDeleteAsync(Guid id)
 		{
 			var entity = await _repository.GetByIdAsync(id);
@@ -38,9 +117,26 @@ namespace Application.Implementations.COM
 			{
 				throw new KeyNotFoundException($"COM_Feedback with id {id} not found.");
 			}
+			
+			var courseId = entity.CourseID;
+			var feedbackTypeId = entity.FeedbackTypeID;
+			
 			entity.IsDeleted = true;
 			_repository.Update(entity);
 			await _unitOfWork.SaveChangesAsync();
+
+			// Update course average rating if this was a course feedback
+			if (courseId.HasValue)
+			{
+				var feedbackTypes = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.FeedbackType);
+				var courseFeedbackType = feedbackTypes.FirstOrDefault(ft => ft.Code == "ForCourse");
+				
+				if (courseFeedbackType != null && feedbackTypeId == courseFeedbackType.LookUpId)
+				{
+					await UpdateCourseAverageRatingAsync(courseId.Value, courseFeedbackType.LookUpId);
+				}
+			}
+
 			return _mapper.Map<FeedbackResponse>(entity);
         }
 
@@ -51,9 +147,26 @@ namespace Application.Implementations.COM
 			{
 				throw new KeyNotFoundException($"COM_Feedback with id {id} not found.");
 			}
+			
+			var courseId = entity.CourseID;
+			var feedbackTypeId = entity.FeedbackTypeID;
+			
 			entity.IsDeleted = false;
 			_repository.Update(entity);
 			await _unitOfWork.SaveChangesAsync();
+
+			// Update course average rating if this is a course feedback
+			if (courseId.HasValue && entity.Rating.HasValue)
+			{
+				var feedbackTypes = await _lookUpService.GetByTypeCodeAsync(LookUpTypes.FeedbackType);
+				var courseFeedbackType = feedbackTypes.FirstOrDefault(ft => ft.Code == "ForCourse");
+				
+				if (courseFeedbackType != null && feedbackTypeId == courseFeedbackType.LookUpId)
+				{
+					await UpdateCourseAverageRatingAsync(courseId.Value, courseFeedbackType.LookUpId);
+				}
+			}
+
 			return _mapper.Map<FeedbackResponse>(entity);
 		}
 

@@ -54,7 +54,7 @@ namespace Application.Mappers.ACAD
                 
                 // Course statistics
                 .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => 
-                    src.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).Sum(i => i.TotalSlots ?? 0) + " slots"))
+                    src.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).Sum(i => i.TotalSlots ?? 0) + " sessions"))
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => 
                     (double)(src.AverageRating ?? 0)))
                 .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src => 
