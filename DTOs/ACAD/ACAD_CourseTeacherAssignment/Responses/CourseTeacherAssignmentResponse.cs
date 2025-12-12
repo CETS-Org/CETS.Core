@@ -6,13 +6,15 @@ namespace DTOs.ACAD.ACAD_CourseTeacherAssignment.Responses
     {
         public Guid Id { get; set; }
         public Guid AssignmentId { get; set; }
+        
         public Guid CourseID { get; set; }
+        
         public Guid TeacherID { get; set; }
         public DateTime AssignedAt { get; set; }
 
         // Properties from HEAD branch
         public string? CourseName { get; set; }
-        public string? CourseId { get; set; }
+        
         public string? FullName { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }
