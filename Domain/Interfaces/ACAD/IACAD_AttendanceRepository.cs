@@ -10,7 +10,9 @@ namespace Domain.Interfaces.ACAD
         Task<IEnumerable<ACAD_Attendance>> GetByStudentAsync(Guid studentId);
         Task<ACAD_Attendance?> GetByMeetingAndStudentAsync(Guid meetingId, Guid studentId);
         Task<int> CountTotalMeetingsByCourseAsync(Guid courseId);
+        Task<int> CountTotalMeetingsByClassAsync(Guid? classId);
         Task<List<ACAD_Attendance>> GetByStudentAndCourseAsync(Guid studentId, Guid courseId);
+        Task<List<ACAD_Attendance>> GetByStudentAndClassAsync(Guid studentId, Guid? classId);
         Task<IEnumerable<StudentAttendanceListResponse>> GetStudentsByClassForAttendanceAsync(Guid classId, Guid? classMeetingId = null);
         Task<BulkAttendanceResponse> BulkMarkAttendanceAsync(BulkAttendanceRequest request);
     }
