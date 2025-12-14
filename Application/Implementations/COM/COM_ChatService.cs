@@ -7,6 +7,7 @@ using Domain.Interfaces.COM;
 using DTOs.COM.COM_Chat.Requests;
 using DTOs.COM.COM_Chat.Responses;
 using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -189,6 +190,29 @@ namespace Application.Implementations.COM
             // Đảo ngược lại danh sách để trả về client hiển thị đúng thứ tự (từ cũ đến mới) nếu cần
             // Hoặc để nguyên nếu client tự sort. Ở đây trả về đúng thứ tự DB trả ra (Mới nhất -> Cũ nhất)
             return _mapper.Map<List<ChatMessageResponse>>(messages);
+        }
+
+        public async Task UpdateGroupMembersByRoomNameAsync(string roomName, List<string> newMemberIds)
+        {
+            if (string.IsNullOrWhiteSpace(roomName)) return;
+
+            // 1. Tìm phòng chat theo Tên (Giả sử tên phòng = tên lớp)
+            // Cần thêm hàm GetRoomByNameAsync trong Repo nếu chưa có, hoặc dùng GetRooms và lọc
+            // Ở đây tôi giả định bạn sẽ viết thêm hàm GetRoomByNameAsync trong Repo cho tối ưu
+            // Hoặc dùng filter đơn giản:
+            var filter = Builders<COM_ChatRoom>.Filter.And(
+                Builders<COM_ChatRoom>.Filter.Eq(x => x.Name, roomName),
+                Builders<COM_ChatRoom>.Filter.Eq(x => x.Type, "group")
+            );
+
+            // Lưu ý: Đây là logic query trực tiếp, tốt nhất nên nằm ở Repo. 
+            // Tôi sẽ viết giả định Repo có hàm GetGroupRoomByNameAsync
+            var room = await _repository.GetGroupRoomByNameAsync(roomName);
+
+            if (room != null)
+            {
+                await _repository.UpdateRoomMembersAsync(room.Id, newMemberIds);
+            }
         }
     }
 }

@@ -405,99 +405,140 @@ namespace Application.Implementations.ACAD
         }
 
 
-        public async Task UpdateClassCompositeAsync(Guid classId, UpdateClassCompositeRequest request)
-        {
-            // [CONSTANTS]
-            var STATUS_ENROLLED = await _lookUpService.GetByCodeAsync("EnrollmentStatus", "Enrolled");
-            var STATUS_WAITING = await _lookUpService.GetByCodeAsync("EnrollmentStatus", "Pending");
-
-            await _uow.ExecuteInTransactionAsync(async () =>
+            public async Task UpdateClassCompositeAsync(Guid classId, UpdateClassCompositeRequest request)
             {
-                // ==================================================================
-                // 1. UPDATE CLASS INFO
-                // ==================================================================
-                var classEntity = await _classRepo.GetByIdAsync(classId);
-                if (classEntity == null) throw new KeyNotFoundException("Class not found.");
+                // [1] Lấy các Constant trạng thái từ Lookup Service (để tránh hardcode ID)
+                var STATUS_ENROLLED = await _lookUpService.GetByCodeAsync("EnrollmentStatus", "Enrolled");
+                var STATUS_WAITING = await _lookUpService.GetByCodeAsync("EnrollmentStatus", "Pending"); // Hoặc "Waiting" tùy DB của bạn
 
-                classEntity.ClassName = request.ClassName;
-                classEntity.TeacherAssignmentID = request.TeacherAssignmentID;
-                classEntity.StartDate = request.StartDate;
-                classEntity.EndDate = request.EndDate;
-                classEntity.Capacity = request.Capacity;
-
-                // Cập nhật sĩ số mới dựa trên danh sách Enrollment gửi lên
-                classEntity.EnrolledCount = request.EnrollmentIds?.Count ?? 0;
-
-                classEntity.UpdatedBy = request.UpdatedBy;
-                classEntity.UpdatedAt = DateTime.Now;
-
-                _classRepo.Update(classEntity);
-
-                // ==================================================================
-                // 2. SYNC ENROLLMENTS (Dựa trên EnrollmentId)
-                // ==================================================================
-                if (request.EnrollmentIds != null)
+                await _uow.ExecuteInTransactionAsync(async () =>
                 {
-                    // A. Lấy danh sách EnrollmentId hiện tại của lớp
-                    // Dùng GetQueryable (hoặc GetAllAsync) để lấy list ID
-                    var currentClassEnrollments = await _enrollmentRepo.GetQueryable()
-                        .Where(e => e.ClassID == classId && !e.IsDeleted)
-                        .ToListAsync();
+                    // ==================================================================
+                    // 1. UPDATE CLASS INFO (Cập nhật thông tin lớp)
+                    // ==================================================================
+                    var classEntity = await _classRepo.GetByIdAsync(classId);
+                    if (classEntity == null) throw new KeyNotFoundException("Class not found.");
 
-                    var currentEnrollmentIds = currentClassEnrollments.Select(e => e.Id).ToList();
-                    var newEnrollmentIds = request.EnrollmentIds; // List<Guid> từ Request
+                    classEntity.ClassName = request.ClassName;
+                    classEntity.TeacherAssignmentID = request.TeacherAssignmentID;
+                    classEntity.StartDate = request.StartDate;
+                    classEntity.EndDate = request.EndDate;
+                    classEntity.Capacity = request.Capacity;
 
-                    // B. Phân loại: Cần Thêm và Cần Xóa
-                    var enrollmentsToAdd = newEnrollmentIds.Except(currentEnrollmentIds).ToList();
-                    var enrollmentsToRemove = currentEnrollmentIds.Except(newEnrollmentIds).ToList();
+                    // Cập nhật sĩ số: Đếm số lượng ID gửi lên
+                    classEntity.EnrolledCount = request.EnrollmentIds?.Count ?? 0;
 
-                    // --- B1. Xử lý THÊM (Waiting -> Enrolled) ---
-                    if (enrollmentsToAdd.Any())
+                    classEntity.UpdatedBy = request.UpdatedBy;
+                    classEntity.UpdatedAt = DateTime.Now;
+
+                    _classRepo.Update(classEntity);
+
+                    // ==================================================================
+                    // 2. SYNC ENROLLMENTS (Đồng bộ danh sách học sinh)
+                    // ==================================================================
+                    if (request.EnrollmentIds != null)
                     {
-                        // Tìm các Enrollment đang Waiting theo ID
-                        var waitingEnrollments = await _enrollmentRepo.GetQueryable()
-                            .Where(e => enrollmentsToAdd.Contains(e.Id)
-                                        && e.ClassID == null // Chỉ lấy nếu chưa có lớp
-                                        && !e.IsDeleted)
+                        // A. Lấy danh sách EnrollmentId hiện tại của lớp
+                        var currentClassEnrollments = await _enrollmentRepo.GetQueryable()
+                            .Where(e => e.ClassID == classId && !e.IsDeleted)
                             .ToListAsync();
 
-                        foreach (var enrollment in waitingEnrollments)
+                        var currentEnrollmentIds = currentClassEnrollments.Select(e => e.Id).ToList();
+                        var newEnrollmentIds = request.EnrollmentIds;
+
+                        // B. Phân loại: Cần Thêm và Cần Xóa
+                        var enrollmentsToAdd = newEnrollmentIds.Except(currentEnrollmentIds).ToList();
+                        var enrollmentsToRemove = currentEnrollmentIds.Except(newEnrollmentIds).ToList();
+
+                        // --- B1. Xử lý THÊM (Waiting -> Enrolled) ---
+                        if (enrollmentsToAdd.Any())
                         {
-                            enrollment.ClassID = classId;
-                            enrollment.EnrollmentStatusID = STATUS_ENROLLED.LookUpId;
-                            enrollment.UpdatedBy = request.UpdatedBy;
-                            enrollment.UpdatedAt = DateTime.Now;
+                            var waitingEnrollments = await _enrollmentRepo.GetQueryable()
+                                .Where(e => enrollmentsToAdd.Contains(e.Id)
+                                            && e.ClassID == null // Chỉ lấy nếu chưa có lớp
+                                            && !e.IsDeleted)
+                                .ToListAsync();
 
-                            // Tùy chọn: Update Invoice DueDate nếu cần thiết ở bước này
+                            foreach (var enrollment in waitingEnrollments)
+                            {
+                                enrollment.ClassID = classId;
+                                enrollment.EnrollmentStatusID = STATUS_ENROLLED.LookUpId;
+                                enrollment.UpdatedBy = request.UpdatedBy;
+                                enrollment.UpdatedAt = DateTime.Now;
 
-                            _enrollmentRepo.Update(enrollment);
+                                _enrollmentRepo.Update(enrollment);
+                            }
+                        }
+
+                        // --- B2. Xử lý XÓA (Enrolled -> Waiting) ---
+                        if (enrollmentsToRemove.Any())
+                        {
+                            var enrollmentsToKick = currentClassEnrollments
+                                .Where(e => enrollmentsToRemove.Contains(e.Id))
+                                .ToList();
+
+                            foreach (var enrollment in enrollmentsToKick)
+                            {
+                                enrollment.ClassID = null; // Gỡ khỏi lớp
+                                enrollment.EnrollmentStatusID = STATUS_WAITING.LookUpId; // Quay về hàng chờ
+                                enrollment.UpdatedBy = request.UpdatedBy;
+                                enrollment.UpdatedAt = DateTime.Now;
+
+                                _enrollmentRepo.Update(enrollment);
+                            }
                         }
                     }
 
-                    // --- B2. Xử lý XÓA (Enrolled -> Waiting) ---
-                    if (enrollmentsToRemove.Any())
+                    // ==================================================================
+                    // 3. COMMIT DATABASE (Lưu SQL trước)
+                    // ==================================================================
+                    await _uow.SaveChangesAsync();
+
+                    // ==================================================================
+                    // 4. SIDE-EFFECTS: Đồng bộ nhóm Chat (MongoDB)
+                    // ==================================================================
+                    try
                     {
-                        var enrollmentsToKick = currentClassEnrollments
-                            .Where(e => enrollmentsToRemove.Contains(e.Id))
-                            .ToList();
+                        // A. Tạo danh sách thành viên CHUẨN (Giáo viên + Học sinh đang Active)
+                        var chatMemberIds = new List<string>();
 
-                        foreach (var enrollment in enrollmentsToKick)
+                        // 4.1 Lấy ID Giáo viên (nếu có)
+                        if (request.TeacherAssignmentID.HasValue)
                         {
-                            enrollment.ClassID = null; // Gỡ khỏi lớp
-                            enrollment.EnrollmentStatusID = STATUS_WAITING.LookUpId; // Quay về hàng chờ
-                            enrollment.UpdatedBy = request.UpdatedBy;
-                            enrollment.UpdatedAt = DateTime.Now;
+                            var teacherAssign = await _courseTeacherAssignmentService.GetByIdAsync(request.TeacherAssignmentID.Value);
+                            if (teacherAssign?.Teacher?.Account != null)
+                            {
+                                chatMemberIds.Add(teacherAssign.Teacher.Account.Id.ToString().ToUpperInvariant());
+                            }
+                        }
 
-                            _enrollmentRepo.Update(enrollment);
+                        // 4.2 Lấy ID Học sinh (Query lại DB để lấy danh sách "Sạch" nhất sau khi Add/Remove)
+                        // Chỉ lấy những người có Status là ENROLLED
+                        var currentStudents = await _enrollmentRepo.GetQueryable()
+                            .Where(e => e.ClassID == classId
+                                        && !e.IsDeleted
+                                        && e.EnrollmentStatusID == STATUS_ENROLLED.LookUpId)
+                            .Select(e => e.StudentID.ToString().ToUpperInvariant())
+                            .ToListAsync();
+
+                        chatMemberIds.AddRange(currentStudents);
+
+                        // B. Gọi Chat Service để cập nhật (Ghi đè danh sách mới vào Mongo)
+                        // Giả định Tên nhóm chat == Tên lớp (ClassName)
+                        if (chatMemberIds.Any())
+                        {
+                            await _chatService.UpdateGroupMembersByRoomNameAsync(classEntity.ClassName, chatMemberIds);
                         }
                     }
-                }
+                    catch (Exception ex)
+                    {
+                        // Log warning để không làm rollback transaction chính
+                        Console.WriteLine($"[Warning] Failed to sync chat members for ClassID: {classId}. Error: {ex.Message}");
+                    }
 
-                // 3. Commit
-                await _uow.SaveChangesAsync();
-                return true;
-            });
-        }
+                    return true;
+                });
+            }
 
 
 
