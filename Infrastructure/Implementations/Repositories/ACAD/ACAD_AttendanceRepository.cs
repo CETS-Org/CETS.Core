@@ -50,6 +50,29 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .CountAsync();
         }
 
+        public async Task<int> CountTotalMeetingsByClassAsync(Guid? classId)
+        {
+            return await _context.ACAD_ClassMeetings
+                            .Where(m => !m.IsDeleted &&
+                                        m.ClassID == classId)
+                            .CountAsync();
+        }
+
+        public async Task<List<ACAD_Attendance>> GetByStudentAndClassAsync(Guid studentId, Guid? classId)
+        {
+            return await _context.ACAD_Attendances
+                .Include(a => a.AttendanceStatus)
+                .Include(a => a.CheckedByNavigation).ThenInclude(u => u.Account)
+                .Include(a => a.Meeting).ThenInclude(m => m.Class)
+                .Include(a => a.Meeting).ThenInclude(m => m.CoveredTopic)
+                .Include(a => a.Meeting).ThenInclude(m => m.Slot)
+                .Include(a => a.Meeting).ThenInclude(m => m.Room)
+                .Include(a => a.Meeting).ThenInclude(m => m.TeacherAssignment)
+                .Where(a => a.StudentID == studentId &&
+                            a.Meeting.ClassID == classId)
+                .ToListAsync();
+        }
+
 
         public async Task<List<ACAD_Attendance>> GetByStudentAndCourseAsync(Guid studentId, Guid courseId)
         {
