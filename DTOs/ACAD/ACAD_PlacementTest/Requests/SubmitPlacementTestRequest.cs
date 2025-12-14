@@ -14,7 +14,7 @@ namespace DTOs.ACAD.ACAD_PlacementTest.Requests
         public string AnswerData { get; set; } = null!; // JSON string chứa câu trả lời của học sinh
         */
         [Required]
-        [Range(0, 100)]
+        [Range(0, 900)]
         public decimal Score { get; set; }
     }
 }

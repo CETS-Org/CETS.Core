@@ -9,13 +9,8 @@ using Domain.Interfaces.CORE;
 using Domain.Interfaces.IDN;
 using DTOs.ACAD.ACAD_PlacementTest.Requests;
 using DTOs.ACAD.ACAD_PlacementTest.Responses;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Application.Implementations.ACAD
 {
@@ -646,29 +641,33 @@ namespace Application.Implementations.ACAD
 
         public async Task SubmitPlacementTestAsync(SubmitPlacementTestRequest request)
         {
-            await _unitOfWork.ExecuteInTransactionAsync(async () =>
-            {
+           /* await _unitOfWork.ExecuteInTransactionAsync(async () =>
+            {*/
                 // Validate placement test exists
                 var placementTest = await _placementTestRepository.GetByIdAsync(request.PlacementTestId);
                 if (placementTest == null || placementTest.IsDeleted)
                     throw new KeyNotFoundException("Placement test not found");
 
                 // Validate student exists
-                var student = await _studentRepository.GetByIdAsync(request.StudentId);
+                var student = await _studentRepository.GetStudentWithAccountAsync(request.StudentId);
                 if (student == null || student.IsDeleted)
                     throw new KeyNotFoundException("Student not found");
 
-                // Validate score range
-                if (request.Score < 0 || request.Score > 100)
-                    throw new ArgumentException("Score must be between 0 and 100");
+                // Validate score range (placement test now uses 0-900 scale)
+                if (request.Score < 0 || request.Score > 900)
+                    throw new ArgumentException("Score must be between 0 and 900");
+
+                // Round score to 2 decimal places to match Precision(5,2) in database
+                var roundedScore = Math.Round(request.Score, 2);
 
                 // Update student's PlacementTestGrade sau khi học sinh hoàn thành bài test
-                student.PlacementTestGrade = request.Score;
+                student.PlacementTestGrade = roundedScore;
                 student.UpdatedAt = DateTime.Now;
+                student.UpdatedBy = _currentUserService.UserId;
                 _studentRepository.Update(student);
 
                 await _unitOfWork.SaveChangesAsync();
-            });
+           // });
         }
 
         public async Task<string> GetQuestionDataUrlAsync(Guid id)
