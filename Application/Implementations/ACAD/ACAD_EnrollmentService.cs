@@ -343,10 +343,11 @@ namespace Application.Implementations.ACAD
             foreach (var e in enrollments)
             {
                 var course = e.Course;
+                var classId = e.ClassID;
                 var courseId = course.Id;
 
                 // 1️⃣ Tổng số session trong syllabus
-                var totalSessions = await _attendanceRepo.CountTotalMeetingsByCourseAsync(courseId);
+               var totalSessions = await _attendanceRepo.CountTotalMeetingsByClassAsync(classId);
 
                 // 2️⃣ Attendance stats
                 var attendances = await _attendanceRepo.GetByStudentAndCourseAsync(studentId, courseId);
