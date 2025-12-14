@@ -1,11 +1,12 @@
-﻿using Domain.Data;
+﻿using AutoMapper;
+using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.ACAD;
 using DTOs.ACAD.ACAD_Course.Responses;
 using DTOs.ACAD.ACAD_Course.Search;
-using Microsoft.EntityFrameworkCore;
-using AutoMapper;
 using Infrastructure.Implementations.Repositories;
+using Microsoft.EntityFrameworkCore;
+using static DTOs.ACAD.ACAD_Course.Search.CourseSearchResult;
 
 namespace Infrastructure.Implementations.Repositories.ACAD
 {
@@ -120,6 +121,54 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     .ThenInclude(e => e.EnrollmentStatus);
         }
 
+        private IQueryable<ACAD_Course> CreateFacetBaseQuery()
+        {
+            return _context.ACAD_Courses
+                .Where(c => c.IsActive && !c.IsDeleted);
+        }
+
+        
+        private async Task<List<FacetItem>> BuildLevelFacetAsync(
+    CourseSearchQuery q,
+    CancellationToken ct)
+        {
+            var query = CreateFacetBaseQuery();
+            query = ApplyFacetFilters(query, q, FacetDimension.Level);
+
+            var counts = await query
+                .GroupBy(c => c.CourseLevelID)
+                .Select(g => new
+                {
+                    LevelId = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync(ct);
+
+            var levelIds = counts.Select(x => x.LevelId).ToList();
+
+            var labels = await _context.CORE_LookUps
+                .Where(l => levelIds.Contains(l.Id))
+                .ToDictionaryAsync(l => l.Id, l => l.Name, ct);
+            return counts
+                .Select(x => new FacetItem
+                {
+                    Key = x.LevelId.ToString(),
+                    Label = labels.GetValueOrDefault(x.LevelId),
+                    Count = x.Count,
+                    Selected = q.LevelIds.Contains(x.LevelId)
+                })
+                .OrderByDescending(x => x.Count)
+                .ToList();
+        }
+
+        private async Task BuildFacetsAsync(
+            CourseSearchResult result,
+            CourseSearchQuery q,
+            CancellationToken ct)
+        {
+                    result.Facets["levels"] = await BuildLevelFacetAsync(q, ct);
+        }
+
         public async Task<CourseSearchResult> SearchBasicAsync(CourseSearchQuery q, CancellationToken ct)
         {
             var baseQ = BuildBaseQuery();
@@ -194,6 +243,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .GroupBy(cs => cs.SkillID)
                 .Select(g => new { Id = g.Key, Count = g.Count() })
                 .ToListAsync(ct);
+
+            //var skillCounts = await GetFacetBaseQuery(q, FacetDimension.Skill)
+            //    .SelectMany(c => c.ACAD_CourseSkills)
+            //    .GroupBy(cs => cs.SkillID)
+            //    .Select(g => new
+            //    {
+            //        Id = g.Key,
+            //        Count = g.Select(x => x.CourseID).Distinct().Count()
+            //    })
+            //    .ToListAsync(ct);
+
 
             var skillIds = skillCounts.Select(x => x.Id).ToList();
             var skillLabels = await _context.Set<CORE_LookUp>()
@@ -332,7 +392,11 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
         private static IQueryable<ACAD_Course> ApplyFilters(IQueryable<ACAD_Course> query, CourseSearchQuery q)
         {
-            if (q.LevelIds.Count > 0) query = query.Where(c => q.LevelIds.Contains(c.CourseLevelID));
+            //if (q.LevelIds.Count > 0) query = query.Where(c => q.LevelIds.Contains(c.CourseLevelID));
+            query = query.Where(c =>
+                q.SkillIds.All(skillId =>
+                    c.ACAD_CourseSkills.Any(cs => cs.SkillID == skillId)));
+
             if (q.CategoryIds.Count > 0) query = query.Where(c => q.CategoryIds.Contains(c.CategoryID));
             if (q.SkillIds.Count > 0) query = query.Where(c => c.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID)));
             if (q.RequirementIds.Count > 0) query = query.Where(c => c.ACAD_CourseRequirements.Any(cr => q.RequirementIds.Contains(cr.RequirementID)));
@@ -403,34 +467,58 @@ namespace Infrastructure.Implementations.Repositories.ACAD
             return query;
         }
 
-        private static IQueryable<ACAD_Course> ApplyFacetFilters(IQueryable<ACAD_Course> query, CourseSearchQuery q, FacetDimension facet)
+        //private static IQueryable<ACAD_Course> ApplyFacetFilters(IQueryable<ACAD_Course> query, CourseSearchQuery q, FacetDimension facet)
+        //{
+        //    if (facet != FacetDimension.Level && q.LevelIds.Count > 0)
+        //        query = query.Where(c => q.LevelIds.Contains(c.CourseLevelID));
+        //    if (facet != FacetDimension.Category && q.CategoryIds.Count > 0)
+        //        query = query.Where(c => q.CategoryIds.Contains(c.CategoryID));
+        //    if (facet != FacetDimension.Skill && q.SkillIds.Count > 0)
+        //        query = query.Where(c => c.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID)));
+        //    if (facet != FacetDimension.Requirement && q.RequirementIds.Count > 0)
+        //        query = query.Where(c => c.ACAD_CourseRequirements.Any(cr => q.RequirementIds.Contains(cr.RequirementID)));
+        //    if (facet != FacetDimension.Benefit && q.BenefitIds.Count > 0)
+        //        query = query.Where(c => c.ACAD_CourseBenefits.Any(cb => q.BenefitIds.Contains(cb.BenefitID)));
+
+        //    if (facet != FacetDimension.DayOfWeek && facet != FacetDimension.TimeSlot)
+        //    {
+        //        if (q.DaysOfWeek.Count > 0) query = query.Where(c => c.ACAD_CourseSchedules.Any(s => q.DaysOfWeek.Contains(s.DayOfWeek)));
+        //        if (q.TimeSlotIds.Count > 0) query = query.Where(c => c.ACAD_CourseSchedules.Any(s => q.TimeSlotIds.Contains(s.TimeSlotID)));
+        //        if (q.TimeSlotNames.Count > 0) query = query.Where(c => c.ACAD_CourseSchedules.Any(s => q.TimeSlotNames.Contains(s.TimeSlot.Name)));
+        //    }
+
+        //    if (q.PriceMin.HasValue) query = query.Where(c => c.StandardPrice >= q.PriceMin.Value);
+        //    if (q.PriceMax.HasValue) query = query.Where(c => c.StandardPrice <= q.PriceMax.Value);
+
+        //    return query;
+        //}
+
+
+        private IQueryable<ACAD_Course> ApplyFacetFilters(
+            IQueryable<ACAD_Course> query,
+            CourseSearchQuery q,
+            FacetDimension currentFacet)
         {
-            if (facet != FacetDimension.Level && q.LevelIds.Count > 0)
+            if (currentFacet != FacetDimension.Level && q.LevelIds.Any())
                 query = query.Where(c => q.LevelIds.Contains(c.CourseLevelID));
-            if (facet != FacetDimension.Category && q.CategoryIds.Count > 0)
+
+            if (currentFacet != FacetDimension.Category && q.CategoryIds.Any())
                 query = query.Where(c => q.CategoryIds.Contains(c.CategoryID));
-            if (facet != FacetDimension.Skill && q.SkillIds.Count > 0)
-                query = query.Where(c => c.ACAD_CourseSkills.Any(cs => q.SkillIds.Contains(cs.SkillID)));
-            if (facet != FacetDimension.Requirement && q.RequirementIds.Count > 0)
-                query = query.Where(c => c.ACAD_CourseRequirements.Any(cr => q.RequirementIds.Contains(cr.RequirementID)));
-            if (facet != FacetDimension.Benefit && q.BenefitIds.Count > 0)
-                query = query.Where(c => c.ACAD_CourseBenefits.Any(cb => q.BenefitIds.Contains(cb.BenefitID)));
 
-            if (facet != FacetDimension.DayOfWeek && facet != FacetDimension.TimeSlot)
-            {
-                if (q.DaysOfWeek.Count > 0) query = query.Where(c => c.ACAD_CourseSchedules.Any(s => q.DaysOfWeek.Contains(s.DayOfWeek)));
-                if (q.TimeSlotIds.Count > 0) query = query.Where(c => c.ACAD_CourseSchedules.Any(s => q.TimeSlotIds.Contains(s.TimeSlotID)));
-                if (q.TimeSlotNames.Count > 0) query = query.Where(c => c.ACAD_CourseSchedules.Any(s => q.TimeSlotNames.Contains(s.TimeSlot.Name)));
-            }
+            if (currentFacet != FacetDimension.Skill && q.SkillIds.Any())
+                query = query.Where(c =>
+                    c.ACAD_CourseSkills.Any(s => q.SkillIds.Contains(s.SkillID)));
 
-            if (q.PriceMin.HasValue) query = query.Where(c => c.StandardPrice >= q.PriceMin.Value);
-            if (q.PriceMax.HasValue) query = query.Where(c => c.StandardPrice <= q.PriceMax.Value);
+            if (currentFacet != FacetDimension.Requirement && q.RequirementIds.Any())
+                query = query.Where(c =>
+                    c.ACAD_CourseRequirements.Any(r => q.RequirementIds.Contains(r.RequirementID)));
+
+            if (currentFacet != FacetDimension.Benefit && q.BenefitIds.Any())
+                query = query.Where(c =>
+                    c.ACAD_CourseBenefits.Any(b => q.BenefitIds.Contains(b.BenefitID)));
 
             return query;
         }
-
-
-
 
     }
 }

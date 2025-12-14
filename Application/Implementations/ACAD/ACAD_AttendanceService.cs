@@ -172,8 +172,8 @@ namespace Application.Implementations.ACAD
 
             foreach (var e in enrollments)
             {
-                var totalSessions = await _attendanceRepository.CountTotalMeetingsByCourseAsync(e.CourseID);
-                var attendances = await _attendanceRepository.GetByStudentAndCourseAsync(studentId, e.CourseID);
+                var totalSessions = await _attendanceRepository.CountTotalMeetingsByClassAsync(e.ClassID);
+                var attendances = await _attendanceRepository.GetByStudentAndClassAsync(studentId, e.ClassID);
 
                 var present = attendances.Count(a => a.AttendanceStatus.Code == "Present");
                 var absent = attendances.Count(a => a.AttendanceStatus.Code == "Absent");
