@@ -304,11 +304,11 @@ namespace Application.Implementations.ACAD
         public async Task<PlacementTestResponse> RandomPlacementTestAsync()
         {
             // Random theo tiêu chí:
+            // - 20 câu Multiple choice reading (MCQ, difficulty = 1, skillType = Reading)
             // - 2 đoạn văn ngắn (passage, difficulty = 2)
             // - 1 bài văn dài (passage, difficulty = 3)
             // - 2 audio ngắn (audio, difficulty = 2)
             // - 1 audio dài (audio, difficulty = 3)
-            // - 5 câu hỏi multiple choice grammar (MCQ, difficulty = 1)
             // 
             // Note: Method này chỉ random questions và return về cho frontend preview/select,
             // KHÔNG tạo PlacementTest entity trong database. Staff sẽ cần click "Create Test" 
@@ -322,7 +322,17 @@ namespace Application.Implementations.ACAD
             if (passageLookUp == null || audioLookUp == null || mcqLookUp == null)
                 throw new InvalidOperationException("Required QuestionType lookups not found in database");
 
+            // Lookup SkillTypeID cho Reading
+            var readingSkillLookUp = await _lookUpRepository.GetByCodeAsync("CourseSkill", "reading");
+            if (readingSkillLookUp == null)
+                throw new InvalidOperationException("Reading skill type lookup not found in database");
+
             var selectedQuestions = new List<ACAD_PlacementQuestion>();
+
+            // 20 câu Multiple choice reading (MCQ, difficulty = 1, skillType = Reading)
+            var mcqReadingQuestions = await _placementQuestionRepository.GetRandomQuestionsByCriteriaAsync(
+                mcqLookUp.Id, 1, 20, readingSkillLookUp.Id);
+            selectedQuestions.AddRange(mcqReadingQuestions);
 
             // 2 passage ngắn
             var shortPassages = await _placementQuestionRepository.GetRandomQuestionsByCriteriaAsync(passageLookUp.Id, 2, 2);
@@ -339,10 +349,6 @@ namespace Application.Implementations.ACAD
             // 1 audio dài
             var longAudio = await _placementQuestionRepository.GetRandomQuestionsByCriteriaAsync(audioLookUp.Id, 3, 1);
             selectedQuestions.AddRange(longAudio);
-
-            // 5 MCQ grammar
-            var mcqQuestions = await _placementQuestionRepository.GetRandomQuestionsByCriteriaAsync(mcqLookUp.Id, 1, 5);
-            selectedQuestions.AddRange(mcqQuestions);
 
             // Map questions to response (không cần download JSON hay tạo test entity)
             var questionResponses = _mapper.Map<List<PlacementQuestionResponse>>(selectedQuestions);
