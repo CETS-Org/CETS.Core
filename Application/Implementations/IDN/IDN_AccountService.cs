@@ -232,7 +232,7 @@ namespace Application.Implementations.IDN
                 account.DateOfBirth = dto.DateOfBirth;
 
             if (!string.IsNullOrWhiteSpace(dto.CID))
-                account.CID = HashCID(dto.CID);
+                account.CID = dto.CID;
 
             if (!string.IsNullOrWhiteSpace(dto.Address))
                 account.Address = dto.Address;
