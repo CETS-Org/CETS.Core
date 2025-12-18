@@ -16,5 +16,7 @@ namespace Application.Interfaces.COM
 
         Task<ChatMessageResponse> SendMessageAsync(SendMessageRequest request);
         Task<List<ChatMessageResponse>> GetMessagesAsync(string roomId, int limit = 50, int skip = 0);
+
+        Task UpdateGroupMembersByRoomNameAsync(string roomName, List<string> newMemberIds);
     }
 }
