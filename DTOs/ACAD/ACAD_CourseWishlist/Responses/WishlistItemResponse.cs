@@ -16,6 +16,7 @@ namespace DTOs.ACAD.ACAD_CourseWishlist.Responses
         public decimal StandardPrice { get; set; }
         public string CourseLevel { get; set; } = string.Empty;
         public string CourseFormat { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
         public string Duration { get; set; } = string.Empty;
         public double Rating { get; set; }
         public int StudentsCount { get; set; }
