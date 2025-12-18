@@ -21,6 +21,8 @@ namespace Domain.Interfaces.ACAD
 
         Task<ACAD_Enrollment?> GetEnrollmentWithCourseAsync(Guid enrollmentId);
 
+        Task<ACAD_Enrollment?> GetByStudentAndClassAsync(Guid studentId, Guid classId);
+
     }
 }
 
