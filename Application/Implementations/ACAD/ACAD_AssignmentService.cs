@@ -255,6 +255,11 @@ namespace Application.Implementations.ACAD
                 return entity.QuestionUrl;
             }
         }
+        public async Task<IEnumerable<UpcomingAssignmentResponse>> GetUpcomingAssignmentsForStudentAsync(Guid studentId, int limit = 5)
+        {
+            return await _assignmentRepository.GetUpcomingAssignmentsForStudentAsync(studentId, limit);
+        }
+
         private async Task NotifyStudentsAboutAssignmentAsync(ACAD_Assignment assignment, string message)
         {
             if (assignment.ClassMeetingID == null)

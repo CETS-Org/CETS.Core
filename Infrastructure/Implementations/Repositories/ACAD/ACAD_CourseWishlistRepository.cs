@@ -25,15 +25,11 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(w => w.Course)
                     .ThenInclude(c => c.CourseFormat)
                 .Include(w => w.Course)
+                    .ThenInclude(c => c.Category)
+                .Include(w => w.Course)
                     .ThenInclude(c => c.ACAD_CourseTeacherAssignments)
                     .ThenInclude(a => a.Teacher)
                     .ThenInclude(t => t.Account)
-                .Include(w => w.Course)
-                    .ThenInclude(c => c.ACAD_Syllabi.Where(s => !s.IsDeleted))
-                    .ThenInclude(s => s.ACAD_SyllabusItems.Where(i => !i.IsDeleted))
-                .Include(w => w.Course)
-                    .ThenInclude(c => c.ACAD_Enrollments)
-                .Include(w => w.Student)
                 .OrderByDescending(w => w.CreatedAt)
                 .ToListAsync();
         }
