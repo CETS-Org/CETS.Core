@@ -145,6 +145,16 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .FirstOrDefaultAsync(e => e.Id == enrollmentId);
         }
 
+        public async Task<ACAD_Enrollment?> GetByStudentAndClassAsync(Guid studentId, Guid classId)
+        {
+            return await _context.ACAD_Enrollments
+                .FirstOrDefaultAsync(e =>
+                    e.StudentID == studentId &&
+                    e.ClassID == classId &&
+                    !e.IsDeleted
+                );
+        }
+
     }
 }
 
