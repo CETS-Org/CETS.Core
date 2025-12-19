@@ -21,6 +21,8 @@ public partial class ACAD_ClassMeeting : AuditedEntity
 
     public Guid? TeacherAssignmentID { get; set; }
 
+    public Guid? SubTeacherAssignmentID { get; set; }
+
     public string? OnlineMeetingUrl { get; set; }
 
     [StringLength(100)]
@@ -57,6 +59,9 @@ public partial class ACAD_ClassMeeting : AuditedEntity
 
     [ForeignKey(nameof(TeacherAssignmentID))]
     public virtual ACAD_CourseTeacherAssignment? TeacherAssignment { get; set; }
+
+    [ForeignKey(nameof(SubTeacherAssignmentID))]
+    public virtual ACAD_CourseTeacherAssignment? SubTeacherAssignment { get; set; }
 
     [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }

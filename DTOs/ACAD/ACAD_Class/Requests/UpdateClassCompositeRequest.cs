@@ -10,6 +10,8 @@ namespace DTOs.ACAD.ACAD_Class.Requests
     {
         public string ClassName { get; set; } = string.Empty;
         public Guid? TeacherAssignmentID { get; set; }
+
+        public Guid? SubTeacherAssignmentID { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         public int Capacity { get; set; }

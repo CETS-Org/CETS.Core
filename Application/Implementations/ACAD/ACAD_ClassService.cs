@@ -184,14 +184,39 @@ namespace Application.Implementations.ACAD
 
         public async Task<Guid> CreateClassWithScheduleAsync(CreateClassWithScheduleRequest request)
         {
-            // [CONSTANTS]
-            var STATUS_ENROLLED = await _lookUpService.GetByCodeAsync("EnrollmentStatus", "Enrolled");//Guid.Parse("148fdc3d-fecc-457d-a539-cc28fd5df900");
+            // ==================================================================
+            // PHASE 1: PREPARE DATA 
+            // (Đọc dữ liệu TUẦN TỰ để tránh lỗi DbContext concurrency)
+            // ==================================================================
 
-            return await _uow.ExecuteInTransactionAsync(async () =>
+            // 1. Lấy Constant Status
+            var statusEnrolled = await _lookUpService.GetByCodeAsync("EnrollmentStatus", "Enrolled");
+
+            // 2. Lấy thông tin tài khoản Giáo viên (Chạy tuần tự)
+            var teacherAccountId = await GetTeacherAccountAsync(request.TeacherAssignmentID);
+            var subTeacherAccountId = await GetTeacherAccountAsync(request.SubTeacherAssignmentID);
+
+            // 3. Bulk Read Enrollments (Lấy 1 lần danh sách Enrollment)
+            var enrollmentIds = request.Enrollments?.Select(x => x.EnrollmentId).Distinct().ToList() ?? new List<Guid>();
+            var enrollments = await _enrollmentRepo.GetByIdsAsync(enrollmentIds);
+
+            // 4. Bulk Read Invoice Items (Lấy 1 lần danh sách InvoiceItem liên quan)
+            // Lọc ra các Enrollment có InvoiceID
+            var invoiceIds = enrollments
+                            .Where(x => x.InvoiceID.HasValue)
+                            .Select(x => x.InvoiceID.Value)
+                            .Distinct()
+                            .ToList();
+
+            var allInvoiceItems = await _invoiceItemRepository.GetByInvoiceIdsAsync(invoiceIds);
+
+            // ==================================================================
+            // PHASE 2: EXECUTE TRANSACTION (Chỉ thực hiện Ghi/Sửa DB)
+            // ==================================================================
+
+            var classId = await _uow.ExecuteInTransactionAsync(async () =>
             {
-                // ==================================================================
-                // 1. TẠO CLASS (LỚP HỌC)
-                // ==================================================================
+                // 1. TẠO CLASS
                 var classEntity = _mapper.Map<ACAD_Class>(request);
                 classEntity.EnrolledCount = request.Enrollments?.Count ?? 0;
                 classEntity.IsActive = true;
@@ -199,9 +224,7 @@ namespace Application.Implementations.ACAD
                 classEntity.CreatedAt = DateTime.Now;
                 _classRepo.Add(classEntity);
 
-                // ==================================================================
-                // 2. TẠO MEETINGS (LỊCH HỌC)
-                // ==================================================================
+                // 2. TẠO MEETINGS
                 if (request.Schedules != null && request.Schedules.Any())
                 {
                     var meetings = request.Schedules.Select(item => new ACAD_ClassMeeting
@@ -212,6 +235,7 @@ namespace Application.Implementations.ACAD
                         RoomID = item.RoomID ?? Guid.Empty,
                         CoveredTopicID = item.SyllabusItemID,
                         TeacherAssignmentID = request.TeacherAssignmentID,
+                        SubTeacherAssignmentID = request.SubTeacherAssignmentID,
                         IsActive = true,
                         IsDeleted = false,
                         CreatedAt = DateTime.Now
@@ -220,145 +244,168 @@ namespace Application.Implementations.ACAD
                     _classMeetingRepo.AddRange(meetings);
                 }
 
-                // ==================================================================
-                // 3. CẬP NHẬT ENROLLMENT (XẾP HỌC SINH VÀO LỚP)
-                // ==================================================================
-                if (request.Enrollments != null && request.Enrollments.Any())
+                // 3. CẬP NHẬT ENROLLMENT & INVOICE (Xử lý trên List RAM đã load ở Phase 1)
+                if (enrollments.Any())
                 {
-                    foreach (var studentItem in request.Enrollments)
+                    foreach (var enrollment in enrollments)
                     {
-                        var enrollment = await _enrollmentRepo.GetByIdAsync(studentItem.EnrollmentId);
-
-                        if (enrollment != null)
+                        // Cập nhật Enrollment
+                        enrollment.ClassID = classEntity.Id;
+                        if (statusEnrolled != null)
                         {
-                            enrollment.ClassID = classEntity.Id;
-                            enrollment.EnrollmentStatusID = STATUS_ENROLLED.LookUpId;
-                            enrollment.UpdatedAt = DateTime.Now;
-                            enrollment.UpdatedBy = request.CreatedBy;
+                            enrollment.EnrollmentStatusID = statusEnrolled.LookUpId;
+                        }
+                        enrollment.UpdatedAt = DateTime.Now;
+                        enrollment.UpdatedBy = request.CreatedBy;
 
-                            _enrollmentRepo.Update(enrollment);
+                        // Cập nhật Invoice Item (Tìm trong list đã load sẵn)
+                        if (enrollment.InvoiceID.HasValue)
+                        {
+                            // Tìm InvoiceItem tương ứng trong list memory (Không query lại DB)
+                            var targetItem = allInvoiceItems.FirstOrDefault(x =>
+                                x.InvoiceID == enrollment.InvoiceID.Value && // So sánh Guid
+                                x.PaymentSequence == 2);
 
-                            // Cập nhật Invoice (Payment Sequence 2)
-                            var invoiceItems = await _invoiceItemRepository.GetByInvoiceIdAsync(enrollment.InvoiceID.Value);
-                            var invoiceItem = invoiceItems.Where(x => x.PaymentSequence == 2).FirstOrDefault();
-                            if (invoiceItem != null)
+                            if (targetItem != null)
                             {
-                                invoiceItem.DueDate = classEntity.StartDate.AddDays(30);
-                                _invoiceItemRepository.Update(invoiceItem);
+                                targetItem.DueDate = classEntity.StartDate.AddDays(30);
+                                // Đánh dấu update InvoiceItem
+                                _invoiceItemRepository.Update(targetItem);
                             }
                         }
                     }
+
+                    // Update Bulk Enrollments
+                    _enrollmentRepo.UpdateRange(enrollments);
                 }
 
-                // ==================================================================
                 // 4. COMMIT DATABASE
-                // ==================================================================
                 await _uow.SaveChangesAsync();
-
-                // ------------------------------------------------------------------
-                // CÁC TÁC VỤ SIDE-EFFECT (Notification & Chat)
-                // Thực hiện sau khi commit để không block transaction chính
-                // ------------------------------------------------------------------
-
-                try
-                {
-                    // Lấy thông tin Giáo viên để dùng chung cho Notif và Chat
-                    string? teacherAccountId = null;
-                    if (request.TeacherAssignmentID.HasValue)
-                    {
-                        var teacherId = await _courseTeacherAssignmentService.GetByIdAsync(request.TeacherAssignmentID.Value);
-                        var teacherAssign = await _accountService.GetAccountByIdAsync(teacherId.TeacherID);
-                        if (teacherAssign?.AccountId != null)
-                        {
-                            teacherAccountId = teacherAssign.AccountId.ToString().ToUpperInvariant();
-                        }
-                    }
-
-                    // ==================================================================
-                    // 5. GỬI THÔNG BÁO (NOTIFICATION)
-                    // ==================================================================
-                    var notifications = new List<CreateNotificationRequest>();
-
-                    // 5.1 Thông báo cho GIÁO VIÊN
-                    if (!string.IsNullOrEmpty(teacherAccountId))
-                    {
-                        notifications.Add(new CreateNotificationRequest
-                        {
-                            UserId = teacherAccountId,
-                            Title = "New Class Assignment",
-                            Message = $"You have been assigned to teach class: {classEntity.ClassName} starting from {classEntity.StartDate:dd/MM/yyyy}.",
-                            Type = "system",
-                            IsRead = false
-                        });
-                    }
-
-                    // 5.2 Thông báo cho HỌC SINH
-                    if (request.Enrollments != null && request.Enrollments.Any())
-                    {
-                        var studentNotifs = request.Enrollments.Select(item => new CreateNotificationRequest
-                        {
-                            UserId = item.StudentId.ToString().ToUpperInvariant(),
-                            Title = "Class Placement Success",
-                            Message = $"You have been placed in class {classEntity.ClassName}. Please check your schedule!",
-                            Type = "system",
-                            IsRead = false
-                        });
-                        notifications.AddRange(studentNotifs);
-                    }
-
-                    if (notifications.Any())
-                    {
-                        await _notificationService.CreateManyAsync(notifications);
-                    }
-
-                    // ==================================================================
-                    // 6. TẠO GROUP CHAT CHO LỚP HỌC [NEW]
-                    // ==================================================================
-
-                    // 6.1 Tổng hợp thành viên: Giáo viên + Học sinh
-                    var chatMemberIds = new List<string>();
-
-                    // Thêm giáo viên (nếu có)
-                    if (!string.IsNullOrEmpty(teacherAccountId))
-                    {
-                        chatMemberIds.Add(teacherAccountId);
-                    }
-
-                    // Thêm học sinh
-                    if (request.Enrollments != null)
-                    {
-                        chatMemberIds.AddRange(request.Enrollments.Select(e => e.StudentId.ToString()));
-                    }
-
-                    // 6.2 Gọi Service tạo phòng chat
-                    // Chỉ tạo nếu có ít nhất 1 thành viên (hoặc tùy logic business của bạn)
-                    if (chatMemberIds.Any())
-                    {
-                        var createChatRequest = new CreateChatRoomRequest
-                        {
-                            Name = classEntity.ClassName, // Tên nhóm chat = Tên lớp
-                            Type = "group",
-                            MemberIds = chatMemberIds.Distinct().ToList() // Loại bỏ ID trùng lặp nếu có
-                        };
-
-                        await _chatService.CreateRoomAsync(createChatRequest);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Log lỗi nhưng không throw exception để transaction tạo lớp vẫn thành công
-                    // (Vì Chat và Notif là tính năng phụ trợ)
-                    Console.WriteLine($"[Warning] Failed to handle side-effects (Notif/Chat) for ClassID: {classEntity.Id}. Error: {ex.Message}");
-                }
 
                 return classEntity.Id;
             });
+
+            // ==================================================================
+            // PHASE 3: SIDE EFFECTS (Chạy nền sau khi Transaction thành công)
+            // ==================================================================
+
+            // Fire-and-forget: Gọi hàm async mà không cần await để trả về kết quả ngay cho User
+            _ = HandleSideEffectsAsync(classId, request, teacherAccountId, subTeacherAccountId);
+
+            return classId;
+        }
+
+        // ==================================================================
+        // CÁC HÀM PHỤ TRỢ (HELPER METHODS)
+        // ==================================================================
+
+        // 1. Hàm lấy Teacher Account ID (Đã sửa lỗi Guid?)
+        private async Task<string?> GetTeacherAccountAsync(Guid? assignmentId)
+        {
+            if (!assignmentId.HasValue) return null;
+
+            var assign = await _courseTeacherAssignmentService.GetByIdAsync(assignmentId.Value);
+            if (assign == null) return null;
+
+            var account = await _accountService.GetAccountByIdAsync(assign.TeacherID);
+
+            // Sửa lỗi: account.AccountId là Guid (không null), nên không dùng account.AccountId?
+            return account?.AccountId.ToString().ToUpperInvariant();
+        }
+
+        // 2. Hàm xử lý Notification và Chat (Chạy ngầm)
+        private async Task HandleSideEffectsAsync(Guid classId, CreateClassWithScheduleRequest request, string? teacherAccountId, string? subTeacherAccountId)
+        {
+            try
+            {
+                // Query nhẹ lại thông tin lớp để lấy ClassName và StartDate chính xác nhất
+                // (Hoặc có thể truyền từ hàm chính vào nếu muốn tiết kiệm 1 query)
+                var classInfo = await _classRepo.GetByIdAsync(classId);
+                if (classInfo == null) return;
+
+                var notifications = new List<CreateNotificationRequest>();
+
+                // --- Tạo Notification ---
+
+                // Cho Giáo viên
+                if (!string.IsNullOrEmpty(teacherAccountId))
+                {
+                    notifications.Add(new CreateNotificationRequest
+                    {
+                        UserId = teacherAccountId,
+                        Title = "New Class Assignment",
+                        Message = $"You have been assigned to teach class: {classInfo.ClassName} starting from {classInfo.StartDate:dd/MM/yyyy}.",
+                        Type = "system",
+                        IsRead = false
+                    });
+                }
+
+                // Cho Sub Teacher
+                if (!string.IsNullOrEmpty(subTeacherAccountId))
+                {
+                    notifications.Add(new CreateNotificationRequest
+                    {
+                        UserId = subTeacherAccountId,
+                        Title = "New Class Assignment",
+                        Message = $"You have been assigned to teach class: {classInfo.ClassName} starting from {classInfo.StartDate:dd/MM/yyyy}.",
+                        Type = "system",
+                        IsRead = false
+                    });
+                }
+
+                // Cho Học sinh
+                if (request.Enrollments != null && request.Enrollments.Any())
+                {
+                    notifications.AddRange(request.Enrollments.Select(item => new CreateNotificationRequest
+                    {
+                        UserId = item.StudentId.ToString().ToUpperInvariant(),
+                        Title = "Class Placement Success",
+                        Message = $"You have been placed in class {classInfo.ClassName}. Please check your schedule!",
+                        Type = "system",
+                        IsRead = false
+                    }));
+                }
+
+                if (notifications.Any())
+                {
+                    await _notificationService.CreateManyAsync(notifications);
+                }
+
+                // --- Tạo Group Chat ---
+
+                var chatMemberIds = new List<string>();
+                if (!string.IsNullOrEmpty(teacherAccountId)) chatMemberIds.Add(teacherAccountId);
+                if (!string.IsNullOrEmpty(subTeacherAccountId)) chatMemberIds.Add(subTeacherAccountId);
+                if (request.Enrollments != null)
+                {
+                    chatMemberIds.AddRange(request.Enrollments.Select(e => e.StudentId.ToString()));
+                }
+
+                // Chỉ tạo chat nếu có thành viên
+                if (chatMemberIds.Any())
+                {
+                    await _chatService.CreateRoomAsync(new CreateChatRoomRequest
+                    {
+                        Name = classInfo.ClassName,
+                        Type = "group",
+                        MemberIds = chatMemberIds.Distinct().ToList()
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi để debug, không throw exception để tránh ảnh hưởng luồng chính (dù luồng chính đã return rồi)
+                Console.WriteLine($"[Background Job Error] ClassID: {classId}. Details: {ex.Message}");
+            }
         }
 
         public async Task<ClassDetailForEditResponse> GetClassDetailForEditAsync(Guid classId)
         {
             // Gọi Repository đã viết ở trên
             var classEntity = await _classRepo.GetClassWithDetailForEditAsync(classId);
+            var classMeeting = await _classMeetingRepo.GetAllClassMeetingByClassId(classId);
+
+
 
             if (classEntity == null)
                 throw new KeyNotFoundException("Class not found or deleted.");
@@ -371,8 +418,10 @@ namespace Application.Implementations.ACAD
                 ClassName = classEntity.ClassName,
                 TeacherAssignmentID = classEntity.TeacherAssignment.Id,
                 TeacherName = classEntity.TeacherAssignment.Teacher.Account.FullName,
+                SubTeacherAssignmentID = classEntity.SubTeacherAssignmentID,
+                SubTeacherName = classEntity.SubTeacherAssignment?.Teacher.Account.FullName,
                 // Lấy phòng từ buổi học đầu tiên (nếu có)
-                RoomId = classEntity.ACAD_ClassMeetings.FirstOrDefault()?.RoomID,
+                RoomId = classMeeting.FirstOrDefault()?.RoomID,
                 StartDate = classEntity.StartDate,
                 EndDate = classEntity.EndDate,
                 Capacity = classEntity.Capacity,
@@ -419,19 +468,7 @@ namespace Application.Implementations.ACAD
                     var classEntity = await _classRepo.GetByIdAsync(classId);
                     if (classEntity == null) throw new KeyNotFoundException("Class not found.");
 
-                    classEntity.ClassName = request.ClassName;
-                    classEntity.TeacherAssignmentID = request.TeacherAssignmentID;
-                    classEntity.StartDate = request.StartDate;
-                    classEntity.EndDate = request.EndDate;
-                    classEntity.Capacity = request.Capacity;
-
-                    // Cập nhật sĩ số: Đếm số lượng ID gửi lên
-                    classEntity.EnrolledCount = request.EnrollmentIds?.Count ?? 0;
-
-                    classEntity.UpdatedBy = request.UpdatedBy;
-                    classEntity.UpdatedAt = DateTime.Now;
-
-                    _classRepo.Update(classEntity);
+                
 
                     // ==================================================================
                     // 2. SYNC ENROLLMENTS (Đồng bộ danh sách học sinh)
@@ -503,13 +540,23 @@ namespace Application.Implementations.ACAD
                         var chatMemberIds = new List<string>();
 
                         // 4.1 Lấy ID Giáo viên (nếu có)
-                        if (request.TeacherAssignmentID.HasValue)
+                        if (request.SubTeacherAssignmentID is Guid teacherId)
                         {
                             //This line is now not get teacheAssign
-                            var teacherAssign = await _courseTeacherAssignmentService.GetByIdAsync(request.TeacherAssignmentID.Value);
+                            var teacherAssign = await _courseTeacherAssignmentService.GetByIdAsync(teacherId);
                             if (teacherAssign?.Teacher?.Account != null)
                             {
-                                chatMemberIds.Add(teacherAssign.Teacher.Account.Id.ToString().ToUpperInvariant());
+                                chatMemberIds.Add(teacherAssign.TeacherID.ToString().ToUpperInvariant());
+                            }
+                        }
+
+                        if (request.SubTeacherAssignmentID is Guid subTeacherId)
+                        {
+                            //This line is now not get teacheAssign
+                            var subTeacherAssign = await _courseTeacherAssignmentService.GetByIdAsync(subTeacherId);
+                            if (subTeacherAssign?.Teacher?.Account != null)
+                            {
+                                chatMemberIds.Add(subTeacherAssign.TeacherID.ToString().ToUpperInvariant());
                             }
                         }
 
