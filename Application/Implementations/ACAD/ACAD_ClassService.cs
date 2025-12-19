@@ -505,6 +505,7 @@ namespace Application.Implementations.ACAD
                         // 4.1 Lấy ID Giáo viên (nếu có)
                         if (request.TeacherAssignmentID.HasValue)
                         {
+                            //This line is now not get teacheAssign
                             var teacherAssign = await _courseTeacherAssignmentService.GetByIdAsync(request.TeacherAssignmentID.Value);
                             if (teacherAssign?.Teacher?.Account != null)
                             {
