@@ -1,4 +1,4 @@
-using Domain.Data;
+﻿using Domain.Data;
 using Domain.Entities;
 using Domain.Interfaces.FIN;
 using Infrastructure.Implementations.Repositories;
@@ -19,6 +19,19 @@ namespace Infrastructure.Implementations.Repositories.FIN
                 .Where(ii => ii.InvoiceID == invoiceId)
                 .OrderBy(ii => ii.Id)
                 .ToListAsync();
+        }
+
+        public async Task<List<FIN_InvoiceItem>> GetByInvoiceIdsAsync(List<Guid> invoiceIds)
+        {
+            if (invoiceIds == null || !invoiceIds.Any())
+            {
+                return new List<FIN_InvoiceItem>();
+            }
+
+        
+            return await _context.FIN_InvoiceItems
+                                 .Where(x => invoiceIds.Contains(x.InvoiceID))
+                                 .ToListAsync();
         }
     }
 }

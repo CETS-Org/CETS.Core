@@ -403,7 +403,7 @@ namespace Application.Implementations.ACAD
         {
             // Gọi Repository đã viết ở trên
             var classEntity = await _classRepo.GetClassWithDetailForEditAsync(classId);
-            var classMeetings = await _classMeetingRepo.GetAllClassMeetingByClassId(classId);
+    
 
             if (classEntity == null)
                 throw new KeyNotFoundException("Class not found or deleted.");
