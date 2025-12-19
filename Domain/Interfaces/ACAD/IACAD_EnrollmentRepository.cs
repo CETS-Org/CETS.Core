@@ -23,6 +23,9 @@ namespace Domain.Interfaces.ACAD
 
         Task<ACAD_Enrollment?> GetByStudentAndClassAsync(Guid studentId, Guid classId);
 
+        Task<List<ACAD_Enrollment>> GetByIdsAsync(List<Guid> ids);
+        void UpdateRange(IEnumerable<ACAD_Enrollment> entities);
+
     }
 }
 
