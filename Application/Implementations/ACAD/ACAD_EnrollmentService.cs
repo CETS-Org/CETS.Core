@@ -132,7 +132,7 @@ namespace Application.Implementations.ACAD
                         dto.TentativeStartDate = null;      // hoặc message tùy ý
                         continue;                            // <-- BỎ QUA KHÓA NÀY
                     }
-                    dto.TentativeStartDate = CalculateTentativeStartDate(e.Course);
+                    dto.TentativeStartDate = CalculateTentativeStartDate(e.Course, e.CreatedAt);
                 }
 
                 list.Add(dto);
@@ -346,6 +346,7 @@ namespace Application.Implementations.ACAD
                 var classId = e.ClassID;
                 var courseId = course.Id;
 
+
                 // 1️⃣ Tổng số session trong syllabus
                var totalSessions = await _attendanceRepo.CountTotalMeetingsByClassAsync(classId);
 
@@ -372,6 +373,18 @@ namespace Application.Implementations.ACAD
                     .Distinct()
                     .ToList() ?? new List<string>();
 
+                //Tính expected date
+                DateTime? expectedStartDate = null;
+
+                if (e.EnrollmentStatus?.Code == "Pending")
+                {
+                    if (course.ACAD_CourseSchedules != null &&
+                        course.ACAD_CourseSchedules.Any())
+                    {
+                        expectedStartDate = CalculateTentativeStartDate(course, e.CreatedAt);
+                    }
+                }
+
                 courseResponses.Add(new CourseOverviewItemResponse
                 {
                     CourseId = course.Id,
@@ -381,7 +394,8 @@ namespace Application.Implementations.ACAD
                     Instructor = teacherNames.FirstOrDefault() ?? "N/A",
                     StatusCode = e.EnrollmentStatus?.Code ?? "InProgress",
                     StatusName = e.EnrollmentStatus?.Name ?? "In Progress",
-                    CourseProgress = $"{completedSessions}/{totalSessions}"
+                    CourseProgress = $"{completedSessions}/{totalSessions}",
+                    ExpectedStartDate = expectedStartDate
                 });
             }
 
@@ -551,45 +565,46 @@ namespace Application.Implementations.ACAD
             return response;
         }
 
-        private DateTime CalculateTentativeStartDate(ACAD_Course course)
-        {
-            var schedules = course.ACAD_CourseSchedules
-                .Select(s => s.DayOfWeek)
-                .Distinct()
-                .ToList();
+        private DateTime CalculateTentativeStartDate(
+            ACAD_Course course,
+            DateTime enrollmentDate
+        )
+                {
+                    var schedules = course.ACAD_CourseSchedules?
+                        .Select(s => (DayOfWeek)s.DayOfWeek) 
+                        .Distinct()
+                        .ToList();
 
-            // ❗ Prevent infinite loop
-            if (schedules == null || schedules.Count == 0)
-                throw new Exception("Course does not have any schedules configured.");
+                    if (schedules == null || schedules.Count == 0)
+                        throw new Exception("Course does not have any schedules configured.");
 
-            DateTime now = DateTime.Now;
+                    DateTime date = GetBatchAnchor(enrollmentDate);
 
-            DateTime anchor;
-            if (now.Day <= 1)
-                anchor = new DateTime(now.Year, now.Month, 1);
-            else if (now.Day <= 15)
-                anchor = new DateTime(now.Year, now.Month, 15);
-            else
-                anchor = new DateTime(now.Year, now.Month, 1).AddMonths(1);
+                    // safety loop
+                    for (int i = 0; i < 60; i++)
+                    {
+                        if (schedules.Contains(date.DayOfWeek))
+                            return date;
 
-            DateTime date = anchor;
+                        date = date.AddDays(1);
+                    }
 
-            // ❗ Safety limit to avoid infinite loop (max 60 days)
-            int safety = 0;
-
-            while (true)
-            {
-                if (schedules.Contains(date.DayOfWeek))
-                    return date;
-
-                date = date.AddDays(1);
-
-                safety++;
-                if (safety > 60)
-                    throw new Exception("Unable to find next session date. Course schedule invalid.");
-            }
+                    throw new Exception("Unable to calculate expected start date.");
         }
 
+
+        DateTime GetBatchAnchor(DateTime enrollmentDate)
+        {
+            if (enrollmentDate.Day < 2)
+                return new DateTime(enrollmentDate.Year, enrollmentDate.Month, 2);
+
+            if (enrollmentDate.Day < 15)
+                return new DateTime(enrollmentDate.Year, enrollmentDate.Month, 15);
+
+            // sau ngày 15 → batch tháng sau
+            var nextMonth = enrollmentDate.AddMonths(1);
+            return new DateTime(nextMonth.Year, nextMonth.Month, 2);
+        }
 
 
 
