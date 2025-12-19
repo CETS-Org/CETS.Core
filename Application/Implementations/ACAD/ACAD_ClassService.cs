@@ -403,7 +403,9 @@ namespace Application.Implementations.ACAD
         {
             // Gọi Repository đã viết ở trên
             var classEntity = await _classRepo.GetClassWithDetailForEditAsync(classId);
-    
+            var classMeeting = await _classMeetingRepo.GetAllClassMeetingByClassId(classId);
+
+
 
             if (classEntity == null)
                 throw new KeyNotFoundException("Class not found or deleted.");
@@ -416,8 +418,10 @@ namespace Application.Implementations.ACAD
                 ClassName = classEntity.ClassName,
                 TeacherAssignmentID = classEntity.TeacherAssignment.Id,
                 TeacherName = classEntity.TeacherAssignment.Teacher.Account.FullName,
+                SubTeacherAssignmentID = classEntity.SubTeacherAssignmentID,
+                SubTeacherName = classEntity.SubTeacherAssignment?.Teacher.Account.FullName,
                 // Lấy phòng từ buổi học đầu tiên (nếu có)
-                RoomId = classEntity.ACAD_ClassMeetings.FirstOrDefault()?.RoomID,
+                RoomId = classMeeting.FirstOrDefault()?.RoomID,
                 StartDate = classEntity.StartDate,
                 EndDate = classEntity.EndDate,
                 Capacity = classEntity.Capacity,
@@ -536,23 +540,23 @@ namespace Application.Implementations.ACAD
                         var chatMemberIds = new List<string>();
 
                         // 4.1 Lấy ID Giáo viên (nếu có)
-                        if (request.TeacherAssignmentID.HasValue)
+                        if (request.SubTeacherAssignmentID is Guid teacherId)
                         {
                             //This line is now not get teacheAssign
-                            var teacherAssign = await _courseTeacherAssignmentService.GetByIdAsync(request.TeacherAssignmentID.Value);
+                            var teacherAssign = await _courseTeacherAssignmentService.GetByIdAsync(teacherId);
                             if (teacherAssign?.Teacher?.Account != null)
                             {
-                                chatMemberIds.Add(teacherAssign.Teacher.Account.Id.ToString().ToUpperInvariant());
+                                chatMemberIds.Add(teacherAssign.TeacherID.ToString().ToUpperInvariant());
                             }
                         }
 
-                        if (request.SubTeacherAssignmentID.HasValue)
+                        if (request.SubTeacherAssignmentID is Guid subTeacherId)
                         {
                             //This line is now not get teacheAssign
-                            var subTeacherAssign = await _courseTeacherAssignmentService.GetByIdAsync(request.SubTeacherAssignmentID.Value);
+                            var subTeacherAssign = await _courseTeacherAssignmentService.GetByIdAsync(subTeacherId);
                             if (subTeacherAssign?.Teacher?.Account != null)
                             {
-                                chatMemberIds.Add(subTeacherAssign.Teacher.Account.Id.ToString().ToUpperInvariant());
+                                chatMemberIds.Add(subTeacherAssign.TeacherID.ToString().ToUpperInvariant());
                             }
                         }
 

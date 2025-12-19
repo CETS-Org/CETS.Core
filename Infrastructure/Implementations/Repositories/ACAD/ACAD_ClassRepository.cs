@@ -600,7 +600,10 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                     .ThenInclude(ta => ta.Course)
                 .Include(c => c.TeacherAssignment)
                     .ThenInclude(ta => ta.Teacher)
-                        .ThenInclude(t => t.Account)        
+                        .ThenInclude(t => t.Account)
+                .Include(c => c.SubTeacherAssignment)
+                    .ThenInclude(ta => ta.Teacher)
+                        .ThenInclude(t => t.Account)
                 .FirstOrDefaultAsync(c => c.Id == classId && !c.IsDeleted);
         }
 
