@@ -17,6 +17,8 @@ public partial class ACAD_Class : AuditedEntity
 
     public Guid? TeacherAssignmentID { get; set; }
 
+    public Guid? SubTeacherAssignmentID { get; set; }
+
     public DateOnly StartDate { get; set; }
 
     public DateOnly EndDate { get; set; }
@@ -55,6 +57,9 @@ public partial class ACAD_Class : AuditedEntity
 
     [ForeignKey(nameof(TeacherAssignmentID))]
     public virtual ACAD_CourseTeacherAssignment? TeacherAssignment { get; set; }
+
+    [ForeignKey(nameof(SubTeacherAssignmentID))]
+    public virtual ACAD_CourseTeacherAssignment? SubTeacherAssignment { get; set; }
 
     [ForeignKey(nameof(UpdatedBy))]
     public virtual IDN_Account? UpdatedByNavigation { get; set; }

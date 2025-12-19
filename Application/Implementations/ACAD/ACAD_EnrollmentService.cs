@@ -1,10 +1,11 @@
-﻿using Application.Interfaces.ACAD;
+using Application.Interfaces.ACAD;
 using Application.Interfaces.CORE;
 using AutoMapper;
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.Interfaces.ACAD;
+using Domain.Interfaces.IDN;
 using DTOs.ACAD.ACAD_Assignment.Responses;
 using DTOs.ACAD.ACAD_ClassMeetings.Responses;
 using DTOs.ACAD.ACAD_Course.Responses;
@@ -27,19 +28,22 @@ namespace Application.Implementations.ACAD
         private readonly ICORE_LookUpService _lookUpService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IIDN_StudentRepository _studentRepo;
 
         public ACAD_EnrollmentService(
             IACAD_EnrollmentRepository enrollmentRepo,
             IACAD_AttendanceRepository attendanceRepo,
             IUnitOfWork unitOfWork,
             ICORE_LookUpService lookUpService,
-            IMapper mapper)
+            IMapper mapper,
+            IIDN_StudentRepository studentRepo)
         {
             _enrollmentRepo = enrollmentRepo;
             _attendanceRepo = attendanceRepo;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _lookUpService = lookUpService;
+            _studentRepo = studentRepo;
         }
 
         public async Task<EnrollmentResponse> EnrollAsync(CreateEnrollmentRequest request)
@@ -522,10 +526,21 @@ namespace Application.Implementations.ACAD
                     // Update final grade
                     enrollment.FinalGrade = gradeUpdate.FinalGrade;
                     
-                    // Calculate and update IsPass based on FinalGrade and StandardScore
-                    if (gradeUpdate.FinalGrade.HasValue && enrollment.Course != null)
+                    // Calculate and update IsPass based on FinalGrade > 5
+                    if (gradeUpdate.FinalGrade.HasValue)
                     {
-                        enrollment.IsPass = gradeUpdate.FinalGrade.Value >= enrollment.Course.StandardScore;
+                        enrollment.IsPass = gradeUpdate.FinalGrade.Value >= 5;
+                        
+                        // If student passes (grade > 5), update PlacementTestGrade with course ExitScore
+                        if (enrollment.IsPass && enrollment.Course != null)
+                        {
+                            var student = await _studentRepo.GetByIdAsync(enrollment.StudentID);
+                            if (student != null)
+                            {
+                                student.PlacementTestGrade = enrollment.Course.ExitScore;
+                                _studentRepo.Update(student);
+                            }
+                        }
                     }
                     else
                     {

@@ -155,6 +155,27 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 );
         }
 
+
+        public async Task<List<ACAD_Enrollment>> GetByIdsAsync(List<Guid> ids)
+        {
+            // Kiểm tra đầu vào để tránh lỗi query với list rỗng
+            if (ids == null || !ids.Any())
+            {
+                return new List<ACAD_Enrollment>();
+            }
+
+            // Sử dụng Contains để tạo câu lệnh SQL: WHERE Id IN ('...', '...')
+            // Lưu ý: Không dùng AsNoTracking() ở đây vì bên Service bạn cần Update các entity này
+            return await _context.ACAD_Enrollments
+                                 .Where(x => ids.Contains(x.Id))
+                                 .ToListAsync();
+        }
+
+        public void UpdateRange(IEnumerable<ACAD_Enrollment> entities)
+        {
+            _context.ACAD_Enrollments.UpdateRange(entities);
+        }
+
     }
 }
 

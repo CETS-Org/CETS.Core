@@ -60,19 +60,30 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
         public async Task<ACAD_Course?> GetDetailAsync(Guid courseId)
         {
-            return await _context.ACAD_Courses
+            var enrolledStatusId = await _context.Set<CORE_LookUp>()
+                .Where(s => s.LookUpType != null && s.LookUpType.Code == "EnrollmentStatus" && s.Code == "Enrolled")
+                .Select(s => s.Id)
+                .FirstOrDefaultAsync();
+
+            var course = await _context.ACAD_Courses
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(c => c.Category)
                 .Include(c => c.CourseLevel)
                 .Include(c => c.CourseFormat)
                 .Include(c => c.ACAD_Syllabi.Where(s => !s.IsDeleted))
                     .ThenInclude(s => s.ACAD_SyllabusItems.Where(i => !i.IsDeleted).OrderBy(i => i.SessionNumber))
-                .Include(c => c.ACAD_Enrollments.Where(e => e.EnrollmentStatus.Name == "Enrolled"))
+                .Include(c => c.ACAD_Enrollments.Where(e => enrolledStatusId != Guid.Empty && e.EnrollmentStatusID == enrolledStatusId))
                     .ThenInclude(e => e.EnrollmentStatus)
-                .Include(c => c.ACAD_CourseBenefits).ThenInclude(b => b.Benefit)
-                .Include(c => c.ACAD_CourseRequirements).ThenInclude(r => r.Requirement)
-                .Include(c => c.ACAD_CourseSkills).ThenInclude(s => s.Skill)
+                .Include(c => c.ACAD_CourseBenefits)
+                    .ThenInclude(b => b.Benefit)
+                .Include(c => c.ACAD_CourseRequirements)
+                    .ThenInclude(r => r.Requirement)
+                .Include(c => c.ACAD_CourseSkills)
+                    .ThenInclude(s => s.Skill)
                 .Include(c => c.ACAD_CourseSchedules)
                     .ThenInclude(cs => cs.TimeSlot)
+
                 .Include(c => c.COM_Feedbacks.Where(f => f.TeacherID == null && !f.IsDeleted))
                     .ThenInclude(f => f.Submitter)
                         .ThenInclude(s => s.Account)
@@ -81,6 +92,8 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 .Include(c => c.CreatedByNavigation)
                 .Include(c => c.UpdatedByNavigation)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
+
+            return course;
         }
 
         public async Task<IEnumerable<ACAD_Course>> GetAllCourse()

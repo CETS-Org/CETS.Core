@@ -99,6 +99,16 @@ namespace Application.Interfaces.Common.Email
             int quantity,
             decimal unitPrice,
             decimal totalAmount);
-    }
+
+        string BuildCourseStartReminderEmail(
+            string studentName,
+            string courseName,
+            string className,
+            string startDate,
+            string roomName);
+    
+}
+
+
 }
 
