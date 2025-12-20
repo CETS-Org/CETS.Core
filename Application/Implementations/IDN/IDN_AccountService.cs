@@ -565,16 +565,7 @@ namespace Application.Implementations.IDN
                        style='background:#4CAF50;color:#fff;padding:15px 30px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;display:inline-block;box-shadow:0 2px 4px rgba(0,0,0,0.1);'>
                       Verify My Account
                     </a>
-                  </div>
-                  <!-- Alternative Method -->
-                  <div style='background:#f8f9fa;padding:15px;border-radius:6px;margin:20px 0;'>
-                    <div style='font-size:12px;color:#666;margin-bottom:8px;'>
-                      <strong>Alternative method:</strong> If the button doesn't work, copy and paste this link into your browser:
-                    </div>
-                    <div style='font-size:12px;color:#4CAF50;word-break:break-all;'>
-                      {verificationUrl}
-                    </div>
-                  </div>
+                  </div>                 
                   <!-- Instructions -->
                   <div style='font-size:14px;color:#555;margin-bottom:20px;line-height:1.6;'>
                     <strong>Instructions:</strong><br/>
@@ -591,7 +582,7 @@ namespace Application.Implementations.IDN
                     <a href='#' style='color:#4CAF50;text-decoration:none;'>Privacy Policy</a>
                     <br/><br/>
                     © 2025 CETS English Center. All rights reserved.<br/>
-                    CETS, 123 ABC Street, District 1, Ho Chi Minh City.
+                    CETS, 45 Nguyen Than Hien, Ngu Hanh Son ward, Da Nang City.
                   </div>
                 </div>";
 
