@@ -4,6 +4,7 @@ using Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251219121851_AddSubTeacherId")]
+    partial class AddSubTeacherId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -368,9 +371,6 @@ namespace Infrastructure.Migrations
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
 
-                    b.Property<Guid?>("SubTeacherAssignmentID")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("TeacherAssignmentID")
                         .HasColumnType("uniqueidentifier");
 
@@ -392,8 +392,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CourseFormatID");
 
                     b.HasIndex("CreatedBy");
-
-                    b.HasIndex("SubTeacherAssignmentID");
 
                     b.HasIndex("TeacherAssignmentID");
 
@@ -2914,10 +2912,6 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_ACAD_Classes_Created");
 
-                    b.HasOne("Domain.Entities.ACAD_CourseTeacherAssignment", "SubTeacherAssignment")
-                        .WithMany()
-                        .HasForeignKey("SubTeacherAssignmentID");
-
                     b.HasOne("Domain.Entities.ACAD_CourseTeacherAssignment", "TeacherAssignment")
                         .WithMany("ACAD_Classes")
                         .HasForeignKey("TeacherAssignmentID")
@@ -2933,8 +2927,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("CourseFormat");
 
                     b.Navigation("CreatedByNavigation");
-
-                    b.Navigation("SubTeacherAssignment");
 
                     b.Navigation("TeacherAssignment");
 
