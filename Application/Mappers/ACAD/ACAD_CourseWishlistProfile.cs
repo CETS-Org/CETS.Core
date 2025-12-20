@@ -17,6 +17,7 @@ namespace Application.Mappers.ACAD
                 .ForMember(dest => dest.StandardPrice, opt => opt.MapFrom(src => src.Course.StandardPrice))
                 .ForMember(dest => dest.CourseLevel, opt => opt.MapFrom(src => src.Course.CourseLevel != null ? src.Course.CourseLevel.Name : ""))
                 .ForMember(dest => dest.CourseFormat, opt => opt.MapFrom(src => src.Course.CourseFormat != null ? src.Course.CourseFormat.Name : ""))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Course.Category != null ? src.Course.Category.Name : ""))
                 .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => 
                     src.Course.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).Sum(i => i.TotalSlots ?? 0) + " slots"))
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => (double)(src.Course.AverageRating ?? 0)))

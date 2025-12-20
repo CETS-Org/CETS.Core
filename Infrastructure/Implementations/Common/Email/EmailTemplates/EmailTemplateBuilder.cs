@@ -38,7 +38,7 @@ namespace Infrastructure.Implementations.Common.Email.EmailTemplates
             return template
                 .Replace("{{StudentName}}", studentName)
                 .Replace("{{ClassName}}", className)
-                .Replace("{{StartDate}}", startDate.ToString("dd MM yyyy"))
+                .Replace("{{StartDate}}", startDate.ToString("dd/MM/yyyy"))
                 .Replace("{{ContinueUrl}}", continueUrl)
                 .Replace("{{RefundUrl}}", refundUrl);
         }
@@ -61,8 +61,8 @@ namespace Infrastructure.Implementations.Common.Email.EmailTemplates
                 .Replace("{{ClassName}}", className)
                 .Replace("{{RefundAmount}}", refundAmount.ToString("N0") + " VND")
                 .Replace("{{RefundMethod}}", refundMethod)
-                .Replace("{{RequestDate}}", requestDate.ToString("dd MMM yyyy"))
-                .Replace("{{ProcessedDate}}", processedDate.ToString("dd MMM yyyy"));
+                .Replace("{{RequestDate}}", requestDate.ToString("dd/MM/yyyy"))
+                .Replace("{{ProcessedDate}}", processedDate.ToString("dd/MM/yyyy"));
         }
         // ======================
         // 3. Confirm watiting for class email
@@ -78,7 +78,7 @@ namespace Infrastructure.Implementations.Common.Email.EmailTemplates
             return template
                 .Replace("{{StudentName}}", studentName)
                 .Replace("{{ClassName}}", className)
-                .Replace("{{StartDate}}", startDate.ToString("dd MMM yyyy"));
+                .Replace("{{StartDate}}", startDate.ToString("dd/MM/yyyy"));
         }
 
         // ======================
@@ -278,6 +278,29 @@ namespace Infrastructure.Implementations.Common.Email.EmailTemplates
                 .Replace("{{GracePeriodDays}}", gracePeriodDays.ToString())
                 .Replace("{{Year}}", DateTime.Now.Year.ToString());
         }
+
+        // ======================
+        // 11. Course Start Reminder Email
+        // ======================
+        public string BuildCourseStartReminderEmail(
+            string studentName,
+            string courseName,
+            string className,
+            string startDate,
+            string roomName)
+        {
+            // Đảm bảo tên file khớp với file HTML bạn tạo bên dưới
+            var template = LoadTemplate("CourseStartReminder.html");
+
+            return template
+                .Replace("{{StudentName}}", studentName)
+                .Replace("{{CourseName}}", courseName)
+                .Replace("{{ClassName}}", className)
+                .Replace("{{StartDate}}", startDate)
+                .Replace("{{RoomName}}", roomName)
+                .Replace("{{Year}}", DateTime.Now.Year.ToString());
+        }
+
 
     }
 }

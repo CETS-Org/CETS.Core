@@ -82,6 +82,7 @@ namespace Application.Implementations.ACAD
             var isSuspension = requestTypeCode.Contains("suspension");
             var isDropout =  requestTypeCode.Contains("dropout");
             var isRefund = requestTypeCode.Contains("refund");
+            var isTransfer = requestTypeCode.Contains("transfer");
 
             // Validate suspension requests
             if (isSuspension && _suspensionValidationService != null)
@@ -101,6 +102,33 @@ namespace Application.Implementations.ACAD
                 {
                     throw new InvalidOperationException($"Dropout request validation failed: {string.Join("; ", validationResult.Errors)}");
                 }
+            }
+
+            //Validate transfer requests
+            if (isTransfer)
+            {
+                if (!requestDto.EnrollmentID.HasValue)
+                {
+                    if (!requestDto.FromClassID.HasValue)
+                        throw new InvalidOperationException(
+                            "EnrollmentID or FromClassID is required for class transfer.");
+
+                    var enrollment = await _enrollmentRepo
+                        .GetByStudentAndClassAsync(requestDto.StudentID, requestDto.FromClassID.Value);
+
+                    if (enrollment == null)
+                        throw new KeyNotFoundException(
+                            "Enrollment not found for the given student and class.");
+
+                    requestDto.EnrollmentID = enrollment.Id;
+                }
+
+                var enrollmentStatus = await _lookUpRepository.GetByIdAsync(
+                    (await _enrollmentRepo.GetByIdAsync(requestDto.EnrollmentID.Value))!.EnrollmentStatusID
+                );
+
+                if ((enrollmentStatus?.Code ?? "").ToLower() != "enrolled")
+                    throw new InvalidOperationException("Only enrolled students can transfer class.");
             }
 
             // Validate EnrollmentID exists if provided
@@ -275,7 +303,8 @@ namespace Application.Implementations.ACAD
             var isDropout = requestTypeCode.Contains("dropout");
             var isEnrollmentCancellation = requestTypeCode.Contains("cancel");
             var isRefund = requestTypeCode.Contains("refund");
-            
+            var isTransfer = requestTypeCode.Contains("transfer");
+
             if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isSuspension)
             {   
                 await HandleSuspensionApprovalAsync(entity);
@@ -306,6 +335,11 @@ namespace Application.Implementations.ACAD
             if (completedStatus != null && requestDto.StatusID == completedStatus.Id && isDropout)
             {
                 await HandleDropoutCompletionAsync(entity);
+            }
+
+            if (approvedStatus != null && requestDto.StatusID == approvedStatus.Id && isTransfer)
+            {
+                await HandleClassTransferAsync(entity);
             }
 
             entity.AcademicRequestStatusID = requestDto.StatusID;
@@ -553,6 +587,21 @@ namespace Application.Implementations.ACAD
 
             // Update enrollment status to Refunded
             enrollment.EnrollmentStatusID = refundedStatus.Id;
+
+            _enrollmentRepo.Update(enrollment);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        private async Task HandleClassTransferAsync(ACAD_AcademicRequest request)
+        {
+            if (!request.EnrollmentID.HasValue || !request.ToClassID.HasValue)
+                throw new InvalidOperationException("Invalid class transfer request.");
+
+            var enrollment = await _enrollmentRepo.GetByIdAsync(request.EnrollmentID.Value);
+            if (enrollment == null)
+                throw new KeyNotFoundException("Enrollment not found.");
+
+            enrollment.ClassID = request.ToClassID.Value;
 
             _enrollmentRepo.Update(enrollment);
             await _unitOfWork.SaveChangesAsync();

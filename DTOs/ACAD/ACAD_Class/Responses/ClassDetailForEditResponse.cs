@@ -14,7 +14,9 @@ namespace DTOs.ACAD.ACAD_Class.Responses
         public Guid CourseId { get; set; }
         public string ClassName { get; set; } = string.Empty;
         public Guid? TeacherAssignmentID { get; set; }
+        public Guid? SubTeacherAssignmentID { get; set; }
         public string? TeacherName { get; set; }// TeacherAssignmentID
+        public string? SubTeacherName { get; set; }
         public Guid? RoomId { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }

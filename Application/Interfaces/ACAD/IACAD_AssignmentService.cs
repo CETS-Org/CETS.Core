@@ -32,5 +32,6 @@ namespace Application.Interfaces.ACAD
         Task<IEnumerable<AssignmentWithSubmissionCountResponse>> GetAssignmentsWithSubmissionCountAsync(Guid classMeetingId);
         Task<string> GetDownloadUrlAsync(Guid id);
         Task<string> GetQuestionDataUrlAsync(Guid id);
+        Task<IEnumerable<UpcomingAssignmentResponse>> GetUpcomingAssignmentsForStudentAsync(Guid studentId, int limit = 5);
     }
 }

@@ -36,6 +36,8 @@ namespace DTOs.ACAD.ACAD_Enrollment.Responses
         public string StatusName { get; set; } = string.Empty;
         public string CourseProgress { get; set; } = string.Empty;
         public string Instructor { get; set; } = string.Empty;
+
+        public DateTime? ExpectedStartDate { get; set; }
     }
 
 }

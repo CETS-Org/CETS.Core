@@ -104,5 +104,35 @@ namespace Infrastructure.Implementations.Repositories.COM
                 .Limit(limit)
                 .ToListAsync();
         }
+
+        public async Task<bool> UpdateRoomMembersAsync(string roomId, List<string> memberIds)
+        {
+            // Chuẩn hóa ID thành uppercase
+            var normalizedIds = memberIds
+                .Select(id => string.IsNullOrWhiteSpace(id) ? id : id.ToUpperInvariant())
+                .Distinct()
+                .ToList();
+
+            var filter = Builders<COM_ChatRoom>.Filter.Eq(x => x.Id, roomId);
+            var update = Builders<COM_ChatRoom>.Update.Set(x => x.MemberIds, normalizedIds);
+
+            var result = await _rooms.UpdateOneAsync(filter, update);
+            return result.IsAcknowledged && result.ModifiedCount > 0;
+        }
+
+        public async Task<COM_ChatRoom?> GetGroupRoomByNameAsync(string roomName)
+        {
+            if (string.IsNullOrWhiteSpace(roomName)) return null;
+
+           
+            var builder = Builders<COM_ChatRoom>.Filter;
+            var filter = builder.And(
+                builder.Eq(x => x.Name, roomName),
+                builder.Eq(x => x.Type, "group")
+            );
+
+            return await _rooms.Find(filter).FirstOrDefaultAsync();
+        }
+
     }
 }

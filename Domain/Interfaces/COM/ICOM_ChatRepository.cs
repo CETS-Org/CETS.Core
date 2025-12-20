@@ -17,5 +17,8 @@ namespace Domain.Interfaces.COM
 
         Task<COM_ChatMessage> CreateMessageAsync(COM_ChatMessage message);
         Task<List<COM_ChatMessage>> GetMessagesByRoomIdAsync(string roomId, int limit, int skip);
+
+        Task<bool> UpdateRoomMembersAsync(string roomId, List<string> memberIds);
+        Task<COM_ChatRoom?> GetGroupRoomByNameAsync(string roomName);
     }
 }
