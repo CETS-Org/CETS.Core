@@ -47,7 +47,7 @@ namespace Application.Implementations.ACAD
             {
                 foreach (var item in courseTeacherAssignment)
                 {
-                    var classes = item.ACAD_Classes;
+                    var classes = item.ACAD_Classes.Where(c => c.IsActive == true && c.IsDeleted == false);
                     foreach(var classItem in classes)
                     {
                         var classMeetings = await _classMeetingRepository.GetClassMeetingTodayByClassId(classItem.Id);
