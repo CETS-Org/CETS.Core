@@ -36,18 +36,17 @@ public class DemographicDropoutAnalysis
 }
 
 /// <summary>
-/// Dropout by class statistics
+/// Dropout by course statistics (aggregated from enrollments)
 /// </summary>
-public class DropoutByClass
+public class DropoutByCourse
 {
-    public string ClassId { get; set; } = null!;
-    public string ClassName { get; set; } = null!;
+    public string CourseId { get; set; } = null!;
     public string CourseName { get; set; } = null!;
+    public string? CourseCode { get; set; }
     public int TotalStudents { get; set; }
     public int DroppedOut { get; set; }
     public decimal DropoutRate { get; set; }
-    public DateOnly StartDate { get; set; }
-    public string Status { get; set; } = null!;
+    public int NumberOfClasses { get; set; }
 }
 
 /// <summary>
@@ -59,7 +58,7 @@ public class StudentDropoutAnalyticsResponse
     public List<DropoutTrendPoint> DropoutTrend { get; set; } = new();
     public List<DropoutReason> TopReasons { get; set; } = new();
     public List<DemographicDropoutAnalysis> DemographicAnalysis { get; set; } = new();
-    public List<DropoutByClass> DropoutByClass { get; set; } = new();
+    public List<DropoutByCourse> DropoutByCourse { get; set; } = new();
     public int HighRiskStudents { get; set; }
     public int AverageTimeToDropout { get; set; } // in days
     public List<string> Recommendations { get; set; } = new();

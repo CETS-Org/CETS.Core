@@ -206,7 +206,7 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
                 TopReasons = CalculateDropoutReasons(droppedOutEnrollments),
                 HighRiskStudents = CalculateHighRiskStudents(enrollments),
                 AverageTimeToDropout = CalculateAverageTimeToDropout(droppedOutEnrollments),
-                DropoutByClass = await CalculateDropoutByClassAsync(enrollments)
+                DropoutByCourse = CalculateDropoutByCourse(enrollments)
             };
 
             if (request.IncludeDemographics)
@@ -249,7 +249,7 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
                 MonthlyTrend = CalculateMonthlyEnrollmentTrend(enrollments, 12),
                 QuarterlyTrend = CalculateQuarterlyEnrollmentTrend(enrollments, 4),
                 TopGrowingCourses = await CalculateTopGrowingCoursesAsync(enrollments),
-                EnrollmentByClass = await CalculateEnrollmentByClassAsync(),
+                EnrollmentByCourse = CalculateEnrollmentByCourse(enrollments),
                 Insights = GenerateEnrollmentInsights(enrollments)
             };
 
@@ -849,77 +849,97 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
         return new List<DemographicDropoutAnalysis>();
     }
 
-    private async Task<List<DropoutByClass>> CalculateDropoutByClassAsync(List<ACAD_Enrollment> enrollments)
+
+    private List<DropoutByCourse> CalculateDropoutByCourse(List<ACAD_Enrollment> enrollments)
     {
-        var allClasses = await _classRepository.GetAllClass();
-        var classes = allClasses.Where(c => !c.IsDeleted).ToList();
+        // Group enrollments by CourseID
+        var courseGroups = enrollments
+            .Where(e => e.Course != null)
+            .GroupBy(e => e.CourseID)
+            .ToList();
 
-        var dropoutByClass = new List<DropoutByClass>();
+        var dropoutByCourse = new List<DropoutByCourse>();
 
-        foreach (var cls in classes)
+        foreach (var courseGroup in courseGroups)
         {
-            var classEnrollments = enrollments.Where(e => e.ClassID == cls.Id).ToList();
-            if (!classEnrollments.Any()) continue;
+            var courseEnrollments = courseGroup.ToList();
+            if (!courseEnrollments.Any()) continue;
 
-            var droppedOut = classEnrollments.Count(e => e.EnrollmentStatus.Code == "Dropped");
-            var dropoutRate = classEnrollments.Count > 0 
-                ? (droppedOut / (decimal)classEnrollments.Count * 100) 
+            var droppedOut = courseEnrollments.Count(e => e.EnrollmentStatus.Code == "Dropped");
+            var dropoutRate = courseEnrollments.Count > 0 
+                ? (droppedOut / (decimal)courseEnrollments.Count * 100) 
                 : 0;
 
-            // Get course name from first enrollment in the class
-            var courseName = classEnrollments.FirstOrDefault()?.Course?.CourseName ?? "N/A";
+            // Get course info from first enrollment
+            var firstEnrollment = courseEnrollments.FirstOrDefault();
+            var course = firstEnrollment?.Course;
+            
+            // Count distinct classes for this course
+            var numberOfClasses = courseEnrollments
+                .Where(e => e.ClassID.HasValue)
+                .Select(e => e.ClassID.Value)
+                .Distinct()
+                .Count();
 
-            dropoutByClass.Add(new DropoutByClass
+            dropoutByCourse.Add(new DropoutByCourse
             {
-                ClassId = cls.Id.ToString(),
-                ClassName = cls.ClassName ?? "N/A",
-                CourseName = courseName,
-                TotalStudents = classEnrollments.Count,
+                CourseId = courseGroup.Key.ToString(),
+                CourseName = course?.CourseName ?? "N/A",
+                CourseCode = course?.CourseCode,
+                TotalStudents = courseEnrollments.Count,
                 DroppedOut = droppedOut,
                 DropoutRate = dropoutRate,
-                StartDate = cls.StartDate,
-                Status = cls.ClassStatus.Code ?? "N/A"
+                NumberOfClasses = numberOfClasses
             });
         }
 
-        return dropoutByClass.OrderByDescending(d => d.DropoutRate).ToList();
+        return dropoutByCourse.OrderByDescending(d => d.DropoutRate).ToList();
     }
 
-    private async Task<List<EnrollmentByClass>> CalculateEnrollmentByClassAsync()
+    private List<EnrollmentByCourseAggregated> CalculateEnrollmentByCourse(List<ACAD_Enrollment> enrollments)
     {
-        var allClasses = await _classRepository.GetAllClass();
-        var classes = allClasses.Where(c => !c.IsDeleted).ToList();
-        
-        var allEnrollments = await _enrollmentRepository.GetAllEnrollment();
-        var enrollments = allEnrollments.ToList();
+        // Group enrollments by CourseID
+        var courseGroups = enrollments
+            .Where(e => e.Course != null)
+            .GroupBy(e => e.CourseID)
+            .ToList();
 
-        var enrollmentByClass = new List<EnrollmentByClass>();
+        var enrollmentByCourse = new List<EnrollmentByCourseAggregated>();
 
-        foreach (var cls in classes)
+        foreach (var courseGroup in courseGroups)
         {
-            var classEnrollments = enrollments.Where(e => e.ClassID == cls.Id).ToList();
-            if (!classEnrollments.Any()) continue;
+            var courseEnrollments = courseGroup.ToList();
+            if (!courseEnrollments.Any()) continue;
 
-            var activeEnrollments = classEnrollments.Count(e => e.EnrollmentStatus.Code == "Active");
-            var completedEnrollments = classEnrollments.Count(e => e.EnrollmentStatus.Code == "Completed");
+            var activeEnrollments = courseEnrollments.Count(e => e.EnrollmentStatus.Code == "Active");
+            var completedEnrollments = courseEnrollments.Count(e => e.EnrollmentStatus.Code == "Completed");
+            var droppedEnrollments = courseEnrollments.Count(e => e.EnrollmentStatus.Code == "Dropped");
 
-            // Get course name from first enrollment in the class
-            var courseName = classEnrollments.FirstOrDefault()?.Course?.CourseName ?? "N/A";
+            // Get course info from first enrollment
+            var firstEnrollment = courseEnrollments.FirstOrDefault();
+            var course = firstEnrollment?.Course;
+            
+            // Count distinct classes for this course (only enrollments that still have ClassID)
+            var numberOfClasses = courseEnrollments
+                .Where(e => e.ClassID.HasValue)
+                .Select(e => e.ClassID.Value)
+                .Distinct()
+                .Count();
 
-            enrollmentByClass.Add(new EnrollmentByClass
+            enrollmentByCourse.Add(new EnrollmentByCourseAggregated
             {
-                ClassId = cls.Id.ToString(),
-                ClassName = cls.ClassName ?? "N/A",
-                CourseName = courseName,
-                TotalEnrollments = classEnrollments.Count,
+                CourseId = courseGroup.Key.ToString(),
+                CourseName = course?.CourseName ?? "N/A",
+                CourseCode = course?.CourseCode,
+                TotalEnrollments = courseEnrollments.Count,
                 ActiveEnrollments = activeEnrollments,
                 CompletedEnrollments = completedEnrollments,
-                StartDate = cls.StartDate,
-                Status = cls.ClassStatus.Code ?? "N/A"
+                DroppedEnrollments = droppedEnrollments,
+                NumberOfClasses = numberOfClasses
             });
         }
 
-        return enrollmentByClass.OrderByDescending(e => e.TotalEnrollments).ToList();
+        return enrollmentByCourse.OrderByDescending(e => e.TotalEnrollments).ToList();
     }
 
     private List<string> GenerateDropoutRecommendations(StudentDropoutAnalyticsResponse data)
