@@ -30,6 +30,7 @@ namespace Application.Implementations.IDN
         private readonly IIDN_AccountRepository _accountRepository;
         private readonly IIDN_RoleRepository _roleRepository;
         private readonly ICORE_LookUpRepository _lookUpRepository;
+        private readonly IIDN_StudentRepository _studentRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IPasswordHasher _passwordHasher;
@@ -40,6 +41,7 @@ namespace Application.Implementations.IDN
             IIDN_AccountRepository accountRepository, 
             IIDN_RoleRepository roleRepository,
             ICORE_LookUpRepository lookUpRepository,
+            IIDN_StudentRepository studentRepository,
             IUnitOfWork unitOfWork, 
             IMapper mapper, 
             IPasswordHasher passwordHasher,
@@ -50,6 +52,7 @@ namespace Application.Implementations.IDN
             _accountRepository = accountRepository;
             _roleRepository = roleRepository;
             _lookUpRepository = lookUpRepository;
+            _studentRepository = studentRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
@@ -63,6 +66,26 @@ namespace Application.Implementations.IDN
             var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(cid));
             var hashHex = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
             return hashHex;
+        }
+
+        private string GenerateStudentCode()
+        {
+            var currentYear = DateTime.Now.Year;
+            var random = new Random();
+            var randomPart = random.Next(1000, 9999);
+            return $"ST{currentYear}{randomPart}"; // Format: ST20250001
+        }
+
+        private async Task<int> GetNextStudentNumberAsync()
+        {
+            var lastStudent = await _studentRepository.FindAsync(s => !s.IsDeleted);
+            if (!lastStudent.Any())
+            {
+                return 1; // First student
+            }
+            
+            var maxStudentNumber = lastStudent.Max(s => s.StudentNumber);
+            return maxStudentNumber + 1;
         }
 
         /* Get methods */
@@ -113,9 +136,9 @@ namespace Application.Implementations.IDN
             account.Password = _passwordHasher.HashPassword(rawPassword);
             account.IsVerified = false;
             
-            // Hash CID for security
+            // CID is stored as plain text (not hashed)
             if (!string.IsNullOrWhiteSpace(account.CID))
-                account.CID = HashCID(account.CID);
+                account.CID = account.CID;
 
             account.IDN_AccountRoles = new List<IDN_AccountRole>
             {
@@ -148,6 +171,18 @@ namespace Application.Implementations.IDN
             }
 
             _teacherRepository.Add(teacher);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Create Student record for the teacher (so teacher can also be a student)
+            var student = new IDN_Student
+            {
+                Id = account.Id,
+                StudentCode = GenerateStudentCode(),
+                StudentNumber = await GetNextStudentNumberAsync(),
+                CreatedAt = DateTime.Now,
+                IsDeleted = false
+            };
+            _studentRepository.Add(student);
             await _unitOfWork.SaveChangesAsync();
 
             // Send login credentials email to teacher
