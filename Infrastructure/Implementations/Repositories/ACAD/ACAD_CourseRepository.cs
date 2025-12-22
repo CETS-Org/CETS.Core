@@ -109,16 +109,17 @@ namespace Infrastructure.Implementations.Repositories.ACAD
 
         public IQueryable<ACAD_Course> GetAllCoursesForListAsync()
         {
+            
             return _context.ACAD_Courses
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Where(c => !c.IsDeleted)
                 .Include(c => c.Category)
                 .Include(c => c.CourseLevel)
-                .Include(c => c.ACAD_CourseTeacherAssignments).ThenInclude(a => a.Teacher).ThenInclude(t => t.Account)
-                .Include(c => c.ACAD_Syllabi.Where(s => !s.IsDeleted))
-                    .ThenInclude(s => s.ACAD_SyllabusItems.Where(i => !i.IsDeleted).OrderBy(i => i.SessionNumber))
-                .Include(c => c.ACAD_Enrollments)
-                    .ThenInclude(e => e.EnrollmentStatus);
+                .Include(c => c.ACAD_CourseTeacherAssignments)
+                    .ThenInclude(a => a.Teacher)
+                    .ThenInclude(t => t.Account)
+                .Include(c => c.ACAD_Enrollments);
         }
 
         private IQueryable<ACAD_Course> CreateFacetBaseQuery()
