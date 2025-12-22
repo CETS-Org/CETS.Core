@@ -89,18 +89,24 @@ namespace Application.Mappers.ACAD
 
             CreateMap<ACAD_Course, CourseListItemResponse>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
-                .ForMember(dest => dest.TeacherDetails, opt => opt.MapFrom(src => 
+                .ForMember(dest => dest.TeacherDetails, opt => opt.MapFrom(src =>
                     src.ACAD_CourseTeacherAssignments.Select(a => a.Teacher).ToList()))
-                 .ForMember(dest => dest.CourseSkills, opt => opt.MapFrom(src =>
+                .ForMember(dest => dest.CourseSkills, opt => opt.MapFrom(src =>
                     src.ACAD_CourseSkills))
-                .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => 
-                    src.ACAD_Syllabi.SelectMany(s => s.ACAD_SyllabusItems).Sum(i => i.TotalSlots ?? 0) + " slots"))
-                .ForMember(dest => dest.CourseLevel, opt => opt.MapFrom(src => src.CourseLevel.Name))
-                .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => 
+                .ForMember(dest => dest.Duration, opt => opt.MapFrom(src =>
+                    (src.ACAD_Syllabi ?? new List<ACAD_Syllabus>())
+                        .SelectMany(s => s.ACAD_SyllabusItems ?? new List<ACAD_SyllabusItem>())
+                        .Sum(i => i.TotalSlots ?? 0) + " slots"))
+                .ForMember(dest => dest.CourseLevel, opt => opt.MapFrom(src =>
+                    src.CourseLevel != null ? src.CourseLevel.Name : string.Empty))
+                .ForMember(dest => dest.Rating, opt => opt.MapFrom(src =>
                     (double)(src.AverageRating ?? 0)))
-                .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src => 
-                    src.ACAD_Enrollments.Count(e => !e.IsDeleted && e.EnrollmentStatus.Name == "Enrolled")))
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
+                .ForMember(dest => dest.StudentsCount, opt => opt.MapFrom(src =>
+                    src.ACAD_Enrollments
+                        .Where(e => !e.IsDeleted && e.EnrollmentStatus != null && e.EnrollmentStatus.Name == "Enrolled")
+                        .Count()))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src =>
+                    src.Category != null ? src.Category.Name : string.Empty))
                 .ForMember(dest => dest.Schedules, opt => opt.MapFrom(src => src.ACAD_CourseSchedules))
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
 
