@@ -164,14 +164,14 @@ namespace Infrastructure.Implementations.Repositories.ACAD
                 throw new Exception($"Class meeting with ID {request.ClassMeetingId} not found");
 
             // 2. Kiểm tra xem ngày meeting có quá hạn 1 ngày không
-            // var meetingDate = classMeeting.Date.ToDateTime(TimeOnly.MinValue);
-            // var currentDate = DateTime.Now.Date;
-            // var daysDifference = (currentDate - meetingDate).Days;
+            var meetingDate = classMeeting.Date.ToDateTime(TimeOnly.MinValue);
+            var currentDate = DateTime.Now.Date;
+            var daysDifference = (currentDate - meetingDate).Days;
 
-            // if (daysDifference > 1)
-            // {
-            //     throw new Exception("The class session has expired more than 1 day. Attendance cannot be taken.");
-            // }
+            if (daysDifference > 1)
+            {
+                throw new Exception("The class session has expired more than 1 day. Attendance cannot be taken.");
+            }
 
             // 3. Lấy danh sách tất cả học sinh trong lớp từ enrollment
             var allStudents = await _context.ACAD_Enrollments
