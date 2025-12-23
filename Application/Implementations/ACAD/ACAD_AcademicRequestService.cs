@@ -24,6 +24,7 @@ namespace Application.Implementations.ACAD
         private readonly IACAD_AcademicRequestRepository _requestRepo;
         private readonly IACAD_AcademicRequestHistoryRepository _historyRepo;
         private readonly IACAD_EnrollmentRepository _enrollmentRepo;
+        private readonly IACAD_ClassReservationRepository _classReservationRepo;
         private readonly ICORE_LookUpRepository _lookUpRepository;
         private readonly IFileStorageService _fileStorageService;
         private readonly IACAD_ClassMeetingRepository _classMeetingRepo;
@@ -40,6 +41,7 @@ namespace Application.Implementations.ACAD
             IACAD_AcademicRequestRepository requestRepo,
             IACAD_AcademicRequestHistoryRepository historyRepo,
             IACAD_EnrollmentRepository enrollmentRepo,
+            IACAD_ClassReservationRepository classReservationRepo,
             ICORE_LookUpRepository lookUpRepository,
             IFileStorageService fileStorageService,
             IACAD_ClassMeetingRepository classMeetingRepo,
@@ -55,6 +57,7 @@ namespace Application.Implementations.ACAD
             _requestRepo = requestRepo;
             _historyRepo = historyRepo;
             _enrollmentRepo = enrollmentRepo;
+            _classReservationRepo = classReservationRepo;
             _lookUpRepository = lookUpRepository;
             _fileStorageService = fileStorageService;
             _classMeetingRepo = classMeetingRepo;
@@ -470,24 +473,61 @@ namespace Application.Implementations.ACAD
 
         private async Task HandleDropoutCompletionAsync(ACAD_AcademicRequest request)
         {
-
-            // Get the student account
             var account = await _accountRepo.GetDetailByIdAsync(request.StudentID);
             if (account == null)
             {
                 throw new KeyNotFoundException("Student account not found.");
             }
 
-            // Get the DroppedOut status
             var droppedOutStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.AccountStatus, "Dropped");
             if (droppedOutStatus == null)
             {
                 throw new KeyNotFoundException("Dropped status not found in lookup data.");
             }
 
-            // Update student account status to DroppedOut
             account.AccountStatusID = droppedOutStatus.Id;
             _accountRepo.Update(account);
+
+            if (request.EnrollmentID.HasValue)
+            {
+                var enrollment = await _enrollmentRepo.GetByIdAsync(request.EnrollmentID.Value);
+                if (enrollment != null)
+                {
+                    var pendingReservationStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.ReservationStatus, "Pending");
+                    var cancelledReservationStatus = await _lookUpRepository.GetByCodeAsync(LookUpTypes.ReservationStatus, "Cancelled");
+
+                    if (pendingReservationStatus == null)
+                    {
+                        throw new KeyNotFoundException("Pending reservation status not found in lookup data.");
+                    }
+
+                    if (cancelledReservationStatus == null)
+                    {
+                        throw new KeyNotFoundException("Cancelled reservation status not found in lookup data.");
+                    }
+
+                    var reservations = _classReservationRepo.GetReservationByStudentId(request.StudentID).ToList();
+
+                    foreach (var reservation in reservations)
+                    {
+                        if (reservation.ReservationStatusID != pendingReservationStatus.Id)
+                        {
+                            continue; 
+                        }
+
+                        var hasCourse = reservation.ACAD_ReservationItems
+                            .Any(item => item.CourseID == enrollment.CourseID);
+
+                        if (!hasCourse)
+                        {
+                            continue;
+                        }
+
+                        reservation.ReservationStatusID = cancelledReservationStatus.Id;
+                        _classReservationRepo.Update(reservation);
+                    }
+                }
+            }
 
             await _unitOfWork.SaveChangesAsync();
         }
