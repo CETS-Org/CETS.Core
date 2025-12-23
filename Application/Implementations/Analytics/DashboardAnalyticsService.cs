@@ -188,10 +188,10 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
 
             // Filter by date range
             if (request.FromDate.HasValue)
-                enrollments = enrollments.Where(e => e.CreatedAt >= request.FromDate.Value).ToList();
+                enrollments = enrollments.Where(e => e.UpdatedAt >= request.FromDate.Value).ToList();
             
             if (request.ToDate.HasValue)
-                enrollments = enrollments.Where(e => e.CreatedAt <= request.ToDate.Value).ToList();
+                enrollments = enrollments.Where(e => e.UpdatedAt <= request.ToDate.Value).ToList();
 
             var droppedOutEnrollments = enrollments
                 .Where(e => e.EnrollmentStatus.Code == "Dropped")
@@ -781,9 +781,13 @@ public class DashboardAnalyticsService : IDashboardAnalyticsService
         for (int i = months - 1; i >= 0; i--)
         {
             var targetDate = DateTime.Now.AddMonths(-i);
+            // Use the latest update timestamp when grouping by month; fallback to CreatedAt
             var monthEnrollments = enrollments
-                .Where(e => e.CreatedAt.Year == targetDate.Year && 
-                           e.CreatedAt.Month == targetDate.Month)
+                .Where(e =>
+                {
+                    var date = e.UpdatedAt ?? e.CreatedAt;
+                    return date.Year == targetDate.Year && date.Month == targetDate.Month;
+                })
                 .ToList();
 
             var droppedOut = monthEnrollments
