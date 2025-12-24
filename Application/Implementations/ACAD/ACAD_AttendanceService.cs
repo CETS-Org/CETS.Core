@@ -45,13 +45,12 @@ namespace Application.Implementations.ACAD
                 throw new Exception($"Class meeting with ID {meetingId} not found");
             }
 
-            var meetingDate = meeting.Date.ToDateTime(TimeOnly.MinValue);
+            var meetingDate = meeting.Date.ToDateTime(TimeOnly.MinValue).Date;
             var currentDate = DateTime.Now.Date;
-            var daysDifference = (currentDate - meetingDate).Days;
 
-            if (daysDifference > 1)
+            if (meetingDate != currentDate)
             {
-                throw new Exception("The class session has expired more than 1 day. Attendance cannot be taken.");
+                throw new Exception("Attendance can only be taken on the exact class date.");
             }
 
             var existing = await _attendanceRepository.GetByMeetingAndStudentAsync(meetingId, studentId);
